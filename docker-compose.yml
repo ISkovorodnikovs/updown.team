@@ -1,0 +1,50 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: updown_db
+      POSTGRES_USER: updown_admin
+      POSTGRES_PASSWORD: aFNLDF5I72z3K1
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - updown
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U updown_admin -d updown_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file: ./backend/.env
+    ports:
+      - "127.0.0.1:3001:3000"
+    networks:
+      - updown
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:80"
+    networks:
+      - updown
+    depends_on:
+      - backend
+
+networks:
+  updown:
+    driver: bridge
+
+volumes:
+  postgres_data:
