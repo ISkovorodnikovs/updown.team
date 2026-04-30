@@ -1,0 +1,114 @@
+import axios from 'axios'
+import { useAuthStore } from '@/stores/auth'
+
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_URL
+    ? `${import.meta.env.VITE_API_URL}/api`
+    : '/api',
+  timeout: 15000,
+})
+
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token')
+  if (token) config.headers.Authorization = `Bearer ${token}`
+  return config
+})
+
+api.interceptors.response.use(
+  (res) => res,
+  (err) => {
+    if (err.response?.status === 401) {
+      const isAuthPage = window.location.pathname === '/login' || window.location.pathname === '/register'
+      // На странице авторизации 401 — это просто неверный пароль, не делаем редирект
+      if (!isAuthPage) {
+        localStorage.removeItem('token')
+        window.location.href = '/login'
+      }
+    }
+    return Promise.reject(err)
+  }
+)
+
+export default api
+
+// Auth
+export const authApi = {
+  sendCode: (email) => api.post('/auth/send-code', { email }),
+  register: (data) => api.post('/auth/register', data),
+  login: (data) => api.post('/auth/login', data),
+  sendLoginCode: (email) => api.post('/auth/login/code', { email }),
+  verifyLoginCode: (data) => api.post('/auth/login/verify', data),
+}
+
+// Users
+export const usersApi = {
+  getMe: () => api.get('/users/me'),
+  updateMe: (data) => api.put('/users/me', data),
+  changePassword: (data) => api.post('/users/me/change-password', data),
+  changeEmail: (data) => api.post('/users/me/change-email', data),
+  confirmEmail: (data) => api.post('/users/me/confirm-email', data),
+  toggle2FA: (enabled) => api.put('/users/me/2fa', { enabled }),
+}
+
+// Partners
+export const partnersApi = {
+  apply: (data) => api.post('/partners/apply', data),
+  myApplication: () => api.get('/partners/my-application'),
+  getAll: (params) => api.get('/partners', { params }),
+  review: (id, data) => api.put(`/partners/${id}/review`, data),
+}
+
+// Bots
+export const botsApi = {
+  getMyBot: () => api.get('/bots/my'),
+  setToken: (token) => api.post('/bots/my/token', { token }),
+  startBot: () => api.post('/bots/my/start'),
+  stopBot: () => api.post('/bots/my/stop'),
+  updateButtons: (buttonUrls) => api.put('/bots/my/buttons', { buttonUrls }),
+  getAll: () => api.get('/bots/all'),
+}
+
+// Tickets
+export const ticketsApi = {
+  create: (data) => api.post('/tickets', data),
+  getMyTickets: () => api.get('/tickets/my'),
+  getAllTickets: (params) => api.get('/tickets/all', { params }),
+  getMessages: (id) => api.get(`/tickets/${id}/messages`),
+  reply: (id, message) => api.post(`/tickets/${id}/reply`, { message }),
+  close: (id) => api.put(`/tickets/${id}/close`),
+}
+
+// Broadcasts
+export const broadcastsApi = {
+  send: (data) => api.post('/broadcasts', data),
+  history: (params) => api.get('/broadcasts/history', { params }),
+}
+
+// Admin
+export const adminApi = {
+  getUsers: (params) => api.get('/admin/users', { params }),
+  assignAdmin: (id) => api.post(`/admin/users/${id}/assign-admin`),
+  revokeAdmin: (id) => api.post(`/admin/users/${id}/revoke-admin`),
+  deactivateUser: (id) => api.post(`/admin/users/${id}/deactivate`),
+  getLogs: (params) => api.get('/admin/logs', { params }),
+}
+
+// Plans
+export const plansApi = {
+  getAll: () => api.get('/plans'),
+  getOne: (id) => api.get(`/plans/${id}`),
+  create: (data) => api.post('/plans', data),
+  update: (id, data) => api.put(`/plans/${id}`, data),
+}
+
+// Subscriptions
+export const subscriptionsApi = {
+  getMy: () => api.get('/subscriptions/my'),
+  getMyHistory: () => api.get('/subscriptions/my/history'),
+  getMyTransactions: () => api.get('/subscriptions/my/transactions'),
+  getActivePlan: () => api.get('/subscriptions/my/active-plan'),
+  pay: (planId) => api.post('/subscriptions/pay', { planId }),
+  // Admin
+  grant: (data) => api.post('/subscriptions/admin/grant', data),
+  getAll: (params) => api.get('/subscriptions/admin/all', { params }),
+}
