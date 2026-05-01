@@ -40,3 +40,16 @@ export class VerifyCodeDto {
   @Length(6, 6)
   code: string;
 }
+
+export class ResetPasswordDto {
+  @IsEmail()
+  email: string;
+
+  @Length(6, 6)
+  code: string;
+
+  @IsString()
+  @MinLength(8)
+  @MaxLength(64)
+  newPassword: string;
+}

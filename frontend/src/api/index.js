@@ -34,10 +34,12 @@ export default api
 // Auth
 export const authApi = {
   sendCode: (email) => api.post('/auth/send-code', { email }),
-  register: (data) => api.post('/auth/register', data),
+  register: (data, refCode) => api.post(`/auth/register${refCode ? `?ref=${refCode}` : ''}`, data),
   login: (data) => api.post('/auth/login', data),
   sendLoginCode: (email) => api.post('/auth/login/code', { email }),
   verifyLoginCode: (data) => api.post('/auth/login/verify', data),
+  forgotPassword: (email) => api.post('/auth/forgot-password', { email }),
+  resetPassword: (data) => api.post('/auth/reset-password', data),
 }
 
 // Users
@@ -111,4 +113,37 @@ export const subscriptionsApi = {
   // Admin
   grant: (data) => api.post('/subscriptions/admin/grant', data),
   getAll: (params) => api.get('/subscriptions/admin/all', { params }),
+}
+
+// Payment (Heleket)
+export const paymentApi = {
+  createInvoice: (data) => api.post('/payment/create', data),
+}
+
+// Referral
+export const referralApi = {
+  getMy: () => api.get('/referral/my'),
+  // Admin
+  manualCredit: (data) => api.post('/referral/admin/credit', data),
+  reassign: (data) => api.post('/referral/admin/reassign', data),
+  zeroBalance: (userId) => api.post(`/referral/admin/zero-balance/${userId}`),
+  getEarnings: (userId) => api.get(`/referral/admin/earnings/${userId}`),
+  getUsers: (search) => api.get('/referral/admin/users', { params: search ? { search } : {} }),
+}
+
+// Banners
+export const bannersApi = {
+  getActive: () => api.get('/banners/active'),
+  getAll: () => api.get('/banners'),
+  create: (data) => api.post('/banners', data),
+  update: (id, data) => api.put(`/banners/${id}`, data),
+  toggle: (id) => api.post(`/banners/${id}/toggle`),
+  remove: (id) => api.delete(`/banners/${id}`),
+}
+
+// Shop
+export const shopApi = {
+  getIndicators: () => api.get('/shop/indicators'),
+  getChannels: () => api.get('/shop/channels'),
+  getAll: () => api.get('/shop/all'),
 }

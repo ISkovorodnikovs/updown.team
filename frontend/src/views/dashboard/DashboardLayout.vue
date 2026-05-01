@@ -52,6 +52,8 @@
           <div class="nav-group">
             <NavItem to="/dashboard/admin/users" :icon="icons.users" :label="t.nav.users" :collapsed="collapsed" />
             <NavItem to="/dashboard/admin/subscriptions" :icon="icons.adminSubs" :label="t.nav.adminSubs" :collapsed="collapsed" />
+            <NavItem to="/dashboard/admin/banners" :icon="icons.banners" :label="t.nav.banners" :collapsed="collapsed" />
+            <NavItem to="/dashboard/admin/referral" :icon="icons.referral" :label="t.nav.referral" :collapsed="collapsed" />
             <NavItem to="/dashboard/all-tickets" :icon="icons.tickets" :label="t.nav.allTickets" :collapsed="collapsed" />
             <NavItem v-if="auth.isOwner" to="/dashboard/admin-logs" :icon="icons.logs" :label="t.nav.logs" :collapsed="collapsed" />
           </div>
@@ -59,6 +61,10 @@
       </nav>
 
       <div class="sidebar__footer">
+        <a href="https://charts.updown.team" target="_blank" rel="noopener" class="charts-link" :title="t.chartsLink">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          <span v-show="!collapsed">{{ t.chartsLink }}</span>
+        </a>
         <div class="user-card" v-show="!collapsed">
           <div class="user-avatar">{{ initials }}</div>
           <div class="user-info">
@@ -103,6 +109,15 @@
         <router-view />
       </main>
     </div>
+
+  <!-- Global cart toast — visible on all pages -->
+  <Transition name="toast-slide">
+    <div class="global-cart-toast" v-if="cartStore.count > 0 && !isShopPage">
+      🛒 {{ t.cart }}: {{ cartStore.count }}
+      <router-link to="/dashboard/shop" class="cart-toast-link">{{ t.goCheckout }} →</router-link>
+    </div>
+  </Transition>
+
   </div>
 </template>
 
@@ -111,8 +126,11 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { subscriptionsApi } from '@/api'
+import { useCartStore } from '@/stores/cart'
 
 const auth = useAuthStore()
+const cartStore = useCartStore()
+const isShopPage = computed(() => route.path === '/dashboard/shop')
 const router = useRouter()
 const route = useRoute()
 
@@ -156,6 +174,8 @@ const icons = {
   profile: '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
   users: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
   adminSubs: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>',
+  banners: '<path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/>',
+  referral: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="23" y1="11" x2="17" y2="11"/><line x1="20" y1="8" x2="20" y2="14"/>',
   tickets: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>',
   logs: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>',
 }
@@ -169,8 +189,11 @@ const translations = {
       analytics: 'Аналитика', copytrading: 'Копитрейдинг', education: 'Обучение',
       business: 'Бизнес', whitelabel: 'White Label', development: 'Разработка', affiliate: 'Партнёрка',
       account: 'Аккаунт', finances: 'Финансы', support: 'Поддержка', profile: 'Профиль',
-      users: 'Пользователи', adminSubs: 'Подписки', allTickets: 'Все тикеты', logs: 'Логи',
+      users: 'Пользователи', adminSubs: 'Подписки', banners: 'Баннеры', referral: 'Рефералы', allTickets: 'Все тикеты', logs: 'Логи',
     },
+    chartsLink: 'Chart Platform',
+    cart: 'Корзина',
+    goCheckout: 'Оплатить',
     logout: 'Выйти',
     pageTitles: {
       '/dashboard': 'Главная', '/dashboard/subscriptions': 'Мои подписки',
@@ -181,6 +204,7 @@ const translations = {
       '/dashboard/affiliate': 'Партнёрка', '/dashboard/finances': 'Финансы',
       '/dashboard/support': 'Поддержка', '/dashboard/profile': 'Профиль',
       '/dashboard/admin/users': 'Пользователи', '/dashboard/admin/subscriptions': 'Управление подписками',
+      '/dashboard/admin/banners': 'Конструктор баннеров', '/dashboard/admin/referral': 'Управление рефералами',
     }
   },
   en: {
@@ -190,8 +214,11 @@ const translations = {
       analytics: 'Analytics', copytrading: 'Copy Trading', education: 'Education',
       business: 'Business', whitelabel: 'White Label', development: 'Development', affiliate: 'Affiliate',
       account: 'Account', finances: 'Finances', support: 'Support', profile: 'Profile',
-      users: 'Users', adminSubs: 'Subscriptions', allTickets: 'All Tickets', logs: 'Logs',
+      users: 'Users', adminSubs: 'Subscriptions', banners: 'Banners', referral: 'Referrals', allTickets: 'All Tickets', logs: 'Logs',
     },
+    chartsLink: 'Chart Platform',
+    cart: 'Cart',
+    goCheckout: 'Checkout',
     logout: 'Logout',
     pageTitles: {
       '/dashboard': 'Home', '/dashboard/subscriptions': 'My Subscriptions',
@@ -202,6 +229,7 @@ const translations = {
       '/dashboard/affiliate': 'Affiliate', '/dashboard/finances': 'Finances',
       '/dashboard/support': 'Support', '/dashboard/profile': 'Profile',
       '/dashboard/admin/users': 'Users', '/dashboard/admin/subscriptions': 'Manage Subscriptions',
+      '/dashboard/admin/banners': 'Banner Constructor', '/dashboard/admin/referral': 'Referral Management',
     }
   }
 }
@@ -221,7 +249,9 @@ const NavItem = defineComponent({
     return () => h(RouterLink, {
       to: props.to,
       class: 'nav-item',
-      exactActiveClass: props.exact ? 'router-link-exact-active' : undefined,
+      // Для exact-роутов (Home) не используем router-link-active (prefix match)
+      activeClass: props.exact ? '' : 'router-link-active',
+      exactActiveClass: 'router-link-exact-active',
     }, () => [
       h('span', { class: 'nav-icon', innerHTML: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${props.icon}</svg>` }),
       !props.collapsed ? h('span', { class: 'nav-label' }, props.label) : null,
@@ -442,6 +472,30 @@ export default { components: { NavItem } }
   &--free { color: var(--text-3); }
 }
 
+.charts-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: none;
+  border: 1px solid rgba(79,110,247,0.25);
+  border-radius: 8px;
+  color: #4f6ef7;
+  font-size: 12px;
+  font-family: 'Roboto', sans-serif;
+  text-decoration: none;
+  transition: all 0.2s;
+  white-space: nowrap;
+  overflow: hidden;
+  width: 100%;
+  margin-bottom: 8px;
+  font-weight: 600;
+
+  &:hover { color: #7b9cff; border-color: rgba(79,110,247,0.5); background: rgba(79,110,247,0.08); text-decoration: none; }
+
+  svg { flex-shrink: 0; }
+}
+
 .logout-btn {
   display: flex;
   align-items: center;
@@ -527,4 +581,40 @@ export default { components: { NavItem } }
   padding: 28px;
   background: var(--bg);
 }
+
+/* Global cart toast */
+.global-cart-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-2);
+  border: 1px solid var(--accent);
+  border-radius: 12px;
+  padding: 11px 20px;
+  font-size: 13px;
+  color: var(--text-2);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  z-index: 500;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.35);
+  white-space: nowrap;
+}
+.cart-toast-link {
+  color: var(--accent);
+  font-weight: 700;
+  text-decoration: none;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 12px;
+  &:hover { text-decoration: underline; }
+}
+.toast-slide-enter-active, .toast-slide-leave-active {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.toast-slide-enter-from, .toast-slide-leave-to {
+  opacity: 0;
+  transform: translateX(-50%) translateY(16px);
+}
+
 </style>

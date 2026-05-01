@@ -14,19 +14,31 @@
           <a href="#how" @click.prevent="scrollTo('how')">{{ t.nav.how }}</a>
           <a href="#team" @click.prevent="scrollTo('team')">{{ t.nav.team }}</a>
           <a href="#partners" @click.prevent="scrollTo('partners')">{{ t.nav.partners }}</a>
+          <a href="https://charts.updown.team" target="_blank" rel="noopener" class="nav__charts-link">{{ t.nav.charts }} ↗</a>
         </div>
 
         <div class="nav__actions">
-          <!-- Theme toggle -->
           <button class="icon-btn" @click="toggleTheme" :title="theme === 'dark' ? 'Light mode' : 'Dark mode'">
             <svg v-if="theme === 'dark'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
             <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
           </button>
-          <!-- Lang toggle -->
           <button class="lang-btn" @click="toggleLang">{{ lang === 'ru' ? 'EN' : 'RU' }}</button>
-          <router-link to="/login" class="btn-nav">{{ t.nav.login }}</router-link>
+          <router-link to="/login" class="btn-nav btn-nav--login">{{ t.nav.login }}</router-link>
           <router-link to="/partner-apply" class="btn-nav btn-nav--accent">{{ t.nav.partner }}</router-link>
+          <button class="hamburger" @click="mobileMenuOpen = !mobileMenuOpen" :class="{ 'hamburger--open': mobileMenuOpen }">
+            <span></span><span></span><span></span>
+          </button>
         </div>
+      </div>
+      <!-- Mobile menu -->
+      <div class="nav__mobile" :class="{ 'nav__mobile--open': mobileMenuOpen }">
+        <a href="#products" @click.prevent="scrollTo('products'); mobileMenuOpen=false">{{ t.nav.products }}</a>
+        <a href="#how" @click.prevent="scrollTo('how'); mobileMenuOpen=false">{{ t.nav.how }}</a>
+        <a href="#team" @click.prevent="scrollTo('team'); mobileMenuOpen=false">{{ t.nav.team }}</a>
+        <a href="#partners" @click.prevent="scrollTo('partners'); mobileMenuOpen=false">{{ t.nav.partners }}</a>
+        <a href="https://charts.updown.team" target="_blank" rel="noopener" class="nav__charts-link">{{ t.nav.charts }} ↗</a>
+        <router-link to="/login" @click="mobileMenuOpen=false">{{ t.nav.login }}</router-link>
+        <router-link to="/partner-apply" @click="mobileMenuOpen=false" class="mobile-partner-link">{{ t.nav.partner }}</router-link>
       </div>
     </nav>
 
@@ -406,6 +418,7 @@
               <a href="#products">{{ t.footer.signals }}</a>
               <a href="#products">{{ t.footer.whitelabel }}</a>
               <a href="#products">{{ t.footer.indicators }}</a>
+              <a href="https://charts.updown.team" target="_blank" rel="noopener">{{ t.nav.charts }} ↗</a>
             </div>
           </div>
         </div>
@@ -434,7 +447,8 @@ function toggleTheme() {
 }
 
 // ---- LANG ----
-const lang = ref(localStorage.getItem('ud-lang') || 'ru')
+const lang = ref(localStorage.getItem('ud-lang') || 'en')
+const mobileMenuOpen = ref(false)
 function toggleLang() {
   lang.value = lang.value === 'ru' ? 'en' : 'ru'
   localStorage.setItem('ud-lang', lang.value)
@@ -946,7 +960,7 @@ const tickerItems = ['AiView Crypto', '✦', 'AiView Forex', '✦', 'UpDown PRO'
 // ---- TRANSLATIONS ----
 const translations = {
   ru: {
-    nav: { products: 'Продукты', how: 'Как работает', team: 'Команда', partners: 'Партнёрство', login: 'Войти', partner: 'Стать партнёром' },
+    nav: { products: 'Продукты', how: 'Как работает', team: 'Команда', partners: 'Партнёрство', login: 'Войти', partner: 'Стать партнёром', charts: 'Chart Platform' },
     hero: {
       badge: 'Инфраструктурная торговая платформа',
       title1: 'Торгуй умнее.',
@@ -996,7 +1010,6 @@ const translations = {
         { initials: 'Д', name: 'Дмитрий', role: 'Co-Founder / Product & Strategy', desc: 'Продуктовая архитектура, развитие экосистемы, логика индикаторов и стратегические партнёрства.' },
         { initials: 'И', name: 'Иван', role: 'Co-Founder / CTO', desc: 'Вся техническая инфраструктура, разработка ключевых продуктов, архитектура и масштабируемость.' },
         { initials: 'С', name: 'Сергей', role: 'Lead Trader / Educator', desc: 'Торговые стратегии, обучение пользователей, аналитика и публичный контент.' },
-        { initials: 'М', name: 'Максим', role: 'Trader / Copytrading Lead', desc: 'Копитрейдинг, работа с аудиторией, сопровождение пользователей и аналитика.' },
         { initials: 'К', name: 'Кирилл', role: 'Operations / Junior Dev', desc: 'Операционная деятельность, поддержка продуктов, тестирование и участие в разработке.' },
       ]
     },
@@ -1042,7 +1055,7 @@ const translations = {
     footer: { desc: 'Инфраструктурная торговая платформа', platform: 'Платформа', register: 'Регистрация', ecosystem: 'Экосистема', signals: 'Сигналы', whitelabel: 'White Label', indicators: 'Индикаторы', rights: 'Все права защищены' }
   },
   en: {
-    nav: { products: 'Products', how: 'How it works', team: 'Team', partners: 'Partnership', login: 'Sign In', partner: 'Become a Partner' },
+    nav: { products: 'Products', how: 'How it works', team: 'Team', partners: 'Partnership', login: 'Sign In', partner: 'Become a Partner', charts: 'Chart Platform' },
     hero: {
       badge: 'Infrastructure Trading Platform',
       title1: 'Trade smarter.',
@@ -1092,7 +1105,6 @@ const translations = {
         { initials: 'D', name: 'Dmitry', role: 'Co-Founder / Product & Strategy', desc: 'Product architecture, ecosystem development, indicator logic and strategic partnerships.' },
         { initials: 'I', name: 'Ivan', role: 'Co-Founder / CTO', desc: 'Full technical infrastructure, development of key products, architecture and scalability.' },
         { initials: 'S', name: 'Sergey', role: 'Lead Trader / Educator', desc: 'Trading strategies, user education, analytics and public content.' },
-        { initials: 'M', name: 'Maxim', role: 'Trader / Copytrading Lead', desc: 'Copy trading direction, audience engagement, user support and analytics.' },
         { initials: 'K', name: 'Kirill', role: 'Operations / Junior Dev', desc: 'Operations, product support, testing and development participation.' },
       ]
     },
@@ -1248,6 +1260,12 @@ const t = computed(() => translations[lang.value])
       text-decoration: none;
       transition: color 0.2s;
       &:hover { color: var(--text); }
+    }
+
+    .nav__charts-link {
+      color: #4f6ef7;
+      font-weight: 600;
+      &:hover { color: #7b9cff; }
     }
   }
 
@@ -2566,30 +2584,138 @@ const t = computed(() => translations[lang.value])
 }
 
 /* ============================================================
+   HAMBURGER + MOBILE MENU
+============================================================ */
+.hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 34px; height: 34px;
+  background: var(--surface);
+  border: 1px solid var(--border-2);
+  border-radius: 8px;
+  cursor: pointer;
+  padding: 7px 8px;
+
+  span {
+    display: block;
+    height: 2px;
+    background: var(--text-2);
+    border-radius: 2px;
+    transition: all 0.3s ease;
+    transform-origin: center;
+  }
+
+  &--open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  &--open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+  &--open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+}
+
+.nav__mobile {
+  display: none;
+  flex-direction: column;
+  padding: 0 20px;
+  border-top: 1px solid var(--border);
+  background: var(--bg);
+  gap: 4px;
+  /* Закрыто: нулевая высота + clip, без overflow:hidden на самом блоке */
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.35s ease, padding 0.35s ease;
+
+  &--open {
+    max-height: 480px;
+    padding: 12px 20px 16px;
+  }
+
+  a {
+    display: block;
+    padding: 11px 12px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text-2);
+    text-decoration: none;
+    transition: background 0.15s, color 0.15s;
+    &:hover { background: var(--surface); color: var(--text); text-decoration: none; }
+  }
+
+  .nav__charts-link { color: #4f6ef7; font-weight: 600; }
+
+  .mobile-partner-link {
+    margin-top: 8px;
+    background: var(--accent);
+    color: #0a0a0b !important;
+    font-weight: 700;
+    text-align: center;
+    &:hover { background: var(--accent-2); color: #0a0a0b !important; }
+  }
+}
+
+/* ============================================================
    RESPONSIVE
 ============================================================ */
+
+/* ── 1100px: скрываем nav-ссылки, показываем бургер ── */
 @media (max-width: 1100px) {
   .products__grid { grid-template-columns: repeat(2, 1fr); }
   .team__grid { grid-template-columns: repeat(3, 1fr); }
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
   .how__steps { grid-template-columns: repeat(2, 1fr); }
+  .nav__inner { padding: 0 24px; }
+
+  /* Ссылки убираем, показываем бургер — nav остаётся аккуратным */
+  .nav__links { display: none; }
+  .nav__mobile { display: flex; }
+  .hamburger { display: flex; }
+  /* На планшете логин-кнопку прячем, оставляем только accent */
+  .btn-nav--login { display: none; }
 }
 
+/* ── 900px ── */
+@media (max-width: 900px) {
+  .section-container { padding: 0 24px; }
+  .nav__inner { padding: 0 20px; }
+}
+
+/* ── 768px: планшет вертикальный ── */
 @media (max-width: 768px) {
-  .nav__links { display: none; }
+  .btn-nav { display: none; }
+
+  .hero { padding: 100px 20px 60px; }
+  .hero__sub { font-size: 15px; }
+  .hero__stats { gap: 28px; }
+  .hero__cards { display: none; }
+  .float-card { display: none; }
+
   .products__grid { grid-template-columns: 1fr; }
   .team__grid { grid-template-columns: repeat(2, 1fr); }
   .stats-grid { grid-template-columns: 1fr 1fr; }
   .how__steps { grid-template-columns: 1fr; }
   .partners__inner { grid-template-columns: 1fr; }
-  .hero__cards { display: none; }
-  .float-card { display: none; }
-  .footer__cols { gap: 32px; }
+
+  .footer__top { flex-direction: column; gap: 32px; }
+  .footer__cols { flex-direction: row; gap: 32px; flex-wrap: wrap; }
+  .footer__col { min-width: 140px; }
 }
 
+/* ── 600px: телефон ── */
+@media (max-width: 600px) {
+  .hero { padding: 90px 16px 52px; }
+  .hero__cta { flex-direction: column; align-items: center; }
+  .btn-hero { width: 100%; max-width: 320px; justify-content: center; }
+  .hero__stats { gap: 20px; }
+  .hero-stat__num { font-size: 22px; }
+  .section-container { padding: 0 16px; }
+  .section-title { font-size: clamp(20px, 6vw, 30px); }
+}
+
+/* ── 480px ── */
 @media (max-width: 480px) {
   .team__grid { grid-template-columns: 1fr; }
   .stats-grid { grid-template-columns: 1fr; }
-  .section-container { padding: 0 20px; }
+  .nav__inner { padding: 0 16px; height: 60px; }
+  .footer__cols { flex-direction: column; gap: 24px; }
 }
 </style>

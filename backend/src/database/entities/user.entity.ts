@@ -51,9 +51,23 @@ export class User {
   @Column({ default: true })
   isActive: boolean;
 
+  // --- REFERRAL ---
+  // Уникальный реферальный код пользователя
+  @Column({ unique: true, nullable: true })
+  referralCode: string;
+
+  // ID кто привёл этого пользователя
+  @Column({ nullable: true })
+  referredBy: string;
+
+  // Накопленный реферальный баланс (к выплате)
+  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+  referralBalance: number;
+
   @CreateDateColumn()
   createdAt: Date;
 
   @UpdateDateColumn()
   updatedAt: Date;
 }
+

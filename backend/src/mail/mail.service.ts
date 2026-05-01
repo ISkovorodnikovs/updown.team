@@ -84,6 +84,16 @@ export class MailService {
     );
   }
 
+  async sendPasswordResetCode(email: string, code: string) {
+    await this.send(
+      email,
+      'Password Reset Code',
+      `<h2>Password Reset</h2>
+       <p>Your reset code: <strong>${code}</strong></p>
+       <p>Expires in ${this.config.get('CODE_TTL_MINUTES', '10')} minutes. If you didn't request this, ignore this email.</p>`,
+    );
+  }
+
   async sendPartnerStatusUpdate(email: string, status: string, reason?: string) {
     const isApproved = status === 'approved';
     await this.send(

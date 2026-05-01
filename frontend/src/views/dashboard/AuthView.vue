@@ -452,11 +452,13 @@ async function handleRegister() {
   }
   regLoading.value = true; regError.value = ''
   try {
+    const refCode = route.query.ref || ''
+    const url = refCode ? `/auth/register?ref=${refCode}` : '/auth/register'
     const { data } = await authApi.register({
       email: regForm.value.email,
       code: regForm.value.code,
       password: regForm.value.password
-    })
+    }, refCode)
     auth.setAuth(data); router.push('/dashboard')
   } catch (e) { regError.value = translateBackendError(e.response?.data?.message, authT.value.errRegFailed) }
   finally { regLoading.value = false }

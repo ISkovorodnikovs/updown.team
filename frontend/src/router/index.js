@@ -30,6 +30,8 @@ const routes = [
       // Admin
       { path: 'admin/users', component: () => import('@/views/owner/UsersView.vue'), meta: { roles: ['ADMIN','OWNER'] } },
       { path: 'admin/subscriptions', component: () => import('@/views/admin/AdminSubscriptionsView.vue'), meta: { roles: ['ADMIN','OWNER'] } },
+      { path: 'admin/banners', component: () => import('@/views/admin/AdminBannersView.vue'), meta: { roles: ['ADMIN','OWNER'] } },
+      { path: 'admin/referral', component: () => import('@/views/admin/AdminReferralView.vue'), meta: { roles: ['ADMIN','OWNER'] } },
       { path: 'all-tickets', component: () => import('@/views/admin/AllTicketsView.vue'), meta: { roles: ['ADMIN','OWNER'] } },
       { path: 'partners', component: () => import('@/views/admin/PartnersView.vue'), meta: { roles: ['ADMIN','OWNER'] } },
       { path: 'bots-overview', component: () => import('@/views/admin/BotsOverview.vue'), meta: { roles: ['ADMIN','OWNER'] } },

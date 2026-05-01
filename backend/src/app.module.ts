@@ -14,6 +14,10 @@ import { TelegramModule } from './telegram/telegram.module';
 import { AdminModule } from './admin/admin.module';
 import { PlansModule } from './plans/plans.module';
 import { SubscriptionsModule } from './subscriptions/subscriptions.module';
+import { PaymentModule } from './payment/payment.module';
+import { ReferralModule } from './referral/referral.module';
+import { BannersModule } from './banners/banners.module';
+import { ShopModule } from './shop/shop.module';
 import databaseConfig from './config/database.config';
 
 @Module({
@@ -30,7 +34,7 @@ import databaseConfig from './config/database.config';
         database: config.get('DB_DATABASE', 'updown_db'),
         entities: [__dirname + '/database/entities/*.entity{.ts,.js}'],
         migrations: [__dirname + '/database/migrations/*{.ts,.js}'],
-        synchronize: config.get('NODE_ENV') !== 'production',
+        synchronize: true, // TypeORM auto-creates/updates tables on start
         logging: config.get('LOG_SQL') === 'true',
       }),
       inject: [ConfigService],
@@ -57,6 +61,10 @@ import databaseConfig from './config/database.config';
     AdminModule,
     PlansModule,
     SubscriptionsModule,
+    PaymentModule,
+    ReferralModule,
+    BannersModule,
+    ShopModule,
   ],
 })
 export class AppModule {}

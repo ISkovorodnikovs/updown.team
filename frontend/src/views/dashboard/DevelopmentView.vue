@@ -13,7 +13,7 @@
 <script setup>
 import { computed } from 'vue'
 const lang = computed(() => localStorage.getItem('ud-lang') || 'ru')
-const title = 'DevelopmentView'.replace('View','').replace(/([A-Z])/g,' ').trim()
+const title = 'Development'
 </script>
 <style lang="scss" scoped>
 .placeholder-page { display: flex; align-items: center; justify-content: center; min-height: 60vh; }

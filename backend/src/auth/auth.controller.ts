@@ -1,8 +1,8 @@
-import { Controller, Post, Body, UseGuards } from '@nestjs/common';
+import { Controller, Query, Post, Body, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
-import { SendCodeDto, RegisterDto, LoginDto, VerifyCodeDto } from './dto/auth.dto';
+import { SendCodeDto, RegisterDto, LoginDto, VerifyCodeDto, ResetPasswordDto } from './dto/auth.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -36,5 +36,17 @@ export class AuthController {
   @Throttle({ default: { ttl: 60000, limit: 5 } })
   verifyLoginCode(@Body() dto: VerifyCodeDto) {
     return this.authService.verifyLoginCode(dto.email, dto.code);
+  }
+
+  @Post('forgot-password')
+  @Throttle({ default: { ttl: 60000, limit: 3 } })
+  forgotPassword(@Body() dto: SendCodeDto) {
+    return this.authService.sendPasswordResetCode(dto.email);
+  }
+
+  @Post('reset-password')
+  @Throttle({ default: { ttl: 60000, limit: 5 } })
+  resetPassword(@Body() dto: ResetPasswordDto) {
+    return this.authService.resetPassword(dto.email, dto.code, dto.newPassword);
   }
 }

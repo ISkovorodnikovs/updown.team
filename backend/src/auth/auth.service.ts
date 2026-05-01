@@ -17,6 +17,9 @@ import {
 } from '../database/entities/verification-code.entity';
 import { MailService } from '../mail/mail.service';
 import { TelegramMainService } from '../telegram/telegram-main.service';
+import { v4 as uuidv4 } from 'uuid';
+
+function nanoid() { return uuidv4().replace(/-/g,'').substring(0,8).toUpperCase(); }
 
 @Injectable()
 export class AuthService {
@@ -96,23 +99,40 @@ export class AuthService {
     return { message: 'Verification code sent' };
   }
 
-  async register(email: string, code: string, password: string) {
+  async register(email: string, code: string, password: string, refCode?: string) {
     const existing = await this.userRepo.findOne({ where: { email } });
     if (existing) throw new ConflictException('Email already registered');
 
     await this.verifyCode(email, code, CodeType.REGISTRATION);
 
     const passwordHash = await bcrypt.hash(password, 12);
+
+    // Генерируем уникальный реферальный код
+    let referralCode: string;
+    let codeExists = true;
+    while (codeExists) {
+      referralCode = nanoid();
+      codeExists = !!(await this.userRepo.findOne({ where: { referralCode } }));
+    }
+
+    // Находим реферера если есть код
+    let referredBy: string | null = null;
+    if (refCode) {
+      const referrer = await this.userRepo.findOne({ where: { referralCode: refCode } });
+      if (referrer) referredBy = referrer.id;
+    }
+
     const user = this.userRepo.create({
       email,
       passwordHash,
       emailVerified: true,
       role: UserRole.USER,
+      referralCode,
+      referredBy,
     });
 
     await this.userRepo.save(user);
-    // Уведомление в Telegram
-    await this.telegramService.sendMessage(`🆕 Новая регистрация\n📧 ${email}`);
+    await this.telegramService.sendMessage(`🆕 Новая регистрация\n📧 ${email}${referredBy ? '\n🔗 Реферал' : ''}`);
     return this.issueToken(user);
   }
 
@@ -151,6 +171,23 @@ export class AuthService {
     const code = await this.saveCode(email, CodeType.LOGIN_2FA);
     await this.mailService.sendLoginCode(email, code);
     return { message: 'Code sent' };
+  }
+
+  async sendPasswordResetCode(email: string) {
+    const user = await this.userRepo.findOne({ where: { email, isActive: true } });
+    if (!user) return { message: 'If this email exists, a reset code has been sent' };
+    const code = await this.saveCode(email, CodeType.PASSWORD_RESET);
+    await this.mailService.sendPasswordResetCode(email, code);
+    return { message: 'If this email exists, a reset code has been sent' };
+  }
+
+  async resetPassword(email: string, code: string, newPassword: string) {
+    const user = await this.userRepo.findOne({ where: { email, isActive: true } });
+    if (!user) throw new BadRequestException('Invalid request');
+    await this.verifyCode(email, code, CodeType.PASSWORD_RESET);
+    const passwordHash = await bcrypt.hash(newPassword, 12);
+    await this.userRepo.update(user.id, { passwordHash });
+    return { message: 'Password updated successfully' };
   }
 
   private issueToken(user: User) {
