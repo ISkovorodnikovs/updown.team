@@ -82,11 +82,46 @@
               <td>{{ c.signalsChannelId || '—' }}</td>
               <td>{{ c.price }} USDT</td>
               <td>{{ c.expiresAt ? new Date(c.expiresAt).toISOString().slice(0,10) : '—' }}</td>
-              <td><button class="btn btn--danger btn--sm" @click="removeChannel(c)">×</button></td>
+              <td style="display:flex;gap:6px">
+                <button class="btn btn--outline btn--sm" @click="openEdit(c)">✎</button>
+                <button class="btn btn--danger btn--sm" @click="removeChannel(c)">×</button>
+              </td>
             </tr>
           </tbody>
         </table>
         <p v-else style="color:var(--text-2);font-size:13px;margin:12px 0">Каналов пока нет.</p>
+
+        <!-- Edit channel form -->
+        <div v-if="editing" class="ch-form" style="border-color:var(--accent)">
+          <h4 style="margin:8px 0">Редактировать: {{ editing.name }}</h4>
+          <div class="ch-grid">
+            <input class="input" v-model="editForm.name" placeholder="Название" />
+            <input class="input" v-model="editForm.signalsChannelId" placeholder="signalsChannelId (из signals_db)" />
+            <select class="input" v-model="editForm.asset">
+              <option value="crypto">Крипта</option><option value="forex">Форекс</option>
+              <option value="stocks">Фонда</option><option value="gold">Золото</option>
+            </select>
+            <select class="input" v-model="editForm.timeframe">
+              <option>M1</option><option>M3</option><option>M5</option><option>M10</option>
+              <option>M15</option><option>H1</option><option>H4</option>
+            </select>
+            <select class="input" v-model="editForm.direction">
+              <option value="both">Оба</option><option value="long">Long</option><option value="short">Short</option>
+            </select>
+            <input class="input" v-model.number="editForm.price" type="number" min="0" placeholder="Цена USDT" />
+            <input class="input" v-model.number="editForm.discountPercent" type="number" min="0" placeholder="Скидка %" />
+            <label style="display:flex;align-items:center;gap:8px;color:var(--text-2);font-size:13px">
+              <input type="checkbox" v-model="editForm.isActive" /> Активен
+            </label>
+          </div>
+          <p v-if="!editForm.signalsChannelId" style="font-size:12px;color:#B9770E;margin:8px 0">
+            Без signalsChannelId канал останется неактивным (услуга не оказана).
+          </p>
+          <div style="display:flex;gap:10px;margin-top:8px">
+            <button class="btn btn--primary btn--sm" @click="saveEdit" :disabled="savingEdit">Сохранить</button>
+            <button class="btn btn--outline btn--sm" @click="editing = null">Отмена</button>
+          </div>
+        </div>
 
         <div class="ch-form">
           <h4 style="margin:8px 0">Добавить канал</h4>
@@ -155,6 +190,7 @@ const calcPrice = computed(() => {
 async function openChannels(partner) {
   channelsModal.value = partner
   form.value = emptyForm()
+  editing.value = null
   channelsLoading.value = true
   channels.value = await partnersApi.getChannels(partner.id).then(r => r.data).catch(() => [])
   channelsLoading.value = false
@@ -174,6 +210,29 @@ async function removeChannel(c) {
   if (!confirm(`Деактивировать канал "${c.name}"?`)) return
   await partnersApi.removeChannel(c.id).catch(() => {})
   channels.value = await partnersApi.getChannels(channelsModal.value.id).then(r => r.data)
+}
+
+// Edit channel
+const editing = ref(null)
+const savingEdit = ref(false)
+const editForm = ref({})
+function openEdit(c) {
+  editing.value = c
+  editForm.value = {
+    name: c.name, signalsChannelId: c.signalsChannelId || '',
+    asset: c.asset, timeframe: c.timeframe, direction: c.direction,
+    price: Number(c.price), discountPercent: Number(c.discountPercent), isActive: c.isActive,
+  }
+}
+async function saveEdit() {
+  savingEdit.value = true
+  try {
+    await partnersApi.updateChannel(editing.value.id, { ...editForm.value })
+    channels.value = await partnersApi.getChannels(channelsModal.value.id).then(r => r.data)
+    editing.value = null
+  } catch (e) {
+    alert(e.response?.data?.message || 'Ошибка сохранения')
+  } finally { savingEdit.value = false }
 }
 
 async function load() {

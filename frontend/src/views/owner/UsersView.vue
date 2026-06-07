@@ -67,6 +67,7 @@
               <div class="td-actions">
                 <button class="btn btn--accent btn--sm" @click="openGrant(u)" title="Выдать товар">🎁 Выдать</button>
                 <button v-if="u.role !== 'ADMIN' && u.role !== 'OWNER'" class="btn btn--outline btn--sm" @click="assign(u)">→ Admin</button>
+                <button v-if="u.role !== 'PARTNER' && u.role !== 'OWNER'" class="btn btn--outline btn--sm" @click="makePartner(u)">→ Partner</button>
                 <button v-if="u.role === 'ADMIN'" class="btn btn--outline btn--sm" @click="revoke(u)">← User</button>
                 <button v-if="u.isActive && u.role !== 'OWNER'" class="btn btn--danger btn--sm" @click="deactivate(u)">🚫</button>
               </div>
@@ -162,7 +163,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { adminApi, plansApi, shopApi, subscriptionsApi } from '@/api'
+import { adminApi, plansApi, shopApi, subscriptionsApi, partnersApi } from '@/api'
 
 const users = ref([])
 const loading = ref(true)
@@ -268,6 +269,16 @@ async function executeGrant() {
 
 async function assign(u) { await adminApi.assignAdmin(u.id); u.role = 'ADMIN' }
 async function revoke(u) { await adminApi.revokeAdmin(u.id); u.role = 'USER' }
+async function makePartner(u) {
+  const companyName = prompt(`Название компании для партнёра ${u.email}:`, u.email?.split('@')[0] || 'Partner')
+  if (companyName === null) return
+  try {
+    await partnersApi.makePartner({ userId: u.id, companyName: companyName || u.email })
+    u.role = 'PARTNER'
+  } catch (e) {
+    alert(e.response?.data?.message || 'Ошибка назначения партнёра')
+  }
+}
 async function deactivate(u) {
   if (!confirm(`Деактивировать ${u.email}?`)) return
   await adminApi.deactivateUser(u.id); u.isActive = false
