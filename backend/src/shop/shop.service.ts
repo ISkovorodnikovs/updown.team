@@ -1,7 +1,8 @@
 import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, MoreThan } from 'typeorm';
 import { ShopProduct, ProductType } from '../database/entities/shop-product.entity';
+import { UserProduct, UserProductStatus } from '../database/entities/user-product.entity';
 
 const INDICATORS_SEED = [
   {
@@ -119,6 +120,7 @@ export class ShopService implements OnModuleInit {
 
   constructor(
     @InjectRepository(ShopProduct) private productRepo: Repository<ShopProduct>,
+    @InjectRepository(UserProduct) private userProductRepo: Repository<UserProduct>,
   ) {}
 
   async onModuleInit() {
@@ -168,5 +170,63 @@ export class ShopService implements OnModuleInit {
 
   async getAll() {
     return this.productRepo.find({ order: { type: 'ASC', sortOrder: 'ASC' } });
+  }
+
+  // ─── Гейтинг доступа ───────────────────────────────────────────────────────
+
+  // ID товаров, к которым у пользователя есть активный доступ
+  async getActiveProductIds(userId: string): Promise<Set<string>> {
+    const now = new Date();
+    const rows = await this.userProductRepo.find({
+      where: { userId, status: UserProductStatus.ACTIVE, expiresAt: MoreThan(now) },
+      select: ['shopProductId'],
+    });
+    return new Set(rows.map((r) => r.shopProductId));
+  }
+
+  // Купленные пользователем товары (с деталями) — для раздела «Мои продукты»
+  async getMyProducts(userId: string) {
+    const now = new Date();
+    const rows = await this.userProductRepo.find({
+      where: { userId, status: UserProductStatus.ACTIVE, expiresAt: MoreThan(now) },
+      relations: ['product'],
+      order: { expiresAt: 'DESC' },
+    });
+    return rows.map((r) => ({
+      id: r.id,
+      productId: r.shopProductId,
+      name: r.product?.name,
+      type: r.product?.type,
+      tradingViewUrl: r.product?.tradingViewUrl ?? null,
+      startsAt: r.startsAt,
+      expiresAt: r.expiresAt,
+    }));
+  }
+
+  async hasProductAccess(userId: string, productId: string): Promise<boolean> {
+    const ids = await this.getActiveProductIds(userId);
+    return ids.has(productId);
+  }
+
+  // Каталог с флагом владения и скрытием секретных ссылок для не-владельцев
+  async getIndicatorsGated(userId: string) {
+    const [items, owned] = await Promise.all([this.getIndicators(), this.getActiveProductIds(userId)]);
+    return items.map((p) => this.gateProduct(p, owned.has(p.id)));
+  }
+
+  async getChannelsGated(userId: string) {
+    const [items, owned] = await Promise.all([this.getChannels(), this.getActiveProductIds(userId)]);
+    return items.map((p) => this.gateProduct(p, owned.has(p.id)));
+  }
+
+  // Для не-владельца вырезаем tradingViewUrl (платный доступ), добавляем флаг owned
+  private gateProduct(p: ShopProduct, owned: boolean) {
+    const { tradingViewUrl, ...rest } = p as any;
+    return {
+      ...rest,
+      owned,
+      // ссылку отдаём ТОЛЬКО владельцу
+      tradingViewUrl: owned ? tradingViewUrl : null,
+    };
   }
 }

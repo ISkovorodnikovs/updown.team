@@ -7,6 +7,7 @@ import * as crypto from 'crypto';
 import axios from 'axios';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { Transaction, TransactionStatus, TransactionType } from '../database/entities/transaction.entity';
+import { TransactionItem } from '../database/entities/transaction-item.entity';
 import { User } from '../database/entities/user.entity';
 import { Plan } from '../database/entities/plan.entity';
 import { ShopProduct } from '../database/entities/shop-product.entity';
@@ -28,6 +29,7 @@ export class PaymentService {
   constructor(
     private config: ConfigService,
     @InjectRepository(Transaction) private txRepo: Repository<Transaction>,
+    @InjectRepository(TransactionItem) private txItemRepo: Repository<TransactionItem>,
     @InjectRepository(User) private userRepo: Repository<User>,
     @InjectRepository(Plan) private planRepo: Repository<Plan>,
     @InjectRepository(ShopProduct) private productRepo: Repository<ShopProduct>,
@@ -38,7 +40,73 @@ export class PaymentService {
     private telegramService: TelegramMainService,
   ) {}
 
-  // ─── Создать инвойс ────────────────────────────────────────────────────────
+  // ─── Расчёт цены одной позиции ─────────────────────────────────────────────
+
+  private async priceLineItem(item: {
+    type: TransactionType;
+    planId?: string;
+    shopProductId?: string;
+    periodMonths?: number;
+    bannerDiscountPercent?: number;
+  }): Promise<{
+    type: TransactionType;
+    planId?: string;
+    shopProductId?: string;
+    periodMonths: number;
+    amount: number;
+    originalAmount: number;
+    discountPercent: number;
+    description: string;
+  }> {
+    const periodMonths = item.periodMonths ?? 1;
+    if (!ALLOWED_PERIODS.includes(periodMonths)) {
+      throw new BadRequestException('Invalid period. Allowed: 1, 3, 6, 12 months');
+    }
+    const bannerDiscount = item.bannerDiscountPercent ?? 0;
+    if (bannerDiscount < 0 || bannerDiscount > 90) {
+      throw new BadRequestException('Invalid discount');
+    }
+
+    let basePrice = 0;
+    let description = '';
+
+    if (item.type === TransactionType.SUBSCRIPTION && item.planId) {
+      const plan = await this.planRepo.findOne({ where: { id: item.planId } });
+      if (!plan) throw new BadRequestException('Plan not found');
+      if (plan.isActive === false) throw new BadRequestException('Plan is not available');
+      basePrice = Number(plan.price);
+      description = `${plan.name} × ${periodMonths} мес.`;
+    } else if (
+      (item.type === TransactionType.INDICATOR || item.type === TransactionType.CHANNEL) &&
+      item.shopProductId
+    ) {
+      const product = await this.productRepo.findOne({ where: { id: item.shopProductId } });
+      if (!product) throw new BadRequestException('Product not found');
+      if (product.isActive === false) throw new BadRequestException('Product is not available');
+      basePrice = Number(product.price);
+      description = `${product.name} × ${periodMonths} мес.`;
+    } else {
+      throw new BadRequestException('Invalid payment params');
+    }
+
+    const periodDiscount = PERIOD_DISCOUNTS[periodMonths] ?? 0;
+    const discountPercent = Math.max(periodDiscount, bannerDiscount);
+    const originalAmount = +(basePrice * periodMonths).toFixed(2);
+    const amount = +(originalAmount * (1 - discountPercent / 100)).toFixed(2);
+
+    return {
+      type: item.type,
+      planId: item.planId,
+      shopProductId: item.shopProductId,
+      periodMonths,
+      amount,
+      originalAmount,
+      discountPercent,
+      description,
+    };
+  }
+
+  // ─── Создать инвойс (одна позиция) ─────────────────────────────────────────
 
   async createInvoice(dto: {
     userId: string;
@@ -48,66 +116,116 @@ export class PaymentService {
     periodMonths?: number;
     bannerDiscountPercent?: number;
   }) {
-    const { userId, type, planId, shopProductId, periodMonths = 1 } = dto;
-
-    if (!ALLOWED_PERIODS.includes(periodMonths)) {
-      throw new BadRequestException('Invalid period. Allowed: 1, 3, 6, 12 months');
-    }
-    const bannerDiscount = dto.bannerDiscountPercent ?? 0;
-    if (bannerDiscount < 0 || bannerDiscount > 90) {
-      throw new BadRequestException('Invalid discount');
-    }
-
-    const user = await this.userRepo.findOne({ where: { id: userId } });
+    const user = await this.userRepo.findOne({ where: { id: dto.userId } });
     if (!user) throw new BadRequestException('User not found');
 
-    let basePrice = 0;
-    let description = '';
-
-    if (type === TransactionType.SUBSCRIPTION && planId) {
-      const plan = await this.planRepo.findOne({ where: { id: planId } });
-      if (!plan) throw new BadRequestException('Plan not found');
-      basePrice = Number(plan.price);
-      description = `${plan.name} × ${periodMonths} мес.`;
-    } else if ((type === TransactionType.INDICATOR || type === TransactionType.CHANNEL) && shopProductId) {
-      const product = await this.productRepo.findOne({ where: { id: shopProductId } });
-      if (!product) throw new BadRequestException('Product not found');
-      basePrice = Number(product.price);
-      description = `${product.name} × ${periodMonths} мес.`;
-    } else {
-      throw new BadRequestException('Invalid payment params');
-    }
-
-    // Считаем скидку: берём максимум из баннерной и периодной
-    const periodDiscount = PERIOD_DISCOUNTS[periodMonths] ?? 0;
-    const discountPercent = Math.max(periodDiscount, bannerDiscount);
-    const originalAmount = +(basePrice * periodMonths).toFixed(2);
-    const amount = +(originalAmount * (1 - discountPercent / 100)).toFixed(2);
-
+    const line = await this.priceLineItem(dto);
     const orderId = uuidv4();
 
-    // Сохраняем pending транзакцию
     const tx = await this.txRepo.save(
       this.txRepo.create({
-        userId,
-        planId,
-        shopProductId,
-        amount,
-        originalAmount,
-        discountPercent,
-        periodMonths,
+        userId: dto.userId,
+        planId: line.planId,
+        shopProductId: line.shopProductId,
+        amount: line.amount,
+        originalAmount: line.originalAmount,
+        discountPercent: line.discountPercent,
+        periodMonths: line.periodMonths,
         currency: 'USDT',
         status: TransactionStatus.PENDING,
-        type,
+        type: line.type,
         orderId,
-        description,
+        description: line.description,
+        isBatch: false,
       }),
     );
 
-    // Генерируем ссылку Heleket
-    const paymentUrl = await this.createHeleketInvoice(userId, amount, orderId, type);
+    const paymentUrl = await this.createHeleketInvoice(dto.userId, line.amount, orderId, line.type);
 
-    return { transactionId: tx.id, orderId, amount, originalAmount, discountPercent, paymentUrl };
+    return {
+      transactionId: tx.id,
+      orderId,
+      amount: line.amount,
+      originalAmount: line.originalAmount,
+      discountPercent: line.discountPercent,
+      paymentUrl,
+    };
+  }
+
+  // ─── Создать батч-инвойс (вся корзина одной оплатой) ───────────────────────
+
+  async createBatchInvoice(dto: {
+    userId: string;
+    items: Array<{
+      type: TransactionType;
+      planId?: string;
+      shopProductId?: string;
+      periodMonths?: number;
+      bannerDiscountPercent?: number;
+    }>;
+  }) {
+    const user = await this.userRepo.findOne({ where: { id: dto.userId } });
+    if (!user) throw new BadRequestException('User not found');
+
+    if (!Array.isArray(dto.items) || dto.items.length === 0) {
+      throw new BadRequestException('Cart is empty');
+    }
+    if (dto.items.length > 20) {
+      throw new BadRequestException('Too many items in cart');
+    }
+    // Если позиция одна — используем обычный инвойс (проще, без лишней сущности)
+    if (dto.items.length === 1) {
+      return this.createInvoice({ userId: dto.userId, ...dto.items[0] });
+    }
+
+    // Считаем все позиции
+    const lines = [];
+    for (const item of dto.items) {
+      lines.push(await this.priceLineItem(item));
+    }
+
+    const totalAmount = +lines.reduce((sum, l) => sum + l.amount, 0).toFixed(2);
+    const totalOriginal = +lines.reduce((sum, l) => sum + l.originalAmount, 0).toFixed(2);
+    if (totalAmount <= 0) throw new BadRequestException('Invalid cart total');
+
+    const orderId = uuidv4();
+    const description = `Корзина: ${lines.length} поз. (${lines.map((l) => l.description).join('; ')})`.slice(0, 250);
+
+    // Родительская транзакция + позиции (cascade сохранит items)
+    const tx = await this.txRepo.save(
+      this.txRepo.create({
+        userId: dto.userId,
+        amount: totalAmount,
+        originalAmount: totalOriginal,
+        currency: 'USDT',
+        status: TransactionStatus.PENDING,
+        type: TransactionType.SUBSCRIPTION, // тип родителя номинальный; реальные типы — в items
+        orderId,
+        description,
+        isBatch: true,
+        items: lines.map((l) =>
+          this.txItemRepo.create({
+            type: l.type,
+            planId: l.planId,
+            shopProductId: l.shopProductId,
+            periodMonths: l.periodMonths,
+            amount: l.amount,
+            description: l.description,
+          }),
+        ),
+      }),
+    );
+
+    const paymentUrl = await this.createHeleketInvoice(dto.userId, totalAmount, orderId, 'batch');
+
+    return {
+      transactionId: tx.id,
+      orderId,
+      amount: totalAmount,
+      originalAmount: totalOriginal,
+      itemsCount: lines.length,
+      paymentUrl,
+    };
   }
 
   // ─── Создать инвойс в Heleket ──────────────────────────────────────────────
@@ -164,7 +282,7 @@ export class PaymentService {
       // Находим транзакцию
       const tx = await this.txRepo.findOne({
         where: { orderId: data.order_id },
-        relations: ['user', 'plan'],
+        relations: ['user', 'plan', 'items'],
       });
 
       if (!tx) {
@@ -234,17 +352,49 @@ export class PaymentService {
   // ─── Активация после успешной оплаты ─────────────────────────────────────
 
   private async onPaymentSuccess(tx: Transaction, webhookData: any) {
-    const periodMonths = tx.periodMonths || 1;
+    if (tx.isBatch) {
+      // Батч: выдаём каждую позицию корзины
+      const items = tx.items?.length
+        ? tx.items
+        : await this.txItemRepo.find({ where: { transactionId: tx.id } });
+      for (const item of items) {
+        await this.deliverItem(tx, {
+          type: item.type,
+          planId: item.planId,
+          shopProductId: item.shopProductId,
+          periodMonths: item.periodMonths,
+        });
+      }
+    } else {
+      // Одна позиция (legacy / обычный инвойс)
+      await this.deliverItem(tx, {
+        type: tx.type,
+        planId: tx.planId,
+        shopProductId: tx.shopProductId,
+        periodMonths: tx.periodMonths,
+      });
+    }
+
+    // Реферальный бонус считается от полной суммы транзакции (один раз на транзакцию)
+    await this.processReferralBonus(tx);
+  }
+
+  // Выдача одной единицы доступа (подписка / индикатор / канал)
+  private async deliverItem(
+    tx: Transaction,
+    item: { type: TransactionType; planId?: string; shopProductId?: string; periodMonths?: number },
+  ) {
+    const periodMonths = item.periodMonths || 1;
     const durationDays = periodMonths * 30;
     const startsAt = new Date();
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + durationDays);
 
-    if (tx.type === TransactionType.SUBSCRIPTION && tx.planId) {
+    if (item.type === TransactionType.SUBSCRIPTION && item.planId) {
       await this.subRepo.save(
         this.subRepo.create({
           userId: tx.userId,
-          planId: tx.planId,
+          planId: item.planId,
           status: SubscriptionStatus.ACTIVE,
           startsAt,
           expiresAt,
@@ -253,15 +403,14 @@ export class PaymentService {
         }),
       );
     } else if (
-      (tx.type === TransactionType.INDICATOR || tx.type === TransactionType.CHANNEL) &&
-      tx.shopProductId
+      (item.type === TransactionType.INDICATOR || item.type === TransactionType.CHANNEL) &&
+      item.shopProductId
     ) {
-      // Выдача товара (индикатор / сигнальный канал)
       // Если уже есть активный доступ — продлеваем от текущей даты окончания
       const existing = await this.userProductRepo.findOne({
         where: {
           userId: tx.userId,
-          shopProductId: tx.shopProductId,
+          shopProductId: item.shopProductId,
           status: UserProductStatus.ACTIVE,
         },
         order: { expiresAt: 'DESC' },
@@ -275,7 +424,7 @@ export class PaymentService {
         await this.userProductRepo.save(
           this.userProductRepo.create({
             userId: tx.userId,
-            shopProductId: tx.shopProductId,
+            shopProductId: item.shopProductId,
             status: UserProductStatus.ACTIVE,
             startsAt,
             expiresAt,
@@ -285,9 +434,6 @@ export class PaymentService {
         );
       }
     }
-
-    // Начисляем реферальный бонус (для любого платного типа)
-    await this.processReferralBonus(tx);
   }
 
   // ─── Реферальный бонус ────────────────────────────────────────────────────

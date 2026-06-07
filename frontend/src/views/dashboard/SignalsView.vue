@@ -28,7 +28,10 @@
               <span class="ch-price__val">{{ ch.price }}</span>
               <span class="ch-price__unit">USDT / {{ t.mo }}</span>
             </div>
-            <button class="btn-cart" @click="addToCart(ch)" :class="{ 'btn-cart--added': isInCart(ch.id) }">
+            <button v-if="ch.owned" class="btn-cart btn-cart--owned" disabled>
+              ✓ {{ t.owned }}
+            </button>
+            <button v-else class="btn-cart" @click="addToCart(ch)" :class="{ 'btn-cart--added': isInCart(ch.id) }">
               {{ isInCart(ch.id) ? '✓ ' + t.inCart : '+ ' + t.addToCart }}
             </button>
           </div>
@@ -71,6 +74,7 @@ const t = computed(() => {
     channels: r ? 'Сигнальные каналы' : 'Signal Channels',
     mo: r ? 'мес' : 'mo',
     addToCart: r ? 'В корзину' : 'Add to Cart',
+    owned: r ? 'Куплено' : 'Owned',
     inCart: r ? 'В корзине' : 'In Cart',
     cart: r ? 'Корзина' : 'Cart',
     items: r ? 'тов.' : 'items',
@@ -104,7 +108,7 @@ const t = computed(() => {
 }
 .ch-features { list-style: none; display: flex; flex-direction: column; gap: 5px; li { font-size: 12px; color: var(--text-2); display: flex; gap: 7px; align-items: center; span { color: var(--accent); font-size: 9px; } } }
 .ch-price { &__val { font-family: 'Montserrat',sans-serif; font-size: 18px; font-weight: 800; color: var(--accent); } &__unit { font-size: 12px; color: var(--text-3); margin-left: 3px; } }
-.btn-cart { padding: 10px 18px; background: var(--accent); color: #0a0a0b; border: none; border-radius: 9px; font-family: 'Montserrat',sans-serif; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; transition: opacity 0.2s; &:hover { opacity: 0.9; } &--added { opacity: 0.7; } }
+.btn-cart { padding: 10px 18px; background: var(--accent); color: #0a0a0b; border: none; border-radius: 9px; font-family: 'Montserrat',sans-serif; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; transition: opacity 0.2s; &:hover { opacity: 0.9; } &--added { opacity: 0.7; } &--owned { background: var(--bg-3, #1a1a1c); color: var(--accent); border: 1px solid var(--accent); cursor: default; opacity: 1; } }
 
 /* Cart toast */
 .cart-toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--bg-2); border: 1px solid var(--accent); border-radius: 12px; padding: 12px 20px; font-size: 13px; color: var(--text-2); display: flex; align-items: center; gap: 14px; z-index: 100; box-shadow: 0 4px 24px rgba(0,0,0,0.3); &__link { color: var(--accent); font-weight: 700; text-decoration: none; &:hover { text-decoration: underline; } } }

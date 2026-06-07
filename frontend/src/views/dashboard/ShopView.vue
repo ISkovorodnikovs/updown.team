@@ -225,16 +225,15 @@ async function checkout() {
   paying.value = true; error.value = ''
   try {
     const bannerDiscountPercent = getDiscount(cart.selectedPeriod)
-    // Берём первый товар для создания инвойса (Heleket не поддерживает батч)
-    // TODO: создать batch endpoint
-    const first = cart.items[0]
-    const res = await paymentApi.createInvoice({
-      type: first.type,
-      planId: first.planId,
-      shopProductId: first.shopProductId,
+    // Отправляем ВСЮ корзину одной оплатой (batch). Бэкенд суммирует все позиции.
+    const items = cart.items.map(i => ({
+      type: i.type,
+      planId: i.planId,
+      shopProductId: i.shopProductId,
       periodMonths: cart.selectedPeriod,
       bannerDiscountPercent,
-    })
+    }))
+    const res = await paymentApi.createBatchInvoice({ items })
     paymentUrl.value = res.data.paymentUrl
     showCart.value = false
   } catch (e) {

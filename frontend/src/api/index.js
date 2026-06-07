@@ -117,6 +117,7 @@ export const subscriptionsApi = {
 // Payment (Heleket)
 export const paymentApi = {
   createInvoice: (data) => api.post('/payment/create', data),
+  createBatchInvoice: (data) => api.post('/payment/create-batch', data),
 }
 
 // Referral
@@ -144,5 +145,6 @@ export const bannersApi = {
 export const shopApi = {
   getIndicators: () => api.get('/shop/indicators'),
   getChannels: () => api.get('/shop/channels'),
+  getMy: () => api.get('/shop/my'),
   getAll: () => api.get('/shop/all'),
 }

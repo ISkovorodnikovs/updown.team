@@ -1,6 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
 import { User } from './user.entity';
 import { Plan } from './plan.entity';
+import { TransactionItem } from './transaction-item.entity';
 
 export enum TransactionStatus {
   PENDING    = 'pending',
@@ -84,6 +85,13 @@ export class Transaction {
 
   @Column({ type: 'jsonb', nullable: true })
   webhookPayload: any;
+
+  // Батч-покупка корзины: true если в транзакции несколько позиций (см. items)
+  @Column({ default: false })
+  isBatch: boolean;
+
+  @OneToMany(() => TransactionItem, (item) => item.transaction, { cascade: true })
+  items: TransactionItem[];
 
   @CreateDateColumn() createdAt: Date;
   @UpdateDateColumn() updatedAt: Date;

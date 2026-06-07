@@ -24,6 +24,24 @@ export class PaymentController {
     return this.paymentService.createInvoice({ userId: user.id, ...dto });
   }
 
+  // Создать батч-инвойс (вся корзина одной оплатой)
+  @Post('create-batch')
+  @UseGuards(AuthGuard('jwt'))
+  createBatchInvoice(
+    @CurrentUser() user: any,
+    @Body() dto: {
+      items: Array<{
+        type: TransactionType;
+        planId?: string;
+        shopProductId?: string;
+        periodMonths?: number;
+        bannerDiscountPercent?: number;
+      }>;
+    },
+  ) {
+    return this.paymentService.createBatchInvoice({ userId: user.id, items: dto.items });
+  }
+
   // Вебхук от Heleket (без авторизации — внешний запрос)
   @Post('webhook')
   @HttpCode(200)

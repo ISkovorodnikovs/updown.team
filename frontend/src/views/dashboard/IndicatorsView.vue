@@ -13,12 +13,15 @@
           <li v-for="f in ind.features" :key="f"><span>✦</span>{{ f }}</li>
         </ul>
         <div class="ind-card__footer">
-          <a v-if="ind.tradingViewUrl" :href="ind.tradingViewUrl" target="_blank" class="btn-tv">
+          <a v-if="ind.owned && ind.tradingViewUrl" :href="ind.tradingViewUrl" target="_blank" class="btn-tv">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-            TradingView
+            {{ t.openTv }}
           </a>
-          <div class="ind-card__price">50 USDT / {{ t.month }}</div>
-          <button class="btn-cart" @click="addToCart(ind)" :class="{ 'btn-cart--added': isInCart(ind.id) }">
+          <div class="ind-card__price">{{ ind.price }} USDT / {{ t.month }}</div>
+          <button v-if="ind.owned" class="btn-cart btn-cart--owned" disabled>
+            ✓ {{ t.owned }}
+          </button>
+          <button v-else class="btn-cart" @click="addToCart(ind)" :class="{ 'btn-cart--added': isInCart(ind.id) }">
             {{ isInCart(ind.id) ? '✓ ' + t.inCart : '+ ' + t.addToCart }}
           </button>
         </div>
@@ -50,6 +53,8 @@ const t = computed(() => {
     month: r ? 'мес' : 'mo',
     addToCart: r ? 'В корзину' : 'Add to Cart',
     inCart: r ? 'В корзине' : 'In Cart',
+    owned: r ? 'Куплено' : 'Owned',
+    openTv: r ? 'Открыть в TradingView' : 'Open in TradingView',
     signalDay: r ? 'Сигнал дня' : 'Signal of the Day',
     signalDaySub: r ? 'Функция находится в разработке. Скоро здесь появится ежедневный торговый сигнал.' : 'This feature is coming soon. Daily trading signal will appear here.',
   }
@@ -73,7 +78,7 @@ const t = computed(() => {
   &__price { font-family: 'Montserrat',sans-serif; font-size: 14px; font-weight: 800; color: var(--accent); }
 }
 
-.btn-cart { padding: 7px 14px; background: var(--accent); color: #0a0a0b; border: none; border-radius: 8px; font-family: 'Montserrat',sans-serif; font-size: 11px; font-weight: 700; cursor: pointer; transition: opacity 0.2s; white-space: nowrap; &:hover { opacity: 0.9; } &--added { opacity: 0.65; } }
+.btn-cart { padding: 7px 14px; background: var(--accent); color: #0a0a0b; border: none; border-radius: 8px; font-family: 'Montserrat',sans-serif; font-size: 11px; font-weight: 700; cursor: pointer; transition: opacity 0.2s; white-space: nowrap; &:hover { opacity: 0.9; } &--added { opacity: 0.65; } &--owned { background: var(--bg-3, #1a1a1c); color: var(--accent); border: 1px solid var(--accent); cursor: default; opacity: 1; } }
 .btn-tv { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: #4f6ef7; text-decoration: none; font-weight: 600; transition: color 0.2s; &:hover { color: #7b9cff; } }
 
 .signal-day-stub {
