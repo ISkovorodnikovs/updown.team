@@ -43,6 +43,9 @@
                 <button class="btn btn--success btn--sm" @click="review(p, 'approved')">Одобрить</button>
                 <button class="btn btn--danger btn--sm" @click="openReject(p)">Отклонить</button>
               </div>
+              <div style="display:flex;gap:8px" v-else-if="p.status === 'approved'">
+                <button class="btn btn--outline btn--sm" @click="openChannels(p)">Каналы</button>
+              </div>
             </td>
           </tr>
         </tbody>
@@ -63,11 +66,65 @@
         </div>
       </div>
     </div>
+
+    <!-- Channels modal -->
+    <div v-if="channelsModal" class="modal-overlay" @click.self="channelsModal = null">
+      <div class="modal card" style="max-width:680px;width:100%">
+        <h3>Каналы партнёра: {{ channelsModal.companyName }}</h3>
+
+        <div v-if="channelsLoading" class="spinner"></div>
+        <table v-else-if="channels.length" class="table" style="margin:12px 0">
+          <thead><tr><th>Название</th><th>Параметры</th><th>signalsChannelId</th><th>Цена</th><th>До</th><th></th></tr></thead>
+          <tbody>
+            <tr v-for="c in channels" :key="c.id">
+              <td>{{ c.name }}</td>
+              <td>{{ c.asset }}/{{ c.timeframe }}/{{ c.direction }}</td>
+              <td>{{ c.signalsChannelId || '—' }}</td>
+              <td>{{ c.price }} USDT</td>
+              <td>{{ c.expiresAt ? new Date(c.expiresAt).toISOString().slice(0,10) : '—' }}</td>
+              <td><button class="btn btn--danger btn--sm" @click="removeChannel(c)">×</button></td>
+            </tr>
+          </tbody>
+        </table>
+        <p v-else style="color:var(--text-2);font-size:13px;margin:12px 0">Каналов пока нет.</p>
+
+        <div class="ch-form">
+          <h4 style="margin:8px 0">Добавить канал</h4>
+          <div class="ch-grid">
+            <input class="input" v-model="form.name" placeholder="Название" />
+            <input class="input" v-model="form.signalsChannelId" placeholder="signalsChannelId (из signals_db)" />
+            <select class="input" v-model="form.asset">
+              <option value="crypto">Крипта</option>
+              <option value="forex">Форекс</option>
+              <option value="stocks">Фонда</option>
+              <option value="gold">Золото</option>
+            </select>
+            <select class="input" v-model="form.timeframe">
+              <option>M1</option><option>M3</option><option>M5</option><option>M10</option>
+              <option>M15</option><option>H1</option><option>H4</option>
+            </select>
+            <select class="input" v-model="form.direction">
+              <option value="both">Оба</option><option value="long">Long</option><option value="short">Short</option>
+            </select>
+            <input class="input" v-model.number="form.discountPercent" type="number" min="0" placeholder="Скидка %" />
+            <input class="input" v-model.number="form.durationDays" type="number" min="0" placeholder="Дней доступа" />
+          </div>
+          <p style="font-size:12px;color:var(--text-2);margin:8px 0">
+            Расчётная цена: <b>{{ calcPrice }} USDT</b>
+            <span v-if="!form.signalsChannelId" style="color:#B9770E"> · без signalsChannelId канал неактивен (услуга не оказана)</span>
+          </p>
+          <div style="display:flex;gap:10px;margin-top:8px">
+            <button class="btn btn--primary btn--sm" @click="addChannel" :disabled="savingChannel">Добавить</button>
+            <button class="btn btn--outline btn--sm" @click="channelsModal = null">Закрыть</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { partnersApi } from '@/api'
 
 const partners = ref([])
@@ -75,6 +132,49 @@ const loading = ref(true)
 const statusFilter = ref('pending')
 const rejectModal = ref(null)
 const rejectReason = ref('')
+
+// Channels management
+const channelsModal = ref(null)
+const channels = ref([])
+const channelsLoading = ref(false)
+const savingChannel = ref(false)
+const SCALP_TF = ['M1','M3','M5','M10']
+const emptyForm = () => ({
+  name: '', signalsChannelId: '', asset: 'crypto', timeframe: 'M15',
+  direction: 'both', discountPercent: 0, durationDays: 30,
+})
+const form = ref(emptyForm())
+
+const calcPrice = computed(() => {
+  let base = 500
+  if (form.value.asset === 'gold') base += 200
+  if (SCALP_TF.includes(form.value.timeframe)) base += 200
+  return +(base * (1 - (form.value.discountPercent || 0) / 100)).toFixed(2)
+})
+
+async function openChannels(partner) {
+  channelsModal.value = partner
+  form.value = emptyForm()
+  channelsLoading.value = true
+  channels.value = await partnersApi.getChannels(partner.id).then(r => r.data).catch(() => [])
+  channelsLoading.value = false
+}
+
+async function addChannel() {
+  if (!form.value.name) return
+  savingChannel.value = true
+  try {
+    await partnersApi.addChannel(channelsModal.value.id, { ...form.value })
+    channels.value = await partnersApi.getChannels(channelsModal.value.id).then(r => r.data)
+    form.value = emptyForm()
+  } finally { savingChannel.value = false }
+}
+
+async function removeChannel(c) {
+  if (!confirm(`Деактивировать канал "${c.name}"?`)) return
+  await partnersApi.removeChannel(c.id).catch(() => {})
+  channels.value = await partnersApi.getChannels(channelsModal.value.id).then(r => r.data)
+}
 
 async function load() {
   loading.value = true
@@ -113,4 +213,7 @@ function formatDate(d) {
   z-index: 200; padding: 24px;
 }
 .modal { width: 100%; max-width: 440px; h3 { font-size: 18px; font-weight: 600; } }
+.ch-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.ch-form { border-top: 1px solid var(--border, #2a2a30); margin-top: 12px; padding-top: 12px; }
+@media (max-width: 600px) { .ch-grid { grid-template-columns: 1fr; } }
 </style>

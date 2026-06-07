@@ -5,9 +5,10 @@ import { PartnerBotService } from './partner-bot.service';
 import { Bot } from '../database/entities/bot.entity';
 import { BotUser } from '../database/entities/bot-user.entity';
 import { LinkClick } from '../database/entities/link-click.entity';
+import { PartnerChannel } from '../database/entities/partner-channel.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Bot, BotUser, LinkClick])],
+  imports: [TypeOrmModule.forFeature([Bot, BotUser, LinkClick, PartnerChannel])],
   providers: [TelegramMainService, PartnerBotService],
   exports: [TelegramMainService, PartnerBotService],
 })

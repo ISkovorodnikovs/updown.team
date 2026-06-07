@@ -51,6 +51,19 @@ export class Bot {
   @Column({ type: 'jsonb', default: [] })
   buttonUrls: { label: string; url: string }[];
 
+  // Секрет для верификации входящих webhook-запросов от Telegram
+  @Column({ nullable: true })
+  webhookSecret: string;
+
+  // Кому бот отвечает на команды. Пусто/[] = всем. Иначе — только перечисленным.
+  // Элементы: telegram user id (число строкой) или @username
+  @Column({ type: 'jsonb', default: [] })
+  allowedRecipients: string[];
+
+  // Telegram user id владельца-партнёра (для приватных ответов «статистика/мои каналы»)
+  @Column({ nullable: true })
+  ownerTelegramId: string;
+
   @Column({ default: 0 })
   totalUsers: number;
 

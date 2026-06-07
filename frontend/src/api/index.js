@@ -56,8 +56,15 @@ export const usersApi = {
 export const partnersApi = {
   apply: (data) => api.post('/partners/apply', data),
   myApplication: () => api.get('/partners/my-application'),
+  myChannels: () => api.get('/partners/my-channels'),
   getAll: (params) => api.get('/partners', { params }),
   review: (id, data) => api.put(`/partners/${id}/review`, data),
+  // Admin
+  makePartner: (data) => api.post('/partners/make-partner', data),
+  getChannels: (id) => api.get(`/partners/${id}/channels`),
+  addChannel: (id, data) => api.post(`/partners/${id}/channels`, data),
+  updateChannel: (channelId, data) => api.put(`/partners/channels/${channelId}`, data),
+  removeChannel: (channelId) => api.delete(`/partners/channels/${channelId}`),
 }
 
 // Bots
@@ -67,6 +74,7 @@ export const botsApi = {
   startBot: () => api.post('/bots/my/start'),
   stopBot: () => api.post('/bots/my/stop'),
   updateButtons: (buttonUrls) => api.put('/bots/my/buttons', { buttonUrls }),
+  updateRecipients: (allowedRecipients) => api.put('/bots/my/recipients', { allowedRecipients }),
   getAll: () => api.get('/bots/all'),
 }
 

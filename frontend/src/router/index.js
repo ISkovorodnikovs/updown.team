@@ -27,6 +27,10 @@ const routes = [
       { path: 'support', component: () => import('@/views/dashboard/TicketsView.vue') },
       { path: 'tickets/:id', component: () => import('@/views/dashboard/TicketDetailView.vue') },
       { path: 'profile', component: () => import('@/views/dashboard/ProfileView.vue') },
+      // Partner
+      { path: 'partner/bot', component: () => import('@/views/partner/BotView.vue'), meta: { roles: ['PARTNER','ADMIN','OWNER'] } },
+      { path: 'partner/channels', component: () => import('@/views/partner/PartnerChannelsView.vue'), meta: { roles: ['PARTNER','ADMIN','OWNER'] } },
+      { path: 'broadcast', component: () => import('@/views/partner/BroadcastView.vue'), meta: { roles: ['PARTNER','ADMIN','OWNER'] } },
       // Admin
       { path: 'admin/users', component: () => import('@/views/owner/UsersView.vue'), meta: { roles: ['ADMIN','OWNER'] } },
       { path: 'admin/subscriptions', component: () => import('@/views/admin/AdminSubscriptionsView.vue'), meta: { roles: ['ADMIN','OWNER'] } },
@@ -38,7 +42,6 @@ const routes = [
       { path: 'partners', component: () => import('@/views/admin/PartnersView.vue'), meta: { roles: ['ADMIN','OWNER'] } },
       { path: 'bots-overview', component: () => import('@/views/admin/BotsOverview.vue'), meta: { roles: ['ADMIN','OWNER'] } },
       { path: 'admin-logs', component: () => import('@/views/owner/AdminLogsView.vue'), meta: { roles: ['OWNER'] } },
-      { path: 'broadcast', component: () => import('@/views/partner/BroadcastView.vue'), meta: { roles: ['ADMIN','OWNER'] } },
     ]
   },
   { path: '/:pathMatch(.*)*', redirect: '/' }

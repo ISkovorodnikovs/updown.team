@@ -46,6 +46,17 @@
           <NavItem to="/dashboard/profile" :icon="icons.profile" :label="t.nav.profile" :collapsed="collapsed" />
         </div>
 
+        <!-- Partner section -->
+        <template v-if="auth.isPartner || auth.isAdmin || auth.isOwner">
+          <div class="nav-section nav-section--admin" v-show="!collapsed">{{ t.nav.partnerZone }}</div>
+          <div class="nav-group">
+            <NavItem to="/dashboard/partner/bot" :icon="icons.adminSubs" :label="t.nav.myBot" :collapsed="collapsed" />
+            <NavItem to="/dashboard/partner/channels" :icon="icons.banners" :label="t.nav.myChannels" :collapsed="collapsed" />
+            <NavItem to="/dashboard/broadcast" :icon="icons.referral" :label="t.nav.broadcast" :collapsed="collapsed" />
+            <NavItem to="/dashboard/affiliate" :icon="icons.referral" :label="t.nav.affiliate" :collapsed="collapsed" />
+          </div>
+        </template>
+
         <!-- Admin section -->
         <template v-if="auth.isAdmin || auth.isOwner">
           <div class="nav-section nav-section--admin" v-show="!collapsed">Admin</div>
@@ -56,6 +67,8 @@
             <NavItem to="/dashboard/admin/subscriptions" :icon="icons.adminSubs" :label="t.nav.adminSubs" :collapsed="collapsed" />
             <NavItem to="/dashboard/admin/banners" :icon="icons.banners" :label="t.nav.banners" :collapsed="collapsed" />
             <NavItem to="/dashboard/admin/referral" :icon="icons.referral" :label="t.nav.referral" :collapsed="collapsed" />
+            <NavItem to="/dashboard/partners" :icon="icons.users" :label="t.nav.partners" :collapsed="collapsed" />
+            <NavItem to="/dashboard/bots-overview" :icon="icons.adminSubs" :label="t.nav.botsOverview" :collapsed="collapsed" />
             <NavItem to="/dashboard/all-tickets" :icon="icons.tickets" :label="t.nav.allTickets" :collapsed="collapsed" />
             <NavItem v-if="auth.isOwner" to="/dashboard/admin-logs" :icon="icons.logs" :label="t.nav.logs" :collapsed="collapsed" />
           </div>
@@ -191,7 +204,7 @@ const translations = {
       analytics: 'Аналитика', copytrading: 'Копитрейдинг', education: 'Обучение',
       business: 'Бизнес', whitelabel: 'White Label', development: 'Разработка', affiliate: 'Партнёрка',
       account: 'Аккаунт', finances: 'Финансы', support: 'Поддержка', profile: 'Профиль',
-      users: 'Пользователи', adminPlans: 'Тарифы', adminShop: 'Магазин', adminSubs: 'Подписки', banners: 'Баннеры', referral: 'Рефералы', allTickets: 'Все тикеты', logs: 'Логи',
+      users: 'Пользователи', adminPlans: 'Тарифы', adminShop: 'Магазин', adminSubs: 'Подписки', banners: 'Баннеры', referral: 'Рефералы', allTickets: 'Все тикеты', logs: 'Логи', partnerZone: 'Партнёрам', myBot: 'Мой бот', myChannels: 'Мои каналы', broadcast: 'Рассылка', affiliate: 'Аффилиат', partners: 'Партнёры', botsOverview: 'Боты (обзор)',
     },
     chartsLink: 'Chart Platform',
     cart: 'Корзина',
@@ -203,7 +216,7 @@ const translations = {
       '/dashboard/indicators': 'Индикаторы', '/dashboard/analytics': 'Аналитика',
       '/dashboard/copytrading': 'Копитрейдинг', '/dashboard/education': 'Обучение',
       '/dashboard/whitelabel': 'White Label', '/dashboard/development': 'Разработка',
-      '/dashboard/affiliate': 'Партнёрка', '/dashboard/finances': 'Финансы',
+      '/dashboard/affiliate': 'Партнёрка', '/dashboard/partner/bot': 'Мой бот', '/dashboard/partner/channels': 'Мои каналы', '/dashboard/broadcast': 'Рассылка', '/dashboard/partners': 'Партнёры', '/dashboard/bots-overview': 'Боты (обзор)', '/dashboard/finances': 'Финансы',
       '/dashboard/support': 'Поддержка', '/dashboard/profile': 'Профиль',
       '/dashboard/admin/users': 'Пользователи', '/dashboard/admin/subscriptions': 'Управление подписками', '/dashboard/admin/plans': 'Управление тарифами', '/dashboard/admin/shop': 'Управление магазином',
       '/dashboard/admin/banners': 'Конструктор баннеров', '/dashboard/admin/referral': 'Управление рефералами',
@@ -216,7 +229,7 @@ const translations = {
       analytics: 'Analytics', copytrading: 'Copy Trading', education: 'Education',
       business: 'Business', whitelabel: 'White Label', development: 'Development', affiliate: 'Affiliate',
       account: 'Account', finances: 'Finances', support: 'Support', profile: 'Profile',
-      users: 'Users', adminPlans: 'Plans', adminShop: 'Shop', adminSubs: 'Subscriptions', banners: 'Banners', referral: 'Referrals', allTickets: 'All Tickets', logs: 'Logs',
+      users: 'Users', adminPlans: 'Plans', adminShop: 'Shop', adminSubs: 'Subscriptions', banners: 'Banners', referral: 'Referrals', allTickets: 'All Tickets', logs: 'Logs', partnerZone: 'Partner Zone', myBot: 'My Bot', myChannels: 'My Channels', broadcast: 'Broadcast', affiliate: 'Affiliate', partners: 'Partners', botsOverview: 'Bots Overview',
     },
     chartsLink: 'Chart Platform',
     cart: 'Cart',
@@ -228,7 +241,7 @@ const translations = {
       '/dashboard/indicators': 'Indicators', '/dashboard/analytics': 'Analytics',
       '/dashboard/copytrading': 'Copy Trading', '/dashboard/education': 'Education',
       '/dashboard/whitelabel': 'White Label', '/dashboard/development': 'Development',
-      '/dashboard/affiliate': 'Affiliate', '/dashboard/finances': 'Finances',
+      '/dashboard/affiliate': 'Affiliate', '/dashboard/partner/bot': 'My Bot', '/dashboard/partner/channels': 'My Channels', '/dashboard/broadcast': 'Broadcast', '/dashboard/partners': 'Partners', '/dashboard/bots-overview': 'Bots Overview', '/dashboard/finances': 'Finances',
       '/dashboard/support': 'Support', '/dashboard/profile': 'Profile',
       '/dashboard/admin/users': 'Users', '/dashboard/admin/subscriptions': 'Manage Subscriptions', '/dashboard/admin/plans': 'Manage Plans', '/dashboard/admin/shop': 'Manage Shop',
       '/dashboard/admin/banners': 'Banner Constructor', '/dashboard/admin/referral': 'Referral Management',

@@ -93,6 +93,23 @@
         </div>
       </div>
 
+      <!-- Recipients whitelist -->
+      <div class="card">
+        <h3>Кому отвечает бот</h3>
+        <p style="color:var(--text-muted);font-size:14px;margin:8px 0 12px">
+          Оставьте пустым — бот отвечает всем. Либо укажите, кому можно (по одному в строке):
+          Telegram ID (например 123456789) или @username.
+        </p>
+        <textarea v-model="recipientsText" rows="4" class="recipients-area"
+          placeholder="@myusername&#10;123456789"></textarea>
+        <div style="margin-top:10px">
+          <button class="btn btn--primary btn--sm" @click="saveRecipients" :disabled="recLoading">
+            {{ recLoading ? 'Сохраняем...' : 'Сохранить список' }}
+          </button>
+          <span v-if="recMsg" style="margin-left:10px;color:var(--accent);font-size:13px">{{ recMsg }}</span>
+        </div>
+      </div>
+
       <!-- Ticket -->
       <div class="card">
         <h3>Нужна помощь?</h3>
@@ -120,14 +137,29 @@ const newToken = ref('')
 const tokenMsg = ref(null)
 const btnMsg = ref('')
 const buttons = ref([{ label: '', url: '' }])
+const recipientsText = ref('')
+const recLoading = ref(false)
+const recMsg = ref('')
 
 onMounted(async () => {
   try {
     const { data } = await botsApi.getMyBot()
     bot.value = data
     if (data?.buttonUrls?.length) buttons.value = [...data.buttonUrls]
+    if (data?.allowedRecipients?.length) recipientsText.value = data.allowedRecipients.join('\n')
   } finally { loading.value = false }
 })
+
+async function saveRecipients() {
+  recLoading.value = true; recMsg.value = ''
+  try {
+    const list = recipientsText.value.split('\n').map(s => s.trim()).filter(Boolean)
+    const { data } = await botsApi.updateRecipients(list)
+    bot.value = data
+    recMsg.value = 'Список сохранён'
+    setTimeout(() => recMsg.value = '', 3000)
+  } finally { recLoading.value = false }
+}
 
 async function setToken() {
   tokenLoading.value = true; tokenMsg.value = null
@@ -216,4 +248,16 @@ async function saveButtons() {
   font-weight: 700;
   flex-shrink: 0;
 }
+.recipients-area {
+  width: 100%;
+  background: var(--bg-2, #1a1a1c);
+  border: 1px solid var(--border, #2a2a30);
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: var(--text, #eee);
+  font-family: inherit;
+  font-size: 13px;
+  resize: vertical;
+}
+.recipients-area:focus { outline: none; border-color: var(--accent); }
 </style>

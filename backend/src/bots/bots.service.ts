@@ -25,13 +25,13 @@ export class BotsService implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
-    // Auto-start all running bots on server restart
-    const bots = await this.botRepo.find({
-      where: { status: BotStatus.RUNNING },
-    });
+    // Перерегистрируем webhook у всех RUNNING-ботов при рестарте сервера.
+    // Троттлим, чтобы не упереться в лимиты Telegram при большом числе ботов.
+    const bots = await this.botRepo.find({ where: { status: BotStatus.RUNNING } });
     for (const bot of bots) {
       try {
         await this.partnerBotService.startBot(bot);
+        await new Promise((r) => setTimeout(r, 200));
       } catch {}
     }
   }
@@ -118,6 +118,25 @@ export class BotsService implements OnModuleInit {
 
     await this.botRepo.update(bot.id, { buttonUrls });
     return this.getMyBot(userId);
+  }
+
+  // Whitelist получателей бота: кому он отвечает на команды (пусто = всем)
+  async updateRecipients(userId: string, allowedRecipients: string[]) {
+    const partnerId = await this.getPartnerIdForUser(userId);
+    const bot = await this.botRepo.findOne({ where: { partnerId } });
+    if (!bot) throw new NotFoundException();
+    const cleaned = (allowedRecipients || [])
+      .map((s) => String(s).trim())
+      .filter(Boolean)
+      .slice(0, 100);
+    await this.botRepo.update(bot.id, { allowedRecipients: cleaned });
+    return this.getMyBot(userId);
+  }
+
+  // Точка входа webhook — вызывается контроллером (без JWT, внешний запрос Telegram)
+  async handleWebhook(botId: string, secret: string, update: any) {
+    await this.partnerBotService.handleUpdate(botId, secret, update);
+    return { ok: true };
   }
 
   async getAllBots() {
