@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, MoreThan } from 'typeorm';
-import { Banner, BannerTargetType } from '../database/entities/banner.entity';
+import { Repository, MoreThan, IsNull } from 'typeorm';
+import { Banner } from '../database/entities/banner.entity';
 
 @Injectable()
 export class BannersService {
@@ -9,19 +9,22 @@ export class BannersService {
     @InjectRepository(Banner) private bannerRepo: Repository<Banner>,
   ) {}
 
-  // Получить активный баннер (для публичного показа)
   async getActiveBanner() {
     const now = new Date();
-    return this.bannerRepo.findOne({
-      where: [
-        { isActive: true, endsAt: MoreThan(now) },
-        { isActive: true, endsAt: null as any },
-      ],
+    // Find newest active banner where endsAt is in future OR null (no expiry)
+    const banners = await this.bannerRepo.find({
+      where: { isActive: true },
       order: { createdAt: 'DESC' },
     });
+
+    // Filter in JS — safer than TypeORM null OR conditions
+    const active = banners.find(b =>
+      b.isActive && (!b.endsAt || new Date(b.endsAt) > now)
+    );
+
+    return active ?? null;
   }
 
-  // Все баннеры (для админки)
   async getAll() {
     return this.bannerRepo.find({ order: { createdAt: 'DESC' } });
   }

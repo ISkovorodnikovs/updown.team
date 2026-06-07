@@ -157,10 +157,23 @@ async function load() {
 }
 
 function openForm(banner) {
-  editing.value = banner
+  editing.value = banner ?? null
   formError.value = ''
-  if (banner) {
-    const endsAtSliced = banner.endsAt ? new Date(banner.endsAt).toISOString().slice(0, 16) : ''
+  if (banner && banner.id) {
+    Object.assign(form, {
+      title:           banner.title           ?? '',
+      message:         banner.message         ?? '',
+      imageUrl:        banner.imageUrl        ?? '',
+      targetType:      banner.targetType      ?? 'all',
+      discountPercent: banner.discountPercent ?? 0,
+      periodDiscounts: banner.periodDiscounts ? { ...banner.periodDiscounts } : { 1: 0, 3: 3, 6: 5, 12: 15 },
+      endsAt:          banner.endsAt ? new Date(banner.endsAt).toISOString().slice(0, 16) : defaultEndsAt(),
+      showOnLanding:   banner.showOnLanding   ?? true,
+      showInDashboard: banner.showInDashboard ?? true,
+      isActive:        banner.isActive        ?? true,
+    })
+  } else {
+    Object.assign(form, defaultForm())
   }
   showForm.value = true
 }
