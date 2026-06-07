@@ -35,7 +35,7 @@ export class PartnersService {
 
   async applyForPartner(
     userId: string,
-    data: { companyName: string; description: string },
+    data: { companyName: string; description: string; source?: string },
   ) {
     const existing = await this.partnerRepo.findOne({ where: { userId } });
     if (existing && existing.status === PartnerStatus.PENDING) {
@@ -48,11 +48,25 @@ export class PartnersService {
     }
 
     const user = await this.userRepo.findOne({ where: { id: userId } });
-    const partner = this.partnerRepo.create({
-      userId,
-      ...data,
-      status: PartnerStatus.PENDING,
-    });
+
+    const source = data.source || 'partner';
+    const description = data.source ? `[${data.source}] ${data.description}` : data.description;
+
+    let partner;
+    if (existing) {
+      existing.companyName = data.companyName;
+      existing.description = description;
+      existing.status = PartnerStatus.PENDING;
+      existing.rejectionReason = null;
+      partner = existing;
+    } else {
+      partner = this.partnerRepo.create({
+        userId,
+        companyName: data.companyName,
+        description,
+        status: PartnerStatus.PENDING,
+      });
+    }
     await this.partnerRepo.save(partner);
 
     // Send notifications
@@ -60,11 +74,11 @@ export class PartnersService {
       name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email,
       email: user.email,
       companyName: data.companyName,
-      description: data.description,
+      description,
     });
 
     await this.telegramMain.sendMessage(
-      `🔔 New partner application!\n👤 ${user.email}\n🏢 ${data.companyName}\n📝 ${data.description}`,
+      `🔔 Новая B2B-заявка [${source}]\n👤 ${user.email}\n🏢 ${data.companyName}\n📝 ${data.description}`,
     );
 
     return partner;

@@ -1,25 +1,42 @@
-<template>
-  <div class="placeholder-page">
-    <div class="placeholder-card">
-      <div class="placeholder-icon">🚧</div>
-      <h2>{{ title }}</h2>
-      <p>{{ lang === 'ru' ? 'Этот раздел находится в разработке' : 'This section is under development' }}</p>
-      <router-link to="/dashboard/shop" class="btn-primary">
-        {{ lang === 'ru' ? 'Посмотреть тарифы' : 'View plans' }}
-      </router-link>
-    </div>
-  </div>
-</template>
 <script setup>
 import { computed } from 'vue'
-const lang = computed(() => localStorage.getItem('ud-lang') || 'ru')
-const title = 'Development'
+import B2BSection from '@/components/B2BSection.vue'
+
+const L = computed(() => (localStorage.getItem('ud-lang') || 'en') === 'ru')
+const data = computed(() => L.value ? ru : en)
+
+const ru = {
+  title: 'Разработка — ваши идеи под ключ',
+  tagline: 'Мы становимся вашими разработчиками: индикаторы, торговые боты, системы, стратегии торговли и автоматизация под ваши задачи. От доработки существующего до создания продукта с нуля.',
+  blocks: [
+    { icon: '📐', h: 'Индикаторы TradingView', p: 'Разработка кастомных индикаторов на Pine Script под вашу методологию: уровни, зоны, прогнозные модели, алерты.' },
+    { icon: '🤖', h: 'Торговые боты и системы', p: 'Боты, автоматизация сигналов, торговые системы и интеграции. Реализуем вашу стратегию в работающий продукт.' },
+    { icon: '🧠', h: 'Стратегии и бэктест', p: 'Формализуем и протестируем вашу торговую стратегию, оптимизируем параметры, соберём статистику.' },
+  ],
+  bullets: [
+    'Доработка существующих инструментов или разработка с нуля',
+    'Pine Script, боты, автоматизация, интеграции',
+    'Прозрачная оценка объёма и стоимости под задачу',
+    'Постоянная поддержка и обновления',
+  ],
+}
+const en = {
+  title: 'Development — your ideas, turnkey',
+  tagline: 'We become your developers: indicators, trading bots, systems, trading strategies and automation for your needs. From improving existing tools to building a product from scratch.',
+  blocks: [
+    { icon: '📐', h: 'TradingView indicators', p: 'Custom Pine Script indicators for your methodology: levels, zones, predictive models, alerts.' },
+    { icon: '🤖', h: 'Trading bots & systems', p: 'Bots, signal automation, trading systems and integrations. We turn your strategy into a working product.' },
+    { icon: '🧠', h: 'Strategies & backtest', p: 'We formalize and test your trading strategy, optimize parameters and gather statistics.' },
+  ],
+  bullets: [
+    'Improve existing tools or build from scratch',
+    'Pine Script, bots, automation, integrations',
+    'Transparent scope and cost estimate per task',
+    'Ongoing support and updates',
+  ],
+}
 </script>
-<style lang="scss" scoped>
-.placeholder-page { display: flex; align-items: center; justify-content: center; min-height: 60vh; }
-.placeholder-card { text-align: center; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 60px 40px; max-width: 400px; }
-.placeholder-icon { font-size: 48px; margin-bottom: 20px; }
-h2 { font-family: 'Montserrat', sans-serif; font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 10px; }
-p { color: var(--text-2); margin-bottom: 24px; }
-.btn-primary { display: inline-block; padding: 12px 28px; background: var(--accent); color: #0a0a0b; border-radius: 10px; font-family: 'Montserrat', sans-serif; font-size: 13px; font-weight: 700; text-decoration: none; &:hover { opacity: 0.9; text-decoration: none; } }
-</style>
+
+<template>
+  <B2BSection source="development" :title="data.title" :tagline="data.tagline" :blocks="data.blocks" :bullets="data.bullets" />
+</template>

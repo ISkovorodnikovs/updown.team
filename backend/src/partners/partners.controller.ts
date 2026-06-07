@@ -19,7 +19,8 @@ import { IsString, IsOptional, IsNumber, IsBoolean, MaxLength, Min } from 'class
 
 class ApplyDto {
   @IsString() companyName: string;
-  @IsString() @MaxLength(1000) description: string;
+  @IsString() @MaxLength(2000) description: string;
+  @IsOptional() @IsString() @MaxLength(40) source?: string;
 }
 
 class ReviewDto {
