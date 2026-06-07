@@ -20,7 +20,7 @@
             <span v-if="b.endsAt">⏱ {{ new Date(b.endsAt).toLocaleString() }}</span>
             <span>🎯 {{ b.targetType }}</span>
             <span v-if="b.periodDiscounts">
-              💸 {{ Object.entries(b.periodDiscounts).map(([m,p]) => `${m}мес: ${p}%`).join(' | ') }}
+              💸 {{ Object.entries(b.periodDiscounts).map(([m,p]) => `${m}м: ${p}%`).join(' | ') }}
             </span>
           </div>
         </div>
@@ -69,11 +69,7 @@
           </div>
           <div class="form-group">
             <label>{{ t.fEnds }}</label>
-            <input
-              class="inp"
-              type="datetime-local"
-              v-model="form.endsAt"
-            />
+            <input class="inp" type="datetime-local" v-model="form.endsAt" />
             <p class="field-hint" style="color:#4ade80" v-if="form.endsAt">✓ {{ new Date(form.endsAt).toLocaleString() }}</p>
             <p class="field-hint" v-else style="color:#52526a">{{ t.noExpiry }}</p>
           </div>
@@ -132,7 +128,6 @@ const editing = ref(null)
 const saving = ref(false)
 const formError = ref('')
 
-// +24 часа от текущего момента в формате datetime-local (YYYY-MM-DDTHH:mm)
 const defaultEndsAt = () => {
   const d = new Date(Date.now() + 24 * 60 * 60 * 1000)
   return d.toISOString().slice(0, 16)
@@ -148,6 +143,7 @@ const defaultForm = () => ({
   showInDashboard: true,
   isActive: true,
 })
+
 const form = reactive(defaultForm())
 
 onMounted(load)
@@ -186,22 +182,75 @@ async function save() {
   saving.value = true; formError.value = ''
   try {
     const payload = {
-      ...form,
-      endsAt: form.endsAt ? new Date(form.endsAt).toISOString() : null,
-      periodDiscounts: form.periodDiscounts,
+      title:           form.title,
+      message:         form.message,
+      imageUrl:        form.imageUrl,
+      targetType:      form.targetType,
+      discountPercent: form.discountPercent,
+      periodDiscounts: { ...form.periodDiscounts },
+      endsAt:          form.endsAt ? new Date(form.endsAt).toISOString() : null,
+      showOnLanding:   form.showOnLanding,
+      showInDashboard: form.showInDashboard,
+      isActive:        form.isActive,
     }
-    let result
     if (editing.value) {
-      result = await bannersApi.update(editing.value.id, payload)
+      await bannersApi.update(editing.value.id, payload)
     } else {
-      result = await bannersApi.create(payload)
+      await bannersApi.create(payload)
     }
     await load()
     showForm.value = false
   } catch (e) {
     formError.value = e.response?.data?.message || 'Error'
   } finally { saving.value = false }
-}</script>
+}
+
+async function toggle(b) {
+  await bannersApi.toggle(b.id)
+  b.isActive = !b.isActive
+}
+
+async function remove(id) {
+  if (!confirm(lang.value === 'ru' ? 'Удалить баннер?' : 'Delete banner?')) return
+  await bannersApi.remove(id)
+  banners.value = banners.value.filter(b => b.id !== id)
+}
+
+const t = computed(() => {
+  const r = lang.value === 'ru'
+  return {
+    title:          r ? 'Конструктор баннеров' : 'Banner Constructor',
+    create:         r ? 'Создать' : 'Create',
+    edit:           r ? 'Редактировать баннер' : 'Edit Banner',
+    active:         r ? '● Активен' : '● Active',
+    inactive:       r ? '● Неактивен' : '● Inactive',
+    enable:         r ? 'Включить' : 'Enable',
+    disable:        r ? 'Выключить' : 'Disable',
+    empty:          r ? 'Баннеров нет. Создайте первый!' : 'No banners yet. Create one!',
+    fTitle:         r ? 'Заголовок' : 'Title',
+    fTitlePh:       r ? 'Горячее предложение 🔥' : 'Hot offer 🔥',
+    fMsg:           r ? 'Сообщение' : 'Message',
+    fMsgPh:         r ? 'Описание акции...' : 'Offer description...',
+    fImage:         r ? 'URL изображения' : 'Image URL',
+    imageHint:      r ? 'Рекомендуется 1200×400px (3:1).' : 'Recommended 1200×400px (3:1).',
+    fTarget:        r ? 'Применяется к' : 'Applies to',
+    targetAll:      r ? 'Всем товарам' : 'All products',
+    targetPlans:    r ? 'Тарифам' : 'Plans',
+    targetIndicators: r ? 'Индикаторам' : 'Indicators',
+    targetChannels: r ? 'Каналам' : 'Channels',
+    fEnds:          r ? 'Конец акции' : 'Ends at',
+    noExpiry:       r ? 'Без ограничения по времени' : 'No expiry',
+    fDiscounts:     r ? 'Скидки по периодам' : 'Period discounts',
+    discountHint:   r ? '0 = без скидки для этого периода' : '0 = no discount for this period',
+    mo:             r ? 'мес' : 'mo',
+    fLanding:       r ? 'Показывать на лендинге' : 'Show on landing',
+    fDashboard:     r ? 'Показывать в ЛК' : 'Show in dashboard',
+    fActive:        r ? 'Активен сразу' : 'Active immediately',
+    save:           r ? 'Сохранить' : 'Save',
+    cancel:         r ? 'Отмена' : 'Cancel',
+  }
+})
+</script>
 
 <style lang="scss" scoped>
 .admin-banners { max-width: 920px; }
@@ -232,7 +281,6 @@ async function save() {
 .btn-icon { width: 34px; height: 34px; border: 1px solid var(--border); background: var(--surface); border-radius: 8px; cursor: pointer; font-size: 14px; transition: all 0.2s; &:hover { border-color: var(--border-2); } &--danger:hover { border-color: rgba(239,68,68,0.5); } }
 .empty-state { padding: 48px; text-align: center; color: var(--text-3); font-size: 14px; background: var(--surface); border: 1px dashed var(--border); border-radius: 14px; }
 
-/* Modal */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 1000; display: flex; align-items: flex-start; justify-content: center; padding: 40px 20px; overflow-y: auto; }
 .modal-card {
   background: var(--bg-2); border: 1px solid var(--border); border-radius: 20px;
@@ -244,18 +292,14 @@ async function save() {
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .field-hint { font-size: 11px; color: var(--text-3); margin-top: 4px; line-height: 1.5; }
 .inp { width: 100%; padding: 11px 14px; background: var(--bg-3,#18181c); border: 1px solid var(--border-2); border-radius: 10px; color: var(--text); font-size: 14px; outline: none; font-family: inherit; transition: border-color 0.2s; &:focus { border-color: var(--accent); } &--ta { resize: vertical; min-height: 80px; line-height: 1.6; } &--xs { width: 56px; text-align: center; padding: 8px 6px; } }
-
 .discounts-grid { display: flex; gap: 14px; flex-wrap: wrap; }
 .disc-cell { display: flex; flex-direction: column; align-items: center; gap: 5px; }
 .disc-period { font-size: 11px; color: var(--text-3); font-weight: 700; font-family: 'Montserrat',sans-serif; }
 .disc-inp-wrap { display: flex; align-items: center; gap: 4px; }
 .disc-pct { font-size: 12px; color: var(--text-3); }
-
 .img-preview { margin-top: 10px; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); img { width: 100%; max-height: 180px; object-fit: cover; display: block; } }
-
 .form-checks { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 20px; }
 .check-label { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-2); cursor: pointer; input { accent-color: var(--accent); width: 15px; height: 15px; } }
-
 .form-error { padding: 10px 14px; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); border-radius: 8px; font-size: 13px; color: #f87171; margin-bottom: 14px; }
 .modal-actions { display: flex; gap: 10px; }
 .btn-save { flex: 1; padding: 12px; background: var(--accent); color: #0a0a0b; border: none; border-radius: 10px; font-family: 'Montserrat',sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; &:disabled { opacity: 0.5; cursor: not-allowed; } }
