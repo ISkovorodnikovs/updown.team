@@ -16,8 +16,10 @@ export class AuthController {
 
   @Post('register')
   @Throttle({ default: { ttl: 60000, limit: 5 } })
-  register(@Body() dto: RegisterDto) {
-    return this.authService.register(dto.email, dto.code, dto.password);
+  register(@Body() dto: RegisterDto, @Query('ref') refQuery?: string) {
+    // Реф-код может прийти либо в query (?ref=CODE), либо в теле запроса
+    const refCode = refQuery || dto.refCode;
+    return this.authService.register(dto.email, dto.code, dto.password, refCode);
   }
 
   @Post('login')

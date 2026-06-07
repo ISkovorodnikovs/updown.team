@@ -109,7 +109,6 @@ export const subscriptionsApi = {
   getMyHistory: () => api.get('/subscriptions/my/history'),
   getMyTransactions: () => api.get('/subscriptions/my/transactions'),
   getActivePlan: () => api.get('/subscriptions/my/active-plan'),
-  pay: (planId) => api.post('/subscriptions/pay', { planId }),
   // Admin
   grant: (data) => api.post('/subscriptions/admin/grant', data),
   getAll: (params) => api.get('/subscriptions/admin/all', { params }),

@@ -123,29 +123,5 @@ export class SubscriptionsService {
     return subs.map(s => ({ ...s, user: s.user ? { ...s.user, passwordHash: undefined } : null }));
   }
 
-  // === Заглушка для оплаты через Heleket ===
-  async initiatePayment(userId: string, planId: string) {
-    const plan = await this.planRepo.findOne({ where: { id: planId } });
-    if (!plan) throw new NotFoundException('Plan not found');
-
-    // Создаём pending транзакцию
-    const tx = await this.txRepo.save({
-      userId,
-      planId,
-      amount: plan.price,
-      currency: 'USDT',
-      status: TransactionStatus.PENDING,
-      description: `Оплата тарифа ${plan.name}`,
-    });
-
-    // TODO: интеграция с Heleket
-    return {
-      transactionId: tx.id,
-      amount: plan.price,
-      currency: 'USDT',
-      status: 'pending',
-      message: 'Оплата временно недоступна. Свяжитесь с поддержкой для активации тарифа.',
-      // paymentUrl: 'https://heleket.com/pay/...' // будет после интеграции
-    };
-  }
+  // === Управление статусом подписок (истечение) — см. cron в payment.service ===
 }

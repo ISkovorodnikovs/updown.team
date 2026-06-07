@@ -4,6 +4,7 @@ import {
   MinLength,
   MaxLength,
   IsNumberString,
+  IsOptional,
   Length,
 } from 'class-validator';
 
@@ -23,6 +24,12 @@ export class RegisterDto {
   @MinLength(8)
   @MaxLength(64)
   password: string;
+
+  // Реферальный код (опционально). Может прийти как поле тела или ?ref= в query.
+  @IsOptional()
+  @IsString()
+  @MaxLength(32)
+  refCode?: string;
 }
 
 export class LoginDto {

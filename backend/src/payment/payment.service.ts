@@ -1,7 +1,7 @@
 import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, LessThan } from 'typeorm';
+import { Repository, LessThan, DataSource } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import * as crypto from 'crypto';
 import axios from 'axios';
@@ -12,12 +12,14 @@ import { Plan } from '../database/entities/plan.entity';
 import { ShopProduct } from '../database/entities/shop-product.entity';
 import { ReferralEarning } from '../database/entities/referral-earning.entity';
 import { Subscription, SubscriptionStatus } from '../database/entities/subscription.entity';
+import { UserProduct, UserProductStatus } from '../database/entities/user-product.entity';
 import { TelegramMainService } from '../telegram/telegram-main.service';
 
 const REFERRAL_PERCENT = 20;
 
 // Месяцы → скидка (базовая, если нет баннера)
 const PERIOD_DISCOUNTS: Record<number, number> = { 1: 0, 3: 3, 6: 5, 12: 15 };
+const ALLOWED_PERIODS = [1, 3, 6, 12];
 
 @Injectable()
 export class PaymentService {
@@ -31,6 +33,8 @@ export class PaymentService {
     @InjectRepository(ShopProduct) private productRepo: Repository<ShopProduct>,
     @InjectRepository(ReferralEarning) private refEarningRepo: Repository<ReferralEarning>,
     @InjectRepository(Subscription) private subRepo: Repository<Subscription>,
+    @InjectRepository(UserProduct) private userProductRepo: Repository<UserProduct>,
+    private dataSource: DataSource,
     private telegramService: TelegramMainService,
   ) {}
 
@@ -45,6 +49,14 @@ export class PaymentService {
     bannerDiscountPercent?: number;
   }) {
     const { userId, type, planId, shopProductId, periodMonths = 1 } = dto;
+
+    if (!ALLOWED_PERIODS.includes(periodMonths)) {
+      throw new BadRequestException('Invalid period. Allowed: 1, 3, 6, 12 months');
+    }
+    const bannerDiscount = dto.bannerDiscountPercent ?? 0;
+    if (bannerDiscount < 0 || bannerDiscount > 90) {
+      throw new BadRequestException('Invalid discount');
+    }
 
     const user = await this.userRepo.findOne({ where: { id: userId } });
     if (!user) throw new BadRequestException('User not found');
@@ -68,7 +80,7 @@ export class PaymentService {
 
     // Считаем скидку: берём максимум из баннерной и периодной
     const periodDiscount = PERIOD_DISCOUNTS[periodMonths] ?? 0;
-    const discountPercent = Math.max(periodDiscount, dto.bannerDiscountPercent ?? 0);
+    const discountPercent = Math.max(periodDiscount, bannerDiscount);
     const originalAmount = +(basePrice * periodMonths).toFixed(2);
     const amount = +(originalAmount * (1 - discountPercent / 100)).toFixed(2);
 
@@ -161,11 +173,30 @@ export class PaymentService {
       }
 
       const status = data.status as TransactionStatus;
+
+      // Идемпотентность: если транзакция уже была успешно проведена — не активируем повторно
+      const alreadyPaid = tx.status === TransactionStatus.PAID || tx.status === TransactionStatus.PAID_OVER;
       await this.txRepo.update(tx.id, { status, webhookPayload: data });
 
       const userTag = `[${tx.user?.email || tx.userId}]`;
 
+      if ((status === TransactionStatus.PAID || status === TransactionStatus.PAID_OVER) && alreadyPaid) {
+        this.logger.log(`Webhook повтор для уже оплаченной ${tx.orderId} — пропуск активации`);
+        return { ok: true };
+      }
+
       if (status === TransactionStatus.PAID || status === TransactionStatus.PAID_OVER) {
+        // Защита от недоплаты: сверяем фактически оплаченную сумму с ожидаемой
+        const paidAmount = parseFloat(data.payment_amount ?? data.amount ?? '0');
+        const expected = Number(tx.amount);
+        if (status === TransactionStatus.PAID && paidAmount > 0 && paidAmount + 0.01 < expected) {
+          this.logger.warn(`Недоплата order=${tx.orderId}: ожидалось ${expected}, получено ${paidAmount}`);
+          await this.telegramService.sendMessage(
+            `⚠️ Недоплата — доступ НЕ выдан\n👤 ${userTag}\n💵 ожидалось ${expected}, получено ${paidAmount}\n🆔 ${tx.orderId}`,
+          );
+          return { ok: true };
+        }
+
         await this.onPaymentSuccess(tx, data);
         const emoji = status === TransactionStatus.PAID_OVER ? '💰+' : '✅';
         await this.telegramService.sendMessage(
@@ -205,12 +236,11 @@ export class PaymentService {
   private async onPaymentSuccess(tx: Transaction, webhookData: any) {
     const periodMonths = tx.periodMonths || 1;
     const durationDays = periodMonths * 30;
+    const startsAt = new Date();
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + durationDays);
 
     if (tx.type === TransactionType.SUBSCRIPTION && tx.planId) {
-      const startsAt = new Date();
-      const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + durationDays);
-
       await this.subRepo.save(
         this.subRepo.create({
           userId: tx.userId,
@@ -222,17 +252,50 @@ export class PaymentService {
           notes: `Heleket order ${tx.orderId}`,
         }),
       );
-    }
-    // TODO: для indicator/channel — аналогичная логика когда появится UserProduct entity
+    } else if (
+      (tx.type === TransactionType.INDICATOR || tx.type === TransactionType.CHANNEL) &&
+      tx.shopProductId
+    ) {
+      // Выдача товара (индикатор / сигнальный канал)
+      // Если уже есть активный доступ — продлеваем от текущей даты окончания
+      const existing = await this.userProductRepo.findOne({
+        where: {
+          userId: tx.userId,
+          shopProductId: tx.shopProductId,
+          status: UserProductStatus.ACTIVE,
+        },
+        order: { expiresAt: 'DESC' },
+      });
 
-    // Начисляем реферальный бонус
+      if (existing && new Date(existing.expiresAt) > startsAt) {
+        const newExpiry = new Date(existing.expiresAt);
+        newExpiry.setDate(newExpiry.getDate() + durationDays);
+        await this.userProductRepo.update(existing.id, { expiresAt: newExpiry });
+      } else {
+        await this.userProductRepo.save(
+          this.userProductRepo.create({
+            userId: tx.userId,
+            shopProductId: tx.shopProductId,
+            status: UserProductStatus.ACTIVE,
+            startsAt,
+            expiresAt,
+            grantedBy: 'payment',
+            notes: `Heleket order ${tx.orderId}`,
+          }),
+        );
+      }
+    }
+
+    // Начисляем реферальный бонус (для любого платного типа)
     await this.processReferralBonus(tx);
   }
 
   // ─── Реферальный бонус ────────────────────────────────────────────────────
 
   async processReferralBonus(tx: Transaction, customPercent?: number) {
-    if (tx.type !== TransactionType.SUBSCRIPTION) return;
+    // Бонус начисляется за любую реальную оплату (подписки и товары)
+    if (Number(tx.amount) <= 0) return;
+    if (tx.type === TransactionType.ADMIN_GRANT || tx.type === TransactionType.REFERRAL) return;
 
     const user = tx.user || await this.userRepo.findOne({ where: { id: tx.userId } });
     if (!user?.referredBy) return;
@@ -242,20 +305,28 @@ export class PaymentService {
 
     const percent = customPercent ?? REFERRAL_PERCENT;
     const bonusAmount = +(Number(tx.amount) * percent / 100).toFixed(2);
+    if (bonusAmount <= 0) return;
 
-    await this.refEarningRepo.save(
-      this.refEarningRepo.create({
-        referrerId: referrer.id,
-        fromUserId: tx.userId,
-        sourceTransactionId: tx.id,
-        amount: bonusAmount,
-        percent,
-        isManual: false,
-      }),
-    );
+    // Атомарно: запись начисления + инкремент баланса в одной транзакции БД
+    await this.dataSource.transaction(async (manager) => {
+      // Защита от двойного начисления по одной и той же транзакции-основанию
+      const existing = await manager.findOne(ReferralEarning, {
+        where: { sourceTransactionId: tx.id },
+      });
+      if (existing) return;
 
-    await this.userRepo.update(referrer.id, {
-      referralBalance: () => `"referralBalance" + ${bonusAmount}`,
+      await manager.save(
+        manager.create(ReferralEarning, {
+          referrerId: referrer.id,
+          fromUserId: tx.userId,
+          sourceTransactionId: tx.id,
+          amount: bonusAmount,
+          percent,
+          isManual: false,
+        }),
+      );
+
+      await manager.increment(User, { id: referrer.id }, 'referralBalance', bonusAmount);
     });
 
     this.logger.log(`💰 Реферальный бонус ${bonusAmount} USDT → ${referrer.email}`);

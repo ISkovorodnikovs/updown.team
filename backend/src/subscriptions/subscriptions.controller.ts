@@ -31,11 +31,6 @@ export class SubscriptionsController {
     return this.subService.getActivePlan(user.id);
   }
 
-  @Post('pay')
-  initiatePayment(@CurrentUser() user: any, @Body() dto: { planId: string }) {
-    return this.subService.initiatePayment(user.id, dto.planId);
-  }
-
   // === ADMIN ===
   @Post('admin/grant')
   @UseGuards(RolesGuard)

@@ -8,11 +8,12 @@ import { Plan } from '../database/entities/plan.entity';
 import { ShopProduct } from '../database/entities/shop-product.entity';
 import { ReferralEarning } from '../database/entities/referral-earning.entity';
 import { Subscription } from '../database/entities/subscription.entity';
+import { UserProduct } from '../database/entities/user-product.entity';
 import { TelegramModule } from '../telegram/telegram.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Transaction, User, Plan, ShopProduct, ReferralEarning, Subscription]),
+    TypeOrmModule.forFeature([Transaction, User, Plan, ShopProduct, ReferralEarning, Subscription, UserProduct]),
     TelegramModule,
   ],
   controllers: [PaymentController],
