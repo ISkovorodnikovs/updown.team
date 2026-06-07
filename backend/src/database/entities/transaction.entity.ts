@@ -62,7 +62,7 @@ export class Transaction {
   @Column({ type: 'enum', enum: TransactionStatus, default: TransactionStatus.PENDING })
   status: TransactionStatus;
 
-  @Column({ type: 'enum', enum: TransactionType, enumName: 'transactions_type_enum', default: TransactionType.SUBSCRIPTION })
+  @Column({ type: 'enum', enum: TransactionType, default: TransactionType.SUBSCRIPTION })
   type: TransactionType;
 
   @Column({ nullable: true, unique: true })

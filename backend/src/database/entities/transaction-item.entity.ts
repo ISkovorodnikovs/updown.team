@@ -14,7 +14,9 @@ export class TransactionItem {
   @JoinColumn({ name: 'transactionId' })
   transaction: Transaction;
 
-  @Column({ type: 'enum', enum: TransactionType, enumName: 'transaction_item_type_enum' })
+  // Храним как varchar (значения совпадают с TransactionType), чтобы не плодить
+  // второй Postgres enum-тип на базе того же TS-enum — это вызывало сбой synchronize.
+  @Column({ type: 'varchar', length: 32 })
   type: TransactionType;
 
   @Column({ nullable: true })
