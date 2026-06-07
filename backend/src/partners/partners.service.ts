@@ -258,4 +258,22 @@ export class PartnersService {
     if (!partner) return [];
     return this.listChannels(partner.id);
   }
+
+  // Партнёр: задать/изменить шаблон сообщения своего канала
+  async updateChannelTemplate(userId: string, channelId: string, template: string) {
+    const partner = await this.partnerRepo.findOne({ where: { userId } });
+    if (!partner) throw new ForbiddenException('Not a partner');
+    const channel = await this.channelRepo.findOne({ where: { id: channelId } });
+    if (!channel || channel.partnerId !== partner.id) {
+      throw new ForbiddenException('Этот канал вам не принадлежит');
+    }
+    channel.messageTemplate = (template || '').slice(0, 4000);
+    await this.channelRepo.save(channel);
+
+    // Уведомляем админа: партнёр изменил шаблон (живое управление)
+    await this.telegramMain.sendMessage(
+      `✏️ Партнёр изменил шаблон канала «${channel.name}»`,
+    ).catch(() => {});
+    return channel;
+  }
 }

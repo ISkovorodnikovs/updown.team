@@ -57,6 +57,7 @@ export const partnersApi = {
   apply: (data) => api.post('/partners/apply', data),
   myApplication: () => api.get('/partners/my-application'),
   myChannels: () => api.get('/partners/my-channels'),
+  updateTemplate: (channelId, template) => api.put(`/partners/my-channels/${channelId}/template`, { template }),
   getAll: (params) => api.get('/partners', { params }),
   review: (id, data) => api.put(`/partners/${id}/review`, data),
   // Admin
@@ -129,6 +130,8 @@ export const subscriptionsApi = {
 export const paymentApi = {
   createInvoice: (data) => api.post('/payment/create', data),
   createBatchInvoice: (data) => api.post('/payment/create-batch', data),
+  createChannelInvoice: (data) => api.post('/payment/channel', data),
+  channelPrice: (asset, timeframe) => api.get('/payment/channel/price', { params: { asset, timeframe } }),
 }
 
 // Referral

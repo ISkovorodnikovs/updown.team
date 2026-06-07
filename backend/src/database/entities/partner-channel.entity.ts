@@ -52,6 +52,10 @@ export class PartnerChannel {
   @Column({ default: false })
   isActive: boolean;
 
+  // Шаблон оформления сигнала в канале партнёра (с плейсхолдерами)
+  @Column({ type: 'text', nullable: true })
+  messageTemplate: string;
+
   @Column({ nullable: true })
   notes: string;
 

@@ -86,6 +86,18 @@ export class Transaction {
   @Column({ type: 'jsonb', nullable: true })
   webhookPayload: any;
 
+  // Метаданные оплаты подключения партнёрского канала (self-service).
+  // Если заполнено — после оплаты создаётся PartnerChannel «ожидает настройки».
+  @Column({ type: 'jsonb', nullable: true })
+  channelMeta: {
+    partnerId: string;
+    name: string;
+    asset: string;
+    timeframe: string;
+    direction: string;
+    durationDays: number;
+  } | null;
+
   // Батч-покупка корзины: true если в транзакции несколько позиций (см. items)
   @Column({ default: false })
   isBatch: boolean;

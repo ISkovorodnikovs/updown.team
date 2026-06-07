@@ -14,6 +14,8 @@ import { ShopProduct } from '../database/entities/shop-product.entity';
 import { ReferralEarning } from '../database/entities/referral-earning.entity';
 import { Subscription, SubscriptionStatus } from '../database/entities/subscription.entity';
 import { UserProduct, UserProductStatus } from '../database/entities/user-product.entity';
+import { PartnerChannel } from '../database/entities/partner-channel.entity';
+import { Partner } from '../database/entities/partner.entity';
 import { TelegramMainService } from '../telegram/telegram-main.service';
 
 const REFERRAL_PERCENT = 20;
@@ -21,6 +23,12 @@ const REFERRAL_PERCENT = 20;
 // Месяцы → скидка (базовая, если нет баннера)
 const PERIOD_DISCOUNTS: Record<number, number> = { 1: 0, 3: 3, 6: 5, 12: 15 };
 const ALLOWED_PERIODS = [1, 3, 6, 12];
+
+// Ценообразование white-label каналов
+const CHANNEL_BASE_PRICE = 500;
+const GOLD_SURCHARGE = 200;
+const SCALP_SURCHARGE = 200;
+const SCALP_TIMEFRAMES = ['M1', 'M3', 'M5', 'M10'];
 
 @Injectable()
 export class PaymentService {
@@ -36,6 +44,8 @@ export class PaymentService {
     @InjectRepository(ReferralEarning) private refEarningRepo: Repository<ReferralEarning>,
     @InjectRepository(Subscription) private subRepo: Repository<Subscription>,
     @InjectRepository(UserProduct) private userProductRepo: Repository<UserProduct>,
+    @InjectRepository(PartnerChannel) private partnerChannelRepo: Repository<PartnerChannel>,
+    @InjectRepository(Partner) private partnerRepo: Repository<Partner>,
     private dataSource: DataSource,
     private telegramService: TelegramMainService,
   ) {}
@@ -228,6 +238,67 @@ export class PaymentService {
     };
   }
 
+  // ─── Self-service оплата подключения партнёрского канала ────────────────────
+
+  calcChannelPrice(asset: string, timeframe: string, discountPercent = 0) {
+    let base = CHANNEL_BASE_PRICE;
+    if (asset === 'gold') base += GOLD_SURCHARGE;
+    if (SCALP_TIMEFRAMES.includes(timeframe)) base += SCALP_SURCHARGE;
+    const final = +(base * (1 - (discountPercent || 0) / 100)).toFixed(2);
+    return { base, final };
+  }
+
+  async createChannelInvoice(dto: {
+    userId: string;
+    name: string;
+    asset?: string;
+    timeframe?: string;
+    direction?: string;
+    durationMonths?: number;
+  }) {
+    const partner = await this.partnerRepo.findOne({ where: { userId: dto.userId } });
+    if (!partner) throw new BadRequestException('Только партнёр может подключать каналы');
+
+    const asset = dto.asset || 'crypto';
+    const timeframe = dto.timeframe || 'M15';
+    const direction = dto.direction || 'both';
+    const months = ALLOWED_PERIODS.includes(dto.durationMonths || 1) ? (dto.durationMonths || 1) : 1;
+    if (!dto.name || dto.name.length > 120) throw new BadRequestException('Некорректное название канала');
+
+    const { final: monthly } = this.calcChannelPrice(asset, timeframe, 0);
+    // Цена за период с учётом периодной скидки (как у тарифов)
+    const periodDiscount = PERIOD_DISCOUNTS[months] ?? 0;
+    const originalAmount = +(monthly * months).toFixed(2);
+    const amount = +(originalAmount * (1 - periodDiscount / 100)).toFixed(2);
+
+    const orderId = uuidv4();
+    const tx = await this.txRepo.save(
+      this.txRepo.create({
+        userId: dto.userId,
+        amount,
+        originalAmount,
+        discountPercent: periodDiscount,
+        periodMonths: months,
+        currency: 'USDT',
+        status: TransactionStatus.PENDING,
+        type: TransactionType.CHANNEL, // переиспользуем существующий enum-тип
+        orderId,
+        description: `Канал «${dto.name}» [${asset}/${timeframe}/${direction}] × ${months} мес.`,
+        channelMeta: {
+          partnerId: partner.id,
+          name: dto.name,
+          asset,
+          timeframe,
+          direction,
+          durationDays: months * 30,
+        },
+      }),
+    );
+
+    const paymentUrl = await this.createHeleketInvoice(dto.userId, amount, orderId, 'partner_channel');
+    return { transactionId: tx.id, orderId, amount, originalAmount, monthly, paymentUrl };
+  }
+
   // ─── Создать инвойс в Heleket ──────────────────────────────────────────────
 
   private async createHeleketInvoice(userId: string, amount: number, orderId: string, type: string): Promise<string> {
@@ -352,6 +423,39 @@ export class PaymentService {
   // ─── Активация после успешной оплаты ─────────────────────────────────────
 
   private async onPaymentSuccess(tx: Transaction, webhookData: any) {
+    // Self-service оплата партнёрского канала
+    if (tx.channelMeta) {
+      const cm = tx.channelMeta;
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + (cm.durationDays || 30));
+      const channel = this.partnerChannelRepo.create({
+        partnerId: cm.partnerId,
+        name: cm.name,
+        asset: cm.asset,
+        timeframe: cm.timeframe,
+        direction: cm.direction,
+        price: Number(tx.amount),
+        discountPercent: 0,
+        paidAt: new Date(),
+        expiresAt,
+        // Ключевое правило: signalsChannelId ещё нет → канал НЕактивен (ожидает настройки)
+        isActive: false,
+        notes: `Оплачен self-service, order ${tx.orderId}`,
+      });
+      await this.partnerChannelRepo.save(channel);
+
+      await this.telegramService.sendMessage(
+        `🟣 Оплачено подключение канала (нужна настройка!)\n` +
+        `🏷 ${cm.name} [${cm.asset}/${cm.timeframe}/${cm.direction}]\n` +
+        `💵 ${tx.amount} USDT\n` +
+        `👤 ${tx.user?.email || tx.userId}\n` +
+        `⚙️ Впишите signalsChannelId в админке, чтобы активировать.`,
+      ).catch(() => {});
+
+      await this.processReferralBonus(tx);
+      return;
+    }
+
     if (tx.isBatch) {
       // Батч: выдаём каждую позицию корзины
       const items = tx.items?.length

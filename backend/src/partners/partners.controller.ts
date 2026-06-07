@@ -77,6 +77,17 @@ export class PartnersController {
     return this.partnersService.myChannels(user.id);
   }
 
+  // Партнёр — задать шаблон своего канала
+  @Put('my-channels/:channelId/template')
+  @Roles(UserRole.PARTNER, UserRole.ADMIN, UserRole.OWNER)
+  updateTemplate(
+    @CurrentUser() user: any,
+    @Param('channelId') channelId: string,
+    @Body() dto: { template: string },
+  ) {
+    return this.partnersService.updateChannelTemplate(user.id, channelId, dto.template);
+  }
+
   @Get()
   @Roles(UserRole.OWNER, UserRole.ADMIN)
   getAll(
