@@ -163,3 +163,9 @@ export const shopApi = {
   update: (id, data) => api.put(`/shop/products/${id}`, data),
   remove: (id) => api.delete(`/shop/products/${id}`),
 }
+
+// Analytics (white-label signals)
+export const analyticsApi = {
+  myReport: (channelId, from, to) => api.get('/analytics/my', { params: { channelId, from, to } }),
+  adminReport: (channelId, from, to) => api.get('/analytics/admin', { params: { channelId, from, to } }),
+}

@@ -18,6 +18,7 @@ import { PaymentModule } from './payment/payment.module';
 import { ReferralModule } from './referral/referral.module';
 import { BannersModule } from './banners/banners.module';
 import { ShopModule } from './shop/shop.module';
+import { AnalyticsModule } from './analytics/analytics.module';
 import databaseConfig from './config/database.config';
 
 @Module({
@@ -65,6 +66,7 @@ import databaseConfig from './config/database.config';
     ReferralModule,
     BannersModule,
     ShopModule,
+    AnalyticsModule,
   ],
 })
 export class AppModule {}
