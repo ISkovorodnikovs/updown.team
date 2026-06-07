@@ -1,7 +1,11 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ShopService } from './shop.service';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { RolesGuard } from '../common/guards/roles.guard';
+import { Roles } from '../common/decorators/roles.decorator';
+import { UserRole } from '../database/entities/user.entity';
+import { CreateShopProductDto, UpdateShopProductDto } from './dto/shop-product.dto';
 
 @Controller('shop')
 export class ShopController {
@@ -27,10 +31,34 @@ export class ShopController {
     return this.shopService.getMyProducts(user.id);
   }
 
-  // Полный каталог без гейтинга (для админ-витрин).
-  @Get('all')
-  @UseGuards(AuthGuard('jwt'))
+  // ─── Админ ─────────────────────────────────────────────────────────────────
+
+  // Полный каталог (включая деактивированные) — для админ-витрины
+  @Get('admin/all')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.OWNER)
   getAll() {
     return this.shopService.getAll();
+  }
+
+  @Post('products')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.OWNER)
+  createProduct(@Body() dto: CreateShopProductDto) {
+    return this.shopService.createProduct(dto);
+  }
+
+  @Put('products/:id')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.OWNER)
+  updateProduct(@Param('id') id: string, @Body() dto: UpdateShopProductDto) {
+    return this.shopService.updateProduct(id, dto);
+  }
+
+  @Delete('products/:id')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.OWNER)
+  removeProduct(@Param('id') id: string) {
+    return this.shopService.softDeleteProduct(id);
   }
 }

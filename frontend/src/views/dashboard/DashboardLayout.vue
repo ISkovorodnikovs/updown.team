@@ -51,6 +51,8 @@
           <div class="nav-section nav-section--admin" v-show="!collapsed">Admin</div>
           <div class="nav-group">
             <NavItem to="/dashboard/admin/users" :icon="icons.users" :label="t.nav.users" :collapsed="collapsed" />
+            <NavItem to="/dashboard/admin/plans" :icon="icons.adminSubs" :label="t.nav.adminPlans" :collapsed="collapsed" />
+            <NavItem to="/dashboard/admin/shop" :icon="icons.banners" :label="t.nav.adminShop" :collapsed="collapsed" />
             <NavItem to="/dashboard/admin/subscriptions" :icon="icons.adminSubs" :label="t.nav.adminSubs" :collapsed="collapsed" />
             <NavItem to="/dashboard/admin/banners" :icon="icons.banners" :label="t.nav.banners" :collapsed="collapsed" />
             <NavItem to="/dashboard/admin/referral" :icon="icons.referral" :label="t.nav.referral" :collapsed="collapsed" />
@@ -189,7 +191,7 @@ const translations = {
       analytics: 'Аналитика', copytrading: 'Копитрейдинг', education: 'Обучение',
       business: 'Бизнес', whitelabel: 'White Label', development: 'Разработка', affiliate: 'Партнёрка',
       account: 'Аккаунт', finances: 'Финансы', support: 'Поддержка', profile: 'Профиль',
-      users: 'Пользователи', adminSubs: 'Подписки', banners: 'Баннеры', referral: 'Рефералы', allTickets: 'Все тикеты', logs: 'Логи',
+      users: 'Пользователи', adminPlans: 'Тарифы', adminShop: 'Магазин', adminSubs: 'Подписки', banners: 'Баннеры', referral: 'Рефералы', allTickets: 'Все тикеты', logs: 'Логи',
     },
     chartsLink: 'Chart Platform',
     cart: 'Корзина',
@@ -203,7 +205,7 @@ const translations = {
       '/dashboard/whitelabel': 'White Label', '/dashboard/development': 'Разработка',
       '/dashboard/affiliate': 'Партнёрка', '/dashboard/finances': 'Финансы',
       '/dashboard/support': 'Поддержка', '/dashboard/profile': 'Профиль',
-      '/dashboard/admin/users': 'Пользователи', '/dashboard/admin/subscriptions': 'Управление подписками',
+      '/dashboard/admin/users': 'Пользователи', '/dashboard/admin/subscriptions': 'Управление подписками', '/dashboard/admin/plans': 'Управление тарифами', '/dashboard/admin/shop': 'Управление магазином',
       '/dashboard/admin/banners': 'Конструктор баннеров', '/dashboard/admin/referral': 'Управление рефералами',
     }
   },
@@ -214,7 +216,7 @@ const translations = {
       analytics: 'Analytics', copytrading: 'Copy Trading', education: 'Education',
       business: 'Business', whitelabel: 'White Label', development: 'Development', affiliate: 'Affiliate',
       account: 'Account', finances: 'Finances', support: 'Support', profile: 'Profile',
-      users: 'Users', adminSubs: 'Subscriptions', banners: 'Banners', referral: 'Referrals', allTickets: 'All Tickets', logs: 'Logs',
+      users: 'Users', adminPlans: 'Plans', adminShop: 'Shop', adminSubs: 'Subscriptions', banners: 'Banners', referral: 'Referrals', allTickets: 'All Tickets', logs: 'Logs',
     },
     chartsLink: 'Chart Platform',
     cart: 'Cart',
@@ -228,7 +230,7 @@ const translations = {
       '/dashboard/whitelabel': 'White Label', '/dashboard/development': 'Development',
       '/dashboard/affiliate': 'Affiliate', '/dashboard/finances': 'Finances',
       '/dashboard/support': 'Support', '/dashboard/profile': 'Profile',
-      '/dashboard/admin/users': 'Users', '/dashboard/admin/subscriptions': 'Manage Subscriptions',
+      '/dashboard/admin/users': 'Users', '/dashboard/admin/subscriptions': 'Manage Subscriptions', '/dashboard/admin/plans': 'Manage Plans', '/dashboard/admin/shop': 'Manage Shop',
       '/dashboard/admin/banners': 'Banner Constructor', '/dashboard/admin/referral': 'Referral Management',
     }
   }

@@ -1,8 +1,9 @@
-import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
+import { Injectable, OnModuleInit, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, MoreThan } from 'typeorm';
 import { ShopProduct, ProductType } from '../database/entities/shop-product.entity';
 import { UserProduct, UserProductStatus } from '../database/entities/user-product.entity';
+import { CreateShopProductDto, UpdateShopProductDto } from './dto/shop-product.dto';
 
 const INDICATORS_SEED = [
   {
@@ -170,6 +171,29 @@ export class ShopService implements OnModuleInit {
 
   async getAll() {
     return this.productRepo.find({ order: { type: 'ASC', sortOrder: 'ASC' } });
+  }
+
+  // ─── Админ CRUD ────────────────────────────────────────────────────────────
+
+  async createProduct(dto: CreateShopProductDto) {
+    const product = this.productRepo.create(dto);
+    return this.productRepo.save(product);
+  }
+
+  async updateProduct(id: string, dto: UpdateShopProductDto) {
+    const product = await this.productRepo.findOne({ where: { id } });
+    if (!product) throw new NotFoundException('Product not found');
+    Object.assign(product, dto);
+    return this.productRepo.save(product);
+  }
+
+  // Мягкое удаление: деактивируем, чтобы не рвать активные доступы пользователей
+  async softDeleteProduct(id: string) {
+    const product = await this.productRepo.findOne({ where: { id } });
+    if (!product) throw new NotFoundException('Product not found');
+    product.isActive = false;
+    await this.productRepo.save(product);
+    return { id, isActive: false, deleted: true };
   }
 
   // ─── Гейтинг доступа ───────────────────────────────────────────────────────

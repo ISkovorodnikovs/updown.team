@@ -1,7 +1,8 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, OnModuleInit, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Plan, PlanType } from '../database/entities/plan.entity';
+import { CreatePlanDto, UpdatePlanDto } from './dto/plan.dto';
 
 @Injectable()
 export class PlansService implements OnModuleInit {
@@ -37,16 +38,38 @@ export class PlansService implements OnModuleInit {
     ]);
   }
 
+  // Витрина — только активные
   findAll() {
     return this.planRepo.find({ where: { isActive: true }, order: { sortOrder: 'ASC' } });
+  }
+
+  // Для админа — все, включая деактивированные
+  findAllAdmin() {
+    return this.planRepo.find({ order: { sortOrder: 'ASC' } });
   }
 
   findOne(id: string) {
     return this.planRepo.findOne({ where: { id } });
   }
 
-  // Для админа — создать/обновить тариф
-  async upsert(data: Partial<Plan>) {
-    return this.planRepo.save(data);
+  async create(dto: CreatePlanDto) {
+    const plan = this.planRepo.create(dto);
+    return this.planRepo.save(plan);
+  }
+
+  async update(id: string, dto: UpdatePlanDto) {
+    const plan = await this.planRepo.findOne({ where: { id } });
+    if (!plan) throw new NotFoundException('Plan not found');
+    Object.assign(plan, dto);
+    return this.planRepo.save(plan);
+  }
+
+  // Мягкое удаление: деактивируем, чтобы не рвать существующие подписки.
+  async softDelete(id: string) {
+    const plan = await this.planRepo.findOne({ where: { id } });
+    if (!plan) throw new NotFoundException('Plan not found');
+    plan.isActive = false;
+    await this.planRepo.save(plan);
+    return { id, isActive: false, deleted: true };
   }
 }

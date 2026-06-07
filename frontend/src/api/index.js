@@ -99,8 +99,11 @@ export const adminApi = {
 export const plansApi = {
   getAll: () => api.get('/plans'),
   getOne: (id) => api.get(`/plans/${id}`),
+  // Admin
+  getAllAdmin: () => api.get('/plans/admin/all'),
   create: (data) => api.post('/plans', data),
   update: (id, data) => api.put(`/plans/${id}`, data),
+  remove: (id) => api.delete(`/plans/${id}`),
 }
 
 // Subscriptions
@@ -146,5 +149,9 @@ export const shopApi = {
   getIndicators: () => api.get('/shop/indicators'),
   getChannels: () => api.get('/shop/channels'),
   getMy: () => api.get('/shop/my'),
-  getAll: () => api.get('/shop/all'),
+  // Admin
+  getAll: () => api.get('/shop/admin/all'),
+  create: (data) => api.post('/shop/products', data),
+  update: (id, data) => api.put(`/shop/products/${id}`, data),
+  remove: (id) => api.delete(`/shop/products/${id}`),
 }
