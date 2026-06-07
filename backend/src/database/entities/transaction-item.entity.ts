@@ -14,7 +14,7 @@ export class TransactionItem {
   @JoinColumn({ name: 'transactionId' })
   transaction: Transaction;
 
-  @Column({ type: 'enum', enum: TransactionType })
+  @Column({ type: 'enum', enum: TransactionType, enumName: 'transaction_item_type_enum' })
   type: TransactionType;
 
   @Column({ nullable: true })
