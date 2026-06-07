@@ -19,6 +19,7 @@ import { ReferralModule } from './referral/referral.module';
 import { BannersModule } from './banners/banners.module';
 import { ShopModule } from './shop/shop.module';
 import { AnalyticsModule } from './analytics/analytics.module';
+import { ExpiryModule } from './expiry/expiry.module';
 import databaseConfig from './config/database.config';
 
 @Module({
@@ -67,6 +68,7 @@ import databaseConfig from './config/database.config';
     BannersModule,
     ShopModule,
     AnalyticsModule,
+    ExpiryModule,
   ],
 })
 export class AppModule {}
