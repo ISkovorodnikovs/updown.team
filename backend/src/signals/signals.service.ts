@@ -1,4 +1,4 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -10,16 +10,22 @@ import { parseSignal, parseOutcome } from './signals-parser';
 const TG_API = 'https://api.telegram.org';
 
 @Injectable()
-export class SignalsService implements OnModuleInit {
+export class SignalsService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(SignalsService.name);
   private webhookSecret: string | null = null;
+  private botToken: string | null = null;
+  private webhookUrl: string | null = null;
+  private watchdog: NodeJS.Timeout | null = null;
 
   constructor(
     private config: ConfigService,
     @InjectRepository(DailySignal) private signalRepo: Repository<DailySignal>,
   ) {}
 
-  // Регистрируем webhook для SIGNALS_BOT при старте
+  onModuleDestroy() {
+    if (this.watchdog) clearInterval(this.watchdog);
+  }
+
   async onModuleInit() {
     const token = this.config.get<string>('SIGNALS_BOT');
     const backendUrl = this.config.get<string>('BACKEND_URL');
@@ -27,60 +33,85 @@ export class SignalsService implements OnModuleInit {
       this.logger.warn('[Signals] SIGNALS_BOT или BACKEND_URL не заданы — webhook не активен');
       return;
     }
+    this.botToken = token;
     this.webhookSecret = crypto.createHash('sha256').update(token).digest('hex').slice(0, 32);
-    const url = `${backendUrl}/api/signals/webhook`;
-    try {
-      const { data } = await axios.post(`${TG_API}/bot${token}/setWebhook`, {
-        url,
-        secret_token: this.webhookSecret,
-        allowed_updates: ['message', 'channel_post'],
-        drop_pending_updates: true,
-      }, { timeout: 10000 });
-      if (data.ok) this.logger.log(`[Signals] webhook set → ${url}`);
-      else this.logger.error(`[Signals] setWebhook failed: ${data.description}`);
-    } catch (e) {
-      // Логируем ТЕЛО ответа Telegram — там точная причина (description), а не только статус
-      const tgError = e.response?.data
-        ? JSON.stringify(e.response.data)
-        : e.message;
-      this.logger.error(`[Signals] setWebhook error: ${tgError}`);
+    this.webhookUrl = `${backendUrl}/api/signals/webhook`;
 
-      // Повторная попытка минимальным запросом (как ручной curl, который сработал)
-      try {
-        const { data } = await axios.post(`${TG_API}/bot${token}/setWebhook`, {
-          url,
-          secret_token: this.webhookSecret,
-        }, { timeout: 10000 });
-        if (data.ok) {
-          this.logger.log(`[Signals] webhook set (retry, minimal) → ${url}`);
-        } else {
-          this.logger.error(`[Signals] setWebhook retry failed: ${data.description}`);
+    // Стартовая установка (с ретраями), затем периодический самоконтроль
+    await this.ensureWebhook();
+    // Watchdog: каждые 5 минут проверяем и при необходимости переустанавливаем
+    this.watchdog = setInterval(() => {
+      this.ensureWebhook().catch(() => {});
+    }, 5 * 60 * 1000);
+  }
+
+  // Гарантирует, что webhook установлен на наш URL. Безопасно вызывать много раз.
+  private async ensureWebhook() {
+    if (!this.botToken || !this.webhookUrl) return;
+
+    // Сначала проверяем текущее состояние — если уже стоит наш и без ошибок, не трогаем
+    try {
+      const { data } = await axios.get(`${TG_API}/bot${this.botToken}/getWebhookInfo`, { timeout: 8000 });
+      if (data.ok) {
+        const info = data.result;
+        const ok = info.url === this.webhookUrl && !info.last_error_message;
+        if (ok) {
+          return; // webhook здоров — ничего не делаем
         }
-      } catch (e2) {
-        const tgError2 = e2.response?.data ? JSON.stringify(e2.response.data) : e2.message;
-        this.logger.error(`[Signals] setWebhook retry error: ${tgError2}`);
+        if (info.last_error_message) {
+          this.logger.warn(`[Signals] webhook lastError: ${info.last_error_message} — переустанавливаю`);
+        }
       }
+    } catch {
+      // getWebhookInfo не ответил — всё равно попробуем поставить ниже
     }
 
-    // В любом случае показываем фактическое состояние webhook
-    await this.logWebhookInfo(token);
+    await this.setWebhookWithRetry();
+  }
+
+  // setWebhook с несколькими попытками и нарастающей задержкой (учёт retry_after)
+  private async setWebhookWithRetry(maxAttempts = 4) {
+    if (!this.botToken || !this.webhookUrl) return;
+
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        const { data } = await axios.post(`${TG_API}/bot${this.botToken}/setWebhook`, {
+          url: this.webhookUrl,
+          secret_token: this.webhookSecret,
+          allowed_updates: ['message', 'channel_post'],
+        }, { timeout: 10000 });
+
+        if (data.ok) {
+          this.logger.log(`[Signals] webhook set → ${this.webhookUrl} (попытка ${attempt})`);
+          return;
+        }
+        this.logger.error(`[Signals] setWebhook failed: ${data.description}`);
+      } catch (e) {
+        const body = e.response?.data;
+        const desc = body ? JSON.stringify(body) : e.message;
+        this.logger.error(`[Signals] setWebhook attempt ${attempt} error: ${desc}`);
+
+        // Если Telegram попросил подождать (429) — уважаем retry_after
+        const retryAfter = body?.parameters?.retry_after;
+        if (retryAfter) {
+          await this.sleep((retryAfter + 1) * 1000);
+          continue;
+        }
+      }
+      // Экспоненциальная задержка: 2с, 4с, 8с… (для временных сбоев DNS/сети у Telegram)
+      if (attempt < maxAttempts) {
+        await this.sleep(Math.pow(2, attempt) * 1000);
+      }
+    }
+    this.logger.error(`[Signals] webhook не установлен после ${maxAttempts} попыток — watchdog повторит через 5 мин`);
+  }
+
+  private sleep(ms: number) {
+    return new Promise((r) => setTimeout(r, ms));
   }
 
   getWebhookSecret() {
     return this.webhookSecret;
-  }
-
-  // Диагностика: текущее состояние webhook у Telegram (видно в логах при старте)
-  private async logWebhookInfo(token: string) {
-    try {
-      const { data } = await axios.get(`${TG_API}/bot${token}/getWebhookInfo`, { timeout: 8000 });
-      if (data.ok) {
-        const info = data.result;
-        this.logger.log(
-          `[Signals] webhookInfo: url=${info.url || '(none)'}, pending=${info.pending_update_count}, lastError=${info.last_error_message || '—'}`,
-        );
-      }
-    } catch {}
   }
 
   // Парсим SIGNAL_TOPICS вида "11:XAU,4237:BTC" → [{ topicId, label }]
