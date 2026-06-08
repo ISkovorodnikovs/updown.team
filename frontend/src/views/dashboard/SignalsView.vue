@@ -152,18 +152,19 @@ const t = computed(() => {
 
 /* Signal Day Stub */
 .sigday { margin-bottom: 36px; }
-.sigday-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
-.sigday-card { background: var(--bg-2); border: 1px solid var(--border, #26262b); border-radius: 16px; padding: 20px;
-  &--empty { border-style: dashed; opacity: .8; }
+.sigday-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; align-items: stretch; }
+.sigday-card { background: var(--bg-2); border: 1px solid var(--border, #26262b); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; min-height: 280px;
+  &--empty { border-style: dashed; opacity: .8; justify-content: flex-start; }
   &__head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
   &__topic { font-family: 'Montserrat',sans-serif; font-weight: 800; font-size: 15px; letter-spacing: 1px; color: var(--accent); }
-  &__status { font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 20px;
+  &__status { font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 20px; white-space: nowrap;
     &.is-active { color: #1E8449; border: 1px solid #1E8449; }
     &.is-closed { color: var(--text-2); border: 1px solid var(--border, #444); } }
   &__sym { font-size: 18px; font-weight: 800; margin-bottom: 10px; }
   &__dir { font-size: 12px; color: var(--text-2); text-transform: uppercase; margin-left: 6px; }
-  &__upd { font-size: 11px; color: var(--text-2); margin-top: 12px; }
-  &__empty { text-align: center; padding: 16px 0; p { color: var(--text-2); font-size: 13px; margin: 8px 0 0; } } }
+  &__upd { font-size: 11px; color: var(--text-2); margin-top: auto; padding-top: 12px; }
+  &__empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 8px;
+    p { color: var(--text-2); font-size: 13px; margin: 0; } } }
 .sigday-row { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; color: var(--text-2); padding: 4px 0;
   b { color: var(--text); text-align: right; }
   &--col { flex-direction: column; b { text-align: left; } } }
