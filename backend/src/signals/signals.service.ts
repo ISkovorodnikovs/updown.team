@@ -5,7 +5,7 @@ import { Repository } from 'typeorm';
 import axios from 'axios';
 import * as crypto from 'crypto';
 import { DailySignal } from '../database/entities/daily-signal.entity';
-import { parseSignal } from './signals-parser';
+import { parseSignal, parseOutcome } from './signals-parser';
 
 const TG_API = 'https://api.telegram.org';
 
@@ -173,7 +173,15 @@ export class SignalsService implements OnModuleInit {
       !replyTo.forum_topic_created &&        // не псевдо-reply на создание топика
       replyTo.message_id !== msg.message_thread_id; // не корень топика
 
-    if (isRealReply) return; // настоящий ответ-отработка — обработаем в 2.3
+    if (isRealReply) {
+      // Настоящий ответ — это отработка (TP / все цели / закрыт по противоположному)
+      try {
+        await this.applyOutcome(topic, replyTo.message_id, text);
+      } catch (e) {
+        this.logger.error(`[Signals] outcome error: ${e.message}`);
+      }
+      return;
+    }
 
     try {
       await this.captureSignal(topic, msg, text);
@@ -225,5 +233,57 @@ export class SignalsService implements OnModuleInit {
       // уникальный индекс мог сработать при гонке — это ок (первый уже записан)
       this.logger.warn(`[Signals] save race: ${e.message}`);
     }
+  }
+
+  // Применяем отработку (reply на исходное сообщение сигнала) к сигналу дня
+  private async applyOutcome(
+    topic: { topicId: string; label: string },
+    repliedMessageId: number,
+    text: string,
+  ) {
+    // Находим сигнал дня этого топика, чьё исходное сообщение = тому, на которое ответили
+    const signal = await this.signalRepo.findOne({
+      where: { topicId: topic.topicId, sourceMessageId: String(repliedMessageId) },
+    });
+    if (!signal) {
+      // Отработка не на наш сигнал дня (или на сигнал прошлого окна) — игнор
+      return;
+    }
+    if (signal.status === 'closed') {
+      // Уже закрыт — больше не меняем
+      return;
+    }
+
+    const outcome = parseOutcome(text);
+    if (outcome.kind === 'none') return;
+
+    const TP_ORDER = ['given', 'in_zone', 'tp1', 'tp2', 'tp3', 'tp4', 'tp5'];
+    const rank = (pos: string) => {
+      const i = TP_ORDER.indexOf(pos);
+      return i === -1 ? 0 : i;
+    };
+
+    if (outcome.kind === 'tp' && outcome.tpNumber) {
+      const newPos = `tp${outcome.tpNumber}`;
+      // Применяем только если новый TP «дальше» текущего (без отката от дублей/гонки)
+      if (rank(newPos) > rank(signal.position)) {
+        signal.position = newPos;
+        if (outcome.profitPercent) signal.profitPercent = outcome.profitPercent;
+      }
+      // status остаётся active — сигнал ещё в работе
+    } else if (outcome.kind === 'all_targets') {
+      signal.position = 'all_targets';
+      signal.status = 'closed';
+      if (outcome.profitPercent) signal.profitPercent = outcome.profitPercent;
+    } else if (outcome.kind === 'closed_opposite') {
+      signal.position = 'closed_opposite';
+      signal.status = 'closed';
+      if (outcome.profitPercent) signal.profitPercent = outcome.profitPercent;
+    }
+
+    await this.signalRepo.save(signal);
+    this.logger.log(
+      `[Signals] отработка: ${topic.label} ${signal.symbol} → ${signal.position} (${signal.status}) ${signal.profitPercent || ''}`,
+    );
   }
 }
