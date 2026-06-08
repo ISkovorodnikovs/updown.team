@@ -174,3 +174,8 @@ export const analyticsApi = {
   myReport: (channelId, from, to) => api.get('/analytics/my', { params: { channelId, from, to } }),
   adminReport: (channelId, from, to) => api.get('/analytics/admin', { params: { channelId, from, to } }),
 }
+
+// Signals (daily signal of the day)
+export const signalsApi = {
+  getDaily: () => api.get('/signals/daily'),
+}

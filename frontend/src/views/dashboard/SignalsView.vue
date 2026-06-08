@@ -3,11 +3,45 @@
     <h1 class="page-h">{{ t.title }}</h1>
 
     <!-- Signal of the Day -->
-    <div class="signal-day-stub">
-      <div class="stub-badge">🔔 {{ t.signalDay }}</div>
-      <div class="stub-title">СИГНАЛ ДНЯ</div>
-      <div class="stub-sub">{{ t.signalDaySub }}</div>
-    </div>
+    <section class="sigday">
+      <h2 class="section-h">🔔 {{ t.signalDay }}</h2>
+      <div class="sigday-grid">
+        <div v-for="row in dailySignals" :key="row.topicId" class="sigday-card"
+             :class="{ 'sigday-card--empty': !row.signal }">
+          <div class="sigday-card__head">
+            <span class="sigday-card__topic">{{ row.label || row.topicId }}</span>
+            <span class="sigday-card__status"
+                  :class="row.signal && row.signal.status === 'active' ? 'is-active' : 'is-closed'">
+              {{ statusLabel(row.signal) }}
+            </span>
+          </div>
+
+          <template v-if="row.signal">
+            <div class="sigday-card__sym">
+              {{ dirIcon(row.signal.direction) }} {{ row.signal.symbol || '—' }}
+              <span class="sigday-card__dir">{{ row.signal.direction }}</span>
+            </div>
+            <div class="sigday-row"><span>{{ t.given }}</span><b>{{ fmtUtc(row.signal.signalAt) }}</b></div>
+            <div class="sigday-row"><span>{{ t.zone }}</span><b>{{ row.signal.entryZone || '—' }}</b></div>
+            <div class="sigday-row sigday-row--col" v-if="row.signal.targets && row.signal.targets.length">
+              <span>{{ t.targets }}</span>
+              <div class="sigday-tps">
+                <span v-for="(tp, i) in row.signal.targets" :key="i" class="sigday-tp">{{ i+1 }}) {{ tp }}</span>
+              </div>
+            </div>
+            <div class="sigday-row"><span>{{ t.stop }}</span><b>{{ row.signal.stopLoss || '—' }}</b></div>
+            <div class="sigday-row"><span>{{ t.position }}</span><b class="sigday-pos">{{ positionLabel(row.signal) }}</b></div>
+            <div class="sigday-row" v-if="row.signal.profitPercent"><span>{{ t.profit }}</span><b class="sigday-profit">{{ row.signal.profitPercent }}</b></div>
+            <div class="sigday-card__upd">{{ t.updated }}: {{ fmtUtc(row.signal.updatedAt) }}</div>
+          </template>
+
+          <div v-else class="sigday-card__empty">
+            <div class="sigday-card__sym">{{ row.label || row.topicId }}</div>
+            <p>{{ t.awaiting }}</p>
+          </div>
+        </div>
+      </div>
+    </section>
 
     <!-- Channels -->
     <section class="channels-section">
@@ -49,16 +83,38 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { shopApi } from '@/api'
+import { shopApi, signalsApi } from '@/api'
 import { useCartStore } from '@/stores/cart'
 
 const lang = computed(() => localStorage.getItem('ud-lang') || 'en')
 const channels = ref([])
+const dailySignals = ref([])
 const cartStore = useCartStore()
 
 onMounted(async () => {
   channels.value = await shopApi.getChannels().then(r => r.data).catch(() => [])
+  dailySignals.value = await signalsApi.getDaily().then(r => r.data).catch(() => [])
 })
+
+const fmtUtc = (d) => d ? new Date(d).toISOString().slice(0, 16).replace('T', ' ') + ' UTC' : '—'
+
+function statusLabel(sig) {
+  const r = lang.value === 'ru'
+  if (!sig) return r ? 'Ожидание сигнала' : 'Awaiting signal'
+  return sig.status === 'closed' ? (r ? 'Закрыт' : 'Closed') : (r ? 'Активен' : 'Active')
+}
+function positionLabel(sig) {
+  const r = lang.value === 'ru'
+  const map = {
+    given: r ? 'Сигнал дан' : 'Signal given',
+    in_zone: r ? 'В зоне набора' : 'In entry zone',
+    tp1: 'TP1', tp2: 'TP2', tp3: 'TP3', tp4: 'TP4', tp5: 'TP5', sl: 'Stop Loss',
+    all_targets: r ? 'Все цели достигнуты' : 'All targets hit',
+    closed_opposite: r ? 'Закрыт по противоположному' : 'Closed by opposite',
+  }
+  return map[sig?.position] || (r ? '—' : '—')
+}
+function dirIcon(dir) { return dir === 'long' ? '🟢' : dir === 'short' ? '🔴' : '⚪' }
 
 function addToCart(ch) {
   cartStore.add({ id: ch.id, name: ch.name, price: ch.price, type: 'channel', shopProductId: ch.id })
@@ -70,7 +126,14 @@ const t = computed(() => {
   return {
     title: r ? 'Сигналы' : 'Signals',
     signalDay: r ? 'Сигнал дня' : 'Signal of the Day',
-    signalDaySub: r ? 'Функция в разработке. Скоро здесь будет ежедневный торговый сигнал.' : 'Coming soon. Daily trading signal will appear here.',
+    given: r ? 'Дан' : 'Given',
+    zone: r ? 'Зона набора' : 'Entry zone',
+    targets: r ? 'Тейки' : 'Targets',
+    stop: 'Stop',
+    position: r ? 'Положение' : 'Position',
+    profit: r ? 'Профит' : 'Profit',
+    updated: r ? 'Обновлён' : 'Updated',
+    awaiting: r ? 'Сигнал ещё не поступил в этом окне (с 5:00 UTC).' : 'No signal yet in this window (since 5:00 UTC).',
     channels: r ? 'Сигнальные каналы' : 'Signal Channels',
     mo: r ? 'мес' : 'mo',
     addToCart: r ? 'В корзину' : 'Add to Cart',
@@ -88,10 +151,27 @@ const t = computed(() => {
 .page-h { font-family: 'Montserrat',sans-serif; font-size: 22px; font-weight: 800; color: var(--text); margin-bottom: 24px; }
 
 /* Signal Day Stub */
-.signal-day-stub { background: linear-gradient(135deg, var(--bg-2) 0%, rgba(201,243,29,0.05) 100%); border: 2px dashed rgba(201,243,29,0.3); border-radius: 16px; padding: 36px; text-align: center; margin-bottom: 36px; }
-.stub-badge { display: inline-block; background: rgba(201,243,29,0.1); border: 1px solid rgba(201,243,29,0.3); color: var(--accent); font-size: 11px; font-weight: 700; padding: 4px 14px; border-radius: 20px; margin-bottom: 12px; }
-.stub-title { font-family: 'Montserrat',sans-serif; font-size: 28px; font-weight: 900; color: var(--text); letter-spacing: 2px; margin-bottom: 8px; }
-.stub-sub { font-size: 13px; color: var(--text-2); }
+.sigday { margin-bottom: 36px; }
+.sigday-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+.sigday-card { background: var(--bg-2); border: 1px solid var(--border, #26262b); border-radius: 16px; padding: 20px;
+  &--empty { border-style: dashed; opacity: .8; }
+  &__head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  &__topic { font-family: 'Montserrat',sans-serif; font-weight: 800; font-size: 15px; letter-spacing: 1px; color: var(--accent); }
+  &__status { font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 20px;
+    &.is-active { color: #1E8449; border: 1px solid #1E8449; }
+    &.is-closed { color: var(--text-2); border: 1px solid var(--border, #444); } }
+  &__sym { font-size: 18px; font-weight: 800; margin-bottom: 10px; }
+  &__dir { font-size: 12px; color: var(--text-2); text-transform: uppercase; margin-left: 6px; }
+  &__upd { font-size: 11px; color: var(--text-2); margin-top: 12px; }
+  &__empty { text-align: center; padding: 16px 0; p { color: var(--text-2); font-size: 13px; margin: 8px 0 0; } } }
+.sigday-row { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; color: var(--text-2); padding: 4px 0;
+  b { color: var(--text); text-align: right; }
+  &--col { flex-direction: column; b { text-align: left; } } }
+.sigday-tps { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.sigday-tp { background: var(--bg-1, #131316); border: 1px solid var(--border, #2a2a30); border-radius: 6px; padding: 3px 8px; font-size: 12px; color: var(--text); }
+.sigday-pos { color: var(--accent) !important; }
+.sigday-profit { color: #1E8449 !important; }
+@media (max-width: 700px) { .sigday-grid { grid-template-columns: 1fr; } }
 
 /* Channels */
 .section-h { font-family: 'Montserrat',sans-serif; font-size: 18px; font-weight: 800; color: var(--text); margin-bottom: 18px; }
