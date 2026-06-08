@@ -142,6 +142,13 @@ export class SignalsService implements OnModuleInit {
     const msg = update.message || update.channel_post;
     if (!msg) return;
 
+    // Диагностика входящих апдейтов (видно в логах, помогает при отладке)
+    this.logger.log(
+      `[Signals] update: chat=${msg.chat?.id} thread=${msg.message_thread_id} ` +
+      `reply=${msg.reply_to_message ? msg.reply_to_message.message_id : '-'} ` +
+      `topicCreated=${msg.reply_to_message?.forum_topic_created ? 'yes' : 'no'}`,
+    );
+
     // Только наша группа сигналов
     const signalsChat = this.config.get<string>('SIGNALS_CHAT');
     if (signalsChat && String(msg.chat?.id) !== String(signalsChat)) return;
@@ -155,9 +162,18 @@ export class SignalsService implements OnModuleInit {
 
     const text = msg.text || msg.caption || '';
 
-    // В 2.2 обрабатываем только ИСХОДНЫЙ сигнал.
-    // Reply-отработки (TP/SL/закрытие) — в 2.3.
-    if (msg.reply_to_message) return;
+    // В форум-супергруппе у КАЖДОГО сообщения в топике есть reply_to_message,
+    // указывающий на служебное сообщение создания топика (forum_topic_created).
+    // Поэтому НЕЛЬЗЯ отсекать по самому факту reply.
+    // Настоящая отработка = reply на РЕАЛЬНОЕ сообщение (не на создание топика).
+    // В 2.2 обрабатываем только исходный сигнал; настоящие reply-отработки — 2.3.
+    const replyTo = msg.reply_to_message;
+    const isRealReply =
+      replyTo &&
+      !replyTo.forum_topic_created &&        // не псевдо-reply на создание топика
+      replyTo.message_id !== msg.message_thread_id; // не корень топика
+
+    if (isRealReply) return; // настоящий ответ-отработка — обработаем в 2.3
 
     try {
       await this.captureSignal(topic, msg, text);
