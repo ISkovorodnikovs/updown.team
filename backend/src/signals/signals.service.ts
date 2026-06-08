@@ -39,12 +39,48 @@ export class SignalsService implements OnModuleInit {
       if (data.ok) this.logger.log(`[Signals] webhook set → ${url}`);
       else this.logger.error(`[Signals] setWebhook failed: ${data.description}`);
     } catch (e) {
-      this.logger.error(`[Signals] setWebhook error: ${e.message}`);
+      // Логируем ТЕЛО ответа Telegram — там точная причина (description), а не только статус
+      const tgError = e.response?.data
+        ? JSON.stringify(e.response.data)
+        : e.message;
+      this.logger.error(`[Signals] setWebhook error: ${tgError}`);
+
+      // Повторная попытка минимальным запросом (как ручной curl, который сработал)
+      try {
+        const { data } = await axios.post(`${TG_API}/bot${token}/setWebhook`, {
+          url,
+          secret_token: this.webhookSecret,
+        }, { timeout: 10000 });
+        if (data.ok) {
+          this.logger.log(`[Signals] webhook set (retry, minimal) → ${url}`);
+        } else {
+          this.logger.error(`[Signals] setWebhook retry failed: ${data.description}`);
+        }
+      } catch (e2) {
+        const tgError2 = e2.response?.data ? JSON.stringify(e2.response.data) : e2.message;
+        this.logger.error(`[Signals] setWebhook retry error: ${tgError2}`);
+      }
     }
+
+    // В любом случае показываем фактическое состояние webhook
+    await this.logWebhookInfo(token);
   }
 
   getWebhookSecret() {
     return this.webhookSecret;
+  }
+
+  // Диагностика: текущее состояние webhook у Telegram (видно в логах при старте)
+  private async logWebhookInfo(token: string) {
+    try {
+      const { data } = await axios.get(`${TG_API}/bot${token}/getWebhookInfo`, { timeout: 8000 });
+      if (data.ok) {
+        const info = data.result;
+        this.logger.log(
+          `[Signals] webhookInfo: url=${info.url || '(none)'}, pending=${info.pending_update_count}, lastError=${info.last_error_message || '—'}`,
+        );
+      }
+    } catch {}
   }
 
   // Парсим SIGNAL_TOPICS вида "11:XAU,4237:BTC" → [{ topicId, label }]
