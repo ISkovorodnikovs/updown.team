@@ -3,6 +3,7 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateCol
 export enum ProductType {
   INDICATOR = 'indicator',
   SIGNAL_CHANNEL = 'signal_channel',
+  EDUCATION = 'education',
 }
 
 @Entity('shop_products')
@@ -10,7 +11,9 @@ export class ShopProduct {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'enum', enum: ProductType })
+  // varchar вместо enum — значения совпадают с ProductType. Так мы избегаем
+  // рискованного ALTER TYPE при добавлении новых типов (как education).
+  @Column({ type: 'varchar', length: 32 })
   type: ProductType;
 
   @Column()
@@ -45,6 +48,10 @@ export class ShopProduct {
 
   @Column({ default: 0 })
   sortOrder: number;
+
+  // Доп. метаданные продукта (для обучения: seatsTotal, seatsTaken, discountNote и т.п.)
+  @Column({ type: 'jsonb', nullable: true })
+  meta: Record<string, any> | null;
 
   @CreateDateColumn() createdAt: Date;
   @UpdateDateColumn() updatedAt: Date;

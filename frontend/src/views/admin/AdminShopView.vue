@@ -14,7 +14,7 @@ const filter = ref('all')
 const defaultForm = () => ({
   type: 'indicator', name: '', description: '', tradingViewUrl: '',
   price: 0, currency: 'USDT', imageUrl: '', features: '', badge: '',
-  isActive: true, sortOrder: 0,
+  isActive: true, sortOrder: 0, seatsTotal: 10, seatsTaken: 0,
 })
 const form = reactive(defaultForm())
 
@@ -48,6 +48,8 @@ function openForm(p) {
       badge: p.badge ?? '',
       isActive: p.isActive ?? true,
       sortOrder: p.sortOrder ?? 0,
+      seatsTotal: p.meta?.seatsTotal ?? 10,
+      seatsTaken: p.meta?.seatsTaken ?? 0,
     })
   }
   Object.assign(form, base)
@@ -77,6 +79,9 @@ async function save() {
       badge: form.badge || undefined,
       isActive: form.isActive,
       sortOrder: Number(form.sortOrder) || 0,
+      meta: form.type === 'education'
+        ? { seatsTotal: Number(form.seatsTotal) || 0, seatsTaken: Number(form.seatsTaken) || 0 }
+        : undefined,
     }
     if (editing.value) await shopApi.update(editing.value.id, payload)
     else await shopApi.create(payload)
@@ -98,9 +103,12 @@ async function removeProduct(p) {
   await load()
 }
 
-const typeLabel = (tp) => tp === 'indicator'
-  ? (lang.value === 'ru' ? 'Индикатор' : 'Indicator')
-  : (lang.value === 'ru' ? 'Канал' : 'Channel')
+const typeLabel = (tp) => {
+  const r = lang.value === 'ru'
+  if (tp === 'education') return r ? 'Обучение' : 'Education'
+  if (tp === 'signal_channel') return r ? 'Канал' : 'Channel'
+  return r ? 'Индикатор' : 'Indicator'
+}
 
 const t = computed(() => {
   const r = lang.value === 'ru'
@@ -109,6 +117,8 @@ const t = computed(() => {
     sub: r ? 'Индикаторы и сигнальные каналы — цены и доступность' : 'Indicators and signal channels — prices and availability',
     add: r ? '+ Новый товар' : '+ New Product',
     all: r ? 'Все' : 'All', ind: r ? 'Индикаторы' : 'Indicators', ch: r ? 'Каналы' : 'Channels',
+    edu: r ? 'Обучение' : 'Education',
+    seatsTotal: r ? 'Всего мест' : 'Total seats', seatsTaken: r ? 'Занято мест' : 'Seats taken',
     name: r ? 'Название' : 'Name', type: r ? 'Тип' : 'Type', price: r ? 'Цена (USDT/мес)' : 'Price (USDT/mo)',
     desc: r ? 'Описание' : 'Description', tv: 'TradingView URL', img: r ? 'URL картинки' : 'Image URL',
     features: r ? 'Фичи (по одной на строку)' : 'Features (one per line)', badge: r ? 'Бейдж' : 'Badge',
@@ -135,6 +145,7 @@ const t = computed(() => {
       <button :class="{ on: filter==='all' }" @click="filter='all'">{{ t.all }}</button>
       <button :class="{ on: filter==='indicator' }" @click="filter='indicator'">{{ t.ind }}</button>
       <button :class="{ on: filter==='signal_channel' }" @click="filter='signal_channel'">{{ t.ch }}</button>
+      <button :class="{ on: filter==='education' }" @click="filter='education'">{{ t.edu }}</button>
     </div>
 
     <div v-if="loading" class="sa-empty">{{ t.loading }}</div>
@@ -143,7 +154,7 @@ const t = computed(() => {
     <div v-else class="sa-grid">
       <div v-for="p in filtered" :key="p.id" class="sa-card" :class="{ 'sa-card--off': !p.isActive }">
         <div class="sa-card__top">
-          <span class="sa-card__type">{{ typeLabel(p.type === 'signal_channel' ? 'channel' : 'indicator') }}</span>
+          <span class="sa-card__type">{{ typeLabel(p.type) }}</span>
           <span v-if="p.badge" class="sa-card__pill">{{ p.badge }}</span>
           <span v-if="!p.isActive" class="sa-card__badge">{{ t.inactive }}</span>
         </div>
@@ -167,6 +178,7 @@ const t = computed(() => {
               <select v-model="form.type">
                 <option value="indicator">{{ t.ind }}</option>
                 <option value="signal_channel">{{ t.ch }}</option>
+                <option value="education">{{ t.edu }}</option>
               </select>
             </label>
           </div>
@@ -175,6 +187,10 @@ const t = computed(() => {
             <label>{{ t.sort }}<input v-model.number="form.sortOrder" type="number" min="0" /></label>
           </div>
           <label v-if="form.type==='indicator'">{{ t.tv }}<input v-model="form.tradingViewUrl" type="text" /></label>
+          <div v-if="form.type==='education'" class="sa-row">
+            <label>{{ t.seatsTotal }}<input v-model.number="form.seatsTotal" type="number" min="0" /></label>
+            <label>{{ t.seatsTaken }}<input v-model.number="form.seatsTaken" type="number" min="0" /></label>
+          </div>
           <label>{{ t.badge }}<input v-model="form.badge" type="text" /></label>
           <label>{{ t.desc }}<textarea v-model="form.description" rows="2"></textarea></label>
           <label>{{ t.features }}<textarea v-model="form.features" rows="4"></textarea></label>

@@ -40,9 +40,30 @@ async function bootstrap() {
     logger: new CleanLogger(),
   });
 
+  // CORS: явный список разрешённых origin из env (через запятую).
+  // '*' + credentials:true — небезопасно и невалидно, поэтому так не делаем.
+  const corsEnv = process.env.FRONTEND_URL || process.env.CORS_ORIGINS || '';
+  const allowedOrigins = corsEnv.split(',').map((o) => o.trim()).filter(Boolean);
+
+  if (allowedOrigins.length === 0) {
+    // На случай пустой конфигурации в dev — разрешаем localhost, но без credentials-с-* в проде
+    new Logger('Bootstrap').warn('[CORS] FRONTEND_URL не задан — CORS ограничен localhost');
+  }
+
   app.enableCors({
-    origin: process.env.FRONTEND_URL || '*',
+    origin: (origin, callback) => {
+      // Разрешаем запросы без Origin (curl, серверные, healthcheck) и из списка
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.length === 0) {
+        // dev-фолбэк: localhost любого порта
+        if (/^https?:\/\/localhost(:\d+)?$/.test(origin)) return callback(null, true);
+        return callback(null, false);
+      }
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      return callback(null, false);
+    },
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   });
 
   app.useGlobalPipes(new ValidationPipe({

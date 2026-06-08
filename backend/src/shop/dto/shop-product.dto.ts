@@ -51,6 +51,8 @@ export class CreateShopProductDto {
   @IsOptional() @IsBoolean() isActive?: boolean;
 
   @IsOptional() @IsNumber() @Min(0) sortOrder?: number;
+
+  @IsOptional() meta?: Record<string, any>;
 }
 
 export class UpdateShopProductDto {
@@ -65,4 +67,5 @@ export class UpdateShopProductDto {
   @IsOptional() @IsString() @MaxLength(40) badge?: string;
   @IsOptional() @IsBoolean() isActive?: boolean;
   @IsOptional() @IsNumber() @Min(0) sortOrder?: number;
+  @IsOptional() meta?: Record<string, any>;
 }

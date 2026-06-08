@@ -159,6 +159,8 @@ export const bannersApi = {
 export const shopApi = {
   getIndicators: () => api.get('/shop/indicators'),
   getChannels: () => api.get('/shop/channels'),
+  getEducation: () => api.get('/shop/education'),
+  enrollEducation: (id, note) => api.post(`/shop/education/${id}/enroll`, { note }),
   getMy: () => api.get('/shop/my'),
   // Admin
   getAll: () => api.get('/shop/admin/all'),

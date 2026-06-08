@@ -4,6 +4,7 @@ import { Repository, MoreThan } from 'typeorm';
 import { ShopProduct, ProductType } from '../database/entities/shop-product.entity';
 import { UserProduct, UserProductStatus } from '../database/entities/user-product.entity';
 import { CreateShopProductDto, UpdateShopProductDto } from './dto/shop-product.dto';
+import { TelegramMainService } from '../telegram/telegram-main.service';
 
 const INDICATORS_SEED = [
   {
@@ -122,7 +123,21 @@ export class ShopService implements OnModuleInit {
   constructor(
     @InjectRepository(ShopProduct) private productRepo: Repository<ShopProduct>,
     @InjectRepository(UserProduct) private userProductRepo: Repository<UserProduct>,
+    private telegram: TelegramMainService,
   ) {}
+
+  // Заявка на обучение («Записаться») — уведомление админу в техчат
+  async enrollEducation(user: any, productId: string, note?: string) {
+    const product = await this.productRepo.findOne({ where: { id: productId } });
+    if (!product || product.type !== ProductType.EDUCATION) {
+      throw new NotFoundException('Курс не найден');
+    }
+    await this.telegram.sendMessage(
+      `🎓 Заявка на обучение\n📚 ${product.name}\n👤 ${user.email}\n💵 ${product.price} ${product.currency}` +
+      (note ? `\n📝 ${String(note).slice(0, 500)}` : ''),
+    ).catch(() => {});
+    return { ok: true };
+  }
 
   async onModuleInit() {
     // Retry до 5 раз с задержкой — TypeORM synchronize может не успеть создать таблицы
@@ -240,6 +255,19 @@ export class ShopService implements OnModuleInit {
 
   async getChannelsGated(userId: string) {
     const [items, owned] = await Promise.all([this.getChannels(), this.getActiveProductIds(userId)]);
+    return items.map((p) => this.gateProduct(p, owned.has(p.id)));
+  }
+
+  // Обучение — отдельный раздел магазина
+  async getEducation() {
+    return this.productRepo.find({
+      where: { type: ProductType.EDUCATION, isActive: true },
+      order: { sortOrder: 'ASC' },
+    });
+  }
+
+  async getEducationGated(userId: string) {
+    const [items, owned] = await Promise.all([this.getEducation(), this.getActiveProductIds(userId)]);
     return items.map((p) => this.gateProduct(p, owned.has(p.id)));
   }
 

@@ -24,6 +24,20 @@ export class ShopController {
     return this.shopService.getChannelsGated(user.id);
   }
 
+  // Обучение — витрина
+  @Get('education')
+  @UseGuards(AuthGuard('jwt'))
+  getEducation(@CurrentUser() user: any) {
+    return this.shopService.getEducationGated(user.id);
+  }
+
+  // Заявка на обучение «Записаться»
+  @Post('education/:id/enroll')
+  @UseGuards(AuthGuard('jwt'))
+  enroll(@CurrentUser() user: any, @Param('id') id: string, @Body() body: { note?: string }) {
+    return this.shopService.enrollEducation(user, id, body?.note);
+  }
+
   // Купленные пользователем продукты (мои доступы)
   @Get('my')
   @UseGuards(AuthGuard('jwt'))
