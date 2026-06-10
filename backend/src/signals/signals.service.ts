@@ -39,31 +39,47 @@ export class SignalsService implements OnModuleInit, OnModuleDestroy {
 
     // Стартовая установка (с ретраями), затем периодический самоконтроль
     await this.ensureWebhook();
-    // Watchdog: каждые 5 минут проверяем и при необходимости переустанавливаем
+    // Watchdog: каждые 15 минут проверяем и переустанавливаем ТОЛЬКО при потере url
     this.watchdog = setInterval(() => {
       this.ensureWebhook().catch(() => {});
-    }, 5 * 60 * 1000);
+    }, 15 * 60 * 1000);
   }
 
   // Гарантирует, что webhook установлен на наш URL. Безопасно вызывать много раз.
   private async ensureWebhook() {
     if (!this.botToken || !this.webhookUrl) return;
 
-    // Сначала проверяем текущее состояние — если уже стоит наш и без ошибок, не трогаем
+    // Проверяем текущее состояние
     try {
       const { data } = await axios.get(`${TG_API}/bot${this.botToken}/getWebhookInfo`, { timeout: 8000 });
       if (data.ok) {
         const info = data.result;
-        const ok = info.url === this.webhookUrl && !info.last_error_message;
-        if (ok) {
-          return; // webhook здоров — ничего не делаем
+
+        // Главный критерий здоровья — URL стоит и он наш.
+        const urlOk = info.url === this.webhookUrl;
+
+        // last_error в getWebhookInfo — ИСТОРИЧЕСКАЯ запись: остаётся даже когда
+        // webhook уже здоров. Поэтому переустанавливаем ТОЛЬКО при реальной потере
+        // url, а не из-за самого факта last_error.
+        if (urlOk) {
+          // Если есть СВЕЖАЯ ошибка (последние ~5 минут) — отметим в логе, но не
+          // дёргаем setWebhook (переустановка 502 всё равно не лечит, а лог не спамим).
+          if (info.last_error_date) {
+            const ageSec = Math.floor(Date.now() / 1000) - info.last_error_date;
+            if (ageSec >= 0 && ageSec < 300) {
+              this.logger.warn(
+                `[Signals] свежая ошибка доставки (${ageSec}s назад): ${info.last_error_message}. ` +
+                `URL на месте — переустановка не требуется.`,
+              );
+            }
+          }
+          return; // webhook на месте — ничего не делаем
         }
-        if (info.last_error_message) {
-          this.logger.warn(`[Signals] webhook lastError: ${info.last_error_message} — переустанавливаю`);
-        }
+
+        this.logger.warn(`[Signals] webhook url=${info.url || '(none)'} — переустанавливаю`);
       }
     } catch {
-      // getWebhookInfo не ответил — всё равно попробуем поставить ниже
+      // getWebhookInfo не ответил — попробуем поставить ниже
     }
 
     await this.setWebhookWithRetry();
