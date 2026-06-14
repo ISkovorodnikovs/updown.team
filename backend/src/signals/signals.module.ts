@@ -1,11 +1,10 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { SignalsController } from './signals.controller';
 import { SignalsService } from './signals.service';
-import { DailySignal } from '../database/entities/daily-signal.entity';
+import { AnalyticsModule } from '../analytics/analytics.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([DailySignal])],
+  imports: [AnalyticsModule],   // даёт SignalsDbService (read-only pool к signals_db)
   controllers: [SignalsController],
   providers: [SignalsService],
   exports: [SignalsService],

@@ -2,9 +2,23 @@
   <div class="signals-page">
     <h1 class="page-h">{{ t.title }}</h1>
 
-    <!-- Signal of the Day -->
+    <!-- Actual signal from AiView indicator -->
     <section class="sigday">
-      <h2 class="section-h">🔔 {{ t.signalDay }}</h2>
+      <h2 class="section-h">📡 {{ t.signalDay }}</h2>
+
+      <!-- Running tape of closed signals -->
+      <div class="tape" v-if="tape.length">
+        <div class="tape__track">
+          <span v-for="(item, i) in [...tape, ...tape]" :key="i" class="tape__item">
+            <span class="tape__sym">{{ dirIcon(item.direction) }} {{ item.symbol }}</span>
+            <span :class="item.profitPercent >= 0 ? 'tape__up' : 'tape__down'">
+              {{ item.profitPercent >= 0 ? '+' : '' }}{{ item.profitPercent.toFixed(2) }}%
+            </span>
+            <span class="tape__date">{{ fmtTape(item.closedAt) }}</span>
+          </span>
+        </div>
+      </div>
+
       <div class="sigday-grid">
         <div v-for="row in dailySignals" :key="row.topicId" class="sigday-card"
              :class="{ 'sigday-card--empty': !row.signal }">
@@ -19,7 +33,7 @@
           <template v-if="row.signal">
             <div class="sigday-card__sym">
               {{ dirIcon(row.signal.direction) }} {{ row.signal.symbol || '—' }}
-              <span class="sigday-card__dir">{{ row.signal.direction }}</span>
+              <span class="sigday-card__dir">{{ row.signal.direction }} {{ tfLabel(row.signal.timeframe) }}</span>
             </div>
             <div class="sigday-row"><span>{{ t.given }}</span><b>{{ fmtUtc(row.signal.signalAt) }}</b></div>
             <div class="sigday-row"><span>{{ t.zone }}</span><b>{{ row.signal.entryZone || '—' }}</b></div>
@@ -31,8 +45,10 @@
             </div>
             <div class="sigday-row"><span>{{ t.stop }}</span><b>{{ row.signal.stopLoss || '—' }}</b></div>
             <div class="sigday-row"><span>{{ t.position }}</span><b class="sigday-pos">{{ positionLabel(row.signal) }}</b></div>
-            <div class="sigday-row" v-if="row.signal.profitPercent"><span>{{ t.profit }}</span><b class="sigday-profit">{{ row.signal.profitPercent }}</b></div>
-            <div class="sigday-card__upd">{{ t.updated }}: {{ fmtUtc(row.signal.updatedAt) }}</div>
+            <div class="sigday-row" v-if="row.signal.profitPercent"><span>{{ t.profit }}</span>
+              <b :class="parseFloat(row.signal.profitPercent) >= 0 ? 'sigday-profit' : 'sigday-loss'">{{ row.signal.profitPercent }}</b>
+            </div>
+            <div class="sigday-card__upd" v-if="row.signal.closedAt">{{ t.closedAt }}: {{ fmtUtc(row.signal.closedAt) }}</div>
           </template>
 
           <div v-else class="sigday-card__empty">
@@ -40,6 +56,13 @@
             <p>{{ t.awaiting }}</p>
           </div>
         </div>
+      </div>
+
+      <!-- Disclaimers -->
+      <div class="sig-disclaimer">
+        <p>{{ t.disc1 }}</p>
+        <p>{{ t.disc2 }}</p>
+        <p>{{ t.disc3 }} <router-link to="/dashboard/education" class="sig-disclaimer__link">{{ t.discEdu }}</router-link></p>
       </div>
     </section>
 
@@ -88,19 +111,32 @@ import { useCartStore } from '@/stores/cart'
 
 const lang = computed(() => localStorage.getItem('ud-lang') || 'en')
 const channels = ref([])
-const dailySignals = ref([])
+const signalsData = ref({ signals: [], tape: [], updatedAt: null })
 const cartStore = useCartStore()
+
+const dailySignals = computed(() => signalsData.value.signals || [])
+const tape = computed(() => signalsData.value.tape || [])
 
 onMounted(async () => {
   channels.value = await shopApi.getChannels().then(r => r.data).catch(() => [])
-  dailySignals.value = await signalsApi.getDaily().then(r => r.data).catch(() => [])
+  signalsData.value = await signalsApi.getDaily().then(r => r.data).catch(() => ({ signals: [], tape: [] }))
 })
 
 const fmtUtc = (d) => d ? new Date(d).toISOString().slice(0, 16).replace('T', ' ') + ' UTC' : '—'
+const fmtTape = (d) => {
+  if (!d) return ''
+  const dt = new Date(d)
+  const dd = String(dt.getUTCDate()).padStart(2, '0')
+  const mm = String(dt.getUTCMonth() + 1).padStart(2, '0')
+  const hh = String(dt.getUTCHours()).padStart(2, '0')
+  const mi = String(dt.getUTCMinutes()).padStart(2, '0')
+  return `${dd}.${mm} ${hh}:${mi}`
+}
+const tfLabel = (tf) => tf != null ? `M${tf}` : ''
 
 function statusLabel(sig) {
   const r = lang.value === 'ru'
-  if (!sig) return r ? 'Ожидание сигнала' : 'Awaiting signal'
+  if (!sig) return r ? 'Ожидание' : 'Awaiting'
   return sig.status === 'closed' ? (r ? 'Закрыт' : 'Closed') : (r ? 'Активен' : 'Active')
 }
 function positionLabel(sig) {
@@ -110,9 +146,9 @@ function positionLabel(sig) {
     in_zone: r ? 'В зоне набора' : 'In entry zone',
     tp1: 'TP1', tp2: 'TP2', tp3: 'TP3', tp4: 'TP4', tp5: 'TP5', sl: 'Stop Loss',
     all_targets: r ? 'Все цели достигнуты' : 'All targets hit',
-    closed_opposite: r ? 'Закрыт по противоположному' : 'Closed by opposite',
+    closed_opposite: r ? 'Закрыт' : 'Closed',
   }
-  return map[sig?.position] || (r ? '—' : '—')
+  return map[sig?.position] || '—'
 }
 function dirIcon(dir) { return dir === 'long' ? '🟢' : dir === 'short' ? '🔴' : '⚪' }
 
@@ -125,15 +161,25 @@ const t = computed(() => {
   const r = lang.value === 'ru'
   return {
     title: r ? 'Сигналы' : 'Signals',
-    signalDay: r ? 'Сигнал дня' : 'Signal of the Day',
+    signalDay: r ? 'Актуальный сигнал от индикатора AiView' : 'Actual signal from AiView indicator',
     given: r ? 'Дан' : 'Given',
     zone: r ? 'Зона набора' : 'Entry zone',
     targets: r ? 'Тейки' : 'Targets',
     stop: 'Stop',
     position: r ? 'Положение' : 'Position',
     profit: r ? 'Профит' : 'Profit',
-    updated: r ? 'Обновлён' : 'Updated',
-    awaiting: r ? 'Сигнал ещё не поступил в этом окне (с 5:00 UTC).' : 'No signal yet in this window (since 5:00 UTC).',
+    closedAt: r ? 'Закрыт' : 'Closed at',
+    awaiting: r ? 'Сигнал по этой теме пока недоступен.' : 'No signal for this topic yet.',
+    disc1: r
+      ? 'Прошлые результаты не гарантируют будущих.'
+      : 'Past performance does not guarantee future results.',
+    disc2: r
+      ? 'Это не является финансовой рекомендацией. Оценивайте свои возможности и риски.'
+      : 'This is not financial advice. Assess your own capabilities and risks.',
+    disc3: r
+      ? 'Если вы не можете оценить риски самостоятельно — рекомендуем пройти'
+      : 'If you cannot assess the risks on your own, we recommend taking the',
+    discEdu: r ? 'обучение' : 'education course',
     channels: r ? 'Сигнальные каналы' : 'Signal Channels',
     mo: r ? 'мес' : 'mo',
     addToCart: r ? 'В корзину' : 'Add to Cart',
@@ -152,6 +198,15 @@ const t = computed(() => {
 
 /* Signal Day Stub */
 .sigday { margin-bottom: 36px; }
+.tape { overflow: hidden; background: var(--bg-2); border: 1px solid var(--border, #26262b); border-radius: 12px; padding: 10px 0; margin-bottom: 18px; position: relative; }
+.tape__track { display: inline-flex; white-space: nowrap; gap: 28px; animation: tape-scroll 40s linear infinite; }
+.tape:hover .tape__track { animation-play-state: paused; }
+.tape__item { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; }
+.tape__sym { font-weight: 700; }
+.tape__up { color: #1E8449; font-weight: 700; }
+.tape__down { color: #e74c3c; font-weight: 700; }
+.tape__date { color: var(--text-2); font-size: 11px; }
+@keyframes tape-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 .sigday-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; align-items: stretch; }
 .sigday-card { background: var(--bg-2); border: 1px solid var(--border, #26262b); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; min-height: 280px;
   &--empty { border-style: dashed; opacity: .8; justify-content: flex-start; }
@@ -172,6 +227,10 @@ const t = computed(() => {
 .sigday-tp { background: var(--bg-1, #131316); border: 1px solid var(--border, #2a2a30); border-radius: 6px; padding: 3px 8px; font-size: 12px; color: var(--text); }
 .sigday-pos { color: var(--accent) !important; }
 .sigday-profit { color: #1E8449 !important; }
+.sigday-loss { color: #e74c3c !important; }
+.sig-disclaimer { margin-top: 14px; padding: 12px 14px; background: var(--bg-2); border: 1px solid var(--border, #26262b); border-radius: 10px;
+  p { margin: 2px 0; font-size: 11px; color: var(--text-2); line-height: 1.5; }
+  &__link { color: var(--accent); text-decoration: underline; } }
 @media (max-width: 700px) { .sigday-grid { grid-template-columns: 1fr; } }
 
 /* Channels */

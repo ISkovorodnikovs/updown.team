@@ -1,136 +1,32 @@
-import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import axios from 'axios';
-import * as crypto from 'crypto';
-import { DailySignal } from '../database/entities/daily-signal.entity';
-import { parseSignal, parseOutcome } from './signals-parser';
+import { SignalsDbService } from '../analytics/signals-db.service';
 
-const TG_API = 'https://api.telegram.org';
-
+// «Актуальный сигнал от индикатора AiView» + бегущая лента закрытых.
+// Источник — внешняя база поставщика signals_db (read-only). Никакого Telegram.
 @Injectable()
-export class SignalsService implements OnModuleInit, OnModuleDestroy {
+export class SignalsService {
   private readonly logger = new Logger(SignalsService.name);
-  private webhookSecret: string | null = null;
-  private botToken: string | null = null;
-  private webhookUrl: string | null = null;
-  private watchdog: NodeJS.Timeout | null = null;
+
+  // Простой in-memory кэш (TTL из .env SIGNALS_CACHE_TTL, сек; по умолчанию 60)
+  private cache: { data: any; expires: number } | null = null;
 
   constructor(
     private config: ConfigService,
-    @InjectRepository(DailySignal) private signalRepo: Repository<DailySignal>,
+    private signalsDb: SignalsDbService,
   ) {}
 
-  onModuleDestroy() {
-    if (this.watchdog) clearInterval(this.watchdog);
+  private get groupId(): string {
+    // Группа, по которой собираем ленту и ищем темы (SIGNALS_CHAT)
+    return this.config.get<string>('SIGNALS_CHAT') || '';
   }
 
-  async onModuleInit() {
-    const token = this.config.get<string>('SIGNALS_BOT');
-    const backendUrl = this.config.get<string>('BACKEND_URL');
-    if (!token || !backendUrl) {
-      this.logger.warn('[Signals] SIGNALS_BOT или BACKEND_URL не заданы — webhook не активен');
-      return;
-    }
-    this.botToken = token;
-    this.webhookSecret = crypto.createHash('sha256').update(token).digest('hex').slice(0, 32);
-    this.webhookUrl = `${backendUrl}/api/signals/webhook`;
-
-    // Стартовая установка (с ретраями), затем периодический самоконтроль
-    await this.ensureWebhook();
-    // Watchdog: каждые 15 минут проверяем и переустанавливаем ТОЛЬКО при потере url
-    this.watchdog = setInterval(() => {
-      this.ensureWebhook().catch(() => {});
-    }, 15 * 60 * 1000);
+  private get cacheTtlMs(): number {
+    const sec = parseInt(this.config.get<string>('SIGNALS_CACHE_TTL', '60'), 10);
+    return (isNaN(sec) ? 60 : sec) * 1000;
   }
 
-  // Гарантирует, что webhook установлен на наш URL. Безопасно вызывать много раз.
-  private async ensureWebhook() {
-    if (!this.botToken || !this.webhookUrl) return;
-
-    // Проверяем текущее состояние
-    try {
-      const { data } = await axios.get(`${TG_API}/bot${this.botToken}/getWebhookInfo`, { timeout: 8000 });
-      if (data.ok) {
-        const info = data.result;
-
-        // Главный критерий здоровья — URL стоит и он наш.
-        const urlOk = info.url === this.webhookUrl;
-
-        // last_error в getWebhookInfo — ИСТОРИЧЕСКАЯ запись: остаётся даже когда
-        // webhook уже здоров. Поэтому переустанавливаем ТОЛЬКО при реальной потере
-        // url, а не из-за самого факта last_error.
-        if (urlOk) {
-          // Если есть СВЕЖАЯ ошибка (последние ~5 минут) — отметим в логе, но не
-          // дёргаем setWebhook (переустановка 502 всё равно не лечит, а лог не спамим).
-          if (info.last_error_date) {
-            const ageSec = Math.floor(Date.now() / 1000) - info.last_error_date;
-            if (ageSec >= 0 && ageSec < 300) {
-              this.logger.warn(
-                `[Signals] свежая ошибка доставки (${ageSec}s назад): ${info.last_error_message}. ` +
-                `URL на месте — переустановка не требуется.`,
-              );
-            }
-          }
-          return; // webhook на месте — ничего не делаем
-        }
-
-        this.logger.warn(`[Signals] webhook url=${info.url || '(none)'} — переустанавливаю`);
-      }
-    } catch {
-      // getWebhookInfo не ответил — попробуем поставить ниже
-    }
-
-    await this.setWebhookWithRetry();
-  }
-
-  // setWebhook с несколькими попытками и нарастающей задержкой (учёт retry_after)
-  private async setWebhookWithRetry(maxAttempts = 4) {
-    if (!this.botToken || !this.webhookUrl) return;
-
-    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-      try {
-        const { data } = await axios.post(`${TG_API}/bot${this.botToken}/setWebhook`, {
-          url: this.webhookUrl,
-          secret_token: this.webhookSecret,
-          allowed_updates: ['message', 'channel_post'],
-        }, { timeout: 10000 });
-
-        if (data.ok) {
-          this.logger.log(`[Signals] webhook set → ${this.webhookUrl} (попытка ${attempt})`);
-          return;
-        }
-        this.logger.error(`[Signals] setWebhook failed: ${data.description}`);
-      } catch (e) {
-        const body = e.response?.data;
-        const desc = body ? JSON.stringify(body) : e.message;
-        this.logger.error(`[Signals] setWebhook attempt ${attempt} error: ${desc}`);
-
-        // Если Telegram попросил подождать (429) — уважаем retry_after
-        const retryAfter = body?.parameters?.retry_after;
-        if (retryAfter) {
-          await this.sleep((retryAfter + 1) * 1000);
-          continue;
-        }
-      }
-      // Экспоненциальная задержка: 2с, 4с, 8с… (для временных сбоев DNS/сети у Telegram)
-      if (attempt < maxAttempts) {
-        await this.sleep(Math.pow(2, attempt) * 1000);
-      }
-    }
-    this.logger.error(`[Signals] webhook не установлен после ${maxAttempts} попыток — watchdog повторит через 5 мин`);
-  }
-
-  private sleep(ms: number) {
-    return new Promise((r) => setTimeout(r, ms));
-  }
-
-  getWebhookSecret() {
-    return this.webhookSecret;
-  }
-
-  // Парсим SIGNAL_TOPICS вида "11:XAU,4237:BTC" → [{ topicId, label }]
+  // SIGNAL_TOPICS="11:XAU,4513:BTC" → [{ topicId, label }]
   getTopics(): { topicId: string; label: string }[] {
     const raw = this.config.get<string>('SIGNAL_TOPICS') || '';
     return raw
@@ -144,193 +40,116 @@ export class SignalsService implements OnModuleInit, OnModuleDestroy {
       .filter((t) => t.topicId);
   }
 
-  // Начало текущего окна 5:00 UTC. Если сейчас раньше 5:00 — окно началось вчера в 5:00.
-  getCurrentWindowStart(now = new Date()): Date {
-    const w = new Date(now);
-    w.setUTCHours(5, 0, 0, 0);
-    if (now.getUTCHours() < 5) {
-      w.setUTCDate(w.getUTCDate() - 1);
-    }
-    return w;
+  // Биржевой символ → красивый вид: BINANCE:BTCUSDT.P → BTC/USDT, VANTAGE:XAUUSD → XAU/USD
+  private prettySymbol(symbol: string): string {
+    if (!symbol) return '';
+    const afterColon = symbol.includes(':') ? symbol.split(':')[1] : symbol;
+    const clean = afterColon.replace(/\.P$/i, ''); // убираем суффикс перпетуала
+    // XAUUSD → XAU/USD, BTCUSDT → BTC/USDT
+    if (/USDT$/i.test(clean)) return clean.replace(/USDT$/i, '/USDT');
+    if (/USD$/i.test(clean)) return clean.replace(/USD$/i, '/USD');
+    return clean;
   }
 
-  // Текущий сигнал дня по топику (за текущее окно)
-  async getCurrentForTopic(topicId: string): Promise<DailySignal | null> {
-    const windowStart = this.getCurrentWindowStart();
-    return this.signalRepo.findOne({ where: { topicId, windowStart } });
+  // reachedTargets {0,1,2,3} → position "tp4" (индексы с нуля). Пусто → given.
+  private positionFromReached(reached: number[] | null, status: string, closePrice: number | null): string {
+    const arr = Array.isArray(reached) ? reached : [];
+    if (arr.length > 0) {
+      const maxIdx = Math.max(...arr);
+      return `tp${maxIdx + 1}`;
+    }
+    if (status === 'closed') {
+      // закрыт без достигнутых TP — вероятно по стопу/противоположному
+      return closePrice != null ? 'closed_opposite' : 'given';
+    }
+    return 'given';
   }
 
-  // Для фронта: по всем настроенным топикам — текущий сигнал дня (или пусто)
-  async getCurrentSignals() {
-    const topics = this.getTopics();
-    const windowStart = this.getCurrentWindowStart();
-    const result = [];
-    for (const t of topics) {
-      const signal = await this.signalRepo.findOne({
-        where: { topicId: t.topicId, windowStart },
-      });
-      result.push({
-        topicId: t.topicId,
-        label: t.label,
-        windowStart,
-        signal: signal || null,
-      });
-    }
-    return result;
-  }
-
-  // ─── Приём апдейтов от SIGNALS_BOT (webhook) ────────────────────────────────
-  async handleUpdate(secretHeader: string, update: any): Promise<void> {
-    if (!this.webhookSecret || secretHeader !== this.webhookSecret) {
-      this.logger.warn('[Signals] webhook: неверный secret_token');
-      return;
-    }
-
-    const msg = update.message || update.channel_post;
-    if (!msg) return;
-
-    // Диагностика входящих апдейтов (видно в логах, помогает при отладке)
-    this.logger.log(
-      `[Signals] update: chat=${msg.chat?.id} thread=${msg.message_thread_id} ` +
-      `reply=${msg.reply_to_message ? msg.reply_to_message.message_id : '-'} ` +
-      `topicCreated=${msg.reply_to_message?.forum_topic_created ? 'yes' : 'no'}`,
-    );
-
-    // Только наша группа сигналов
-    const signalsChat = this.config.get<string>('SIGNALS_CHAT');
-    if (signalsChat && String(msg.chat?.id) !== String(signalsChat)) return;
-
-    // Топик = message_thread_id; берём только настроенные топики
-    const topicId = msg.message_thread_id != null ? String(msg.message_thread_id) : null;
-    if (!topicId) return;
-    const topics = this.getTopics();
-    const topic = topics.find((t) => t.topicId === topicId);
-    if (!topic) return; // не наш топик
-
-    const text = msg.text || msg.caption || '';
-
-    // В форум-супергруппе у КАЖДОГО сообщения в топике есть reply_to_message,
-    // указывающий на служебное сообщение создания топика (forum_topic_created).
-    // Поэтому НЕЛЬЗЯ отсекать по самому факту reply.
-    // Настоящая отработка = reply на РЕАЛЬНОЕ сообщение (не на создание топика).
-    // В 2.2 обрабатываем только исходный сигнал; настоящие reply-отработки — 2.3.
-    const replyTo = msg.reply_to_message;
-    const isRealReply =
-      replyTo &&
-      !replyTo.forum_topic_created &&        // не псевдо-reply на создание топика
-      replyTo.message_id !== msg.message_thread_id; // не корень топика
-
-    if (isRealReply) {
-      // Настоящий ответ — это отработка (TP / все цели / закрыт по противоположному)
-      try {
-        await this.applyOutcome(topic, replyTo.message_id, text);
-      } catch (e) {
-        this.logger.error(`[Signals] outcome error: ${e.message}`);
-      }
-      return;
-    }
-
-    try {
-      await this.captureSignal(topic, msg, text);
-    } catch (e) {
-      this.logger.error(`[Signals] capture error: ${e.message}`);
-    }
-  }
-
-  // Первый сигнал в окне становится «сигналом дня» для топика
-  private async captureSignal(
-    topic: { topicId: string; label: string },
-    msg: any,
-    text: string,
-  ) {
-    const parsed = parseSignal(text);
-    if (!parsed.isSignal) return; // не сигнал (болтовня/реклама/прочее)
-
-    const windowStart = this.getCurrentWindowStart();
-
-    // Уже есть сигнал дня за это окно? Тогда ничего не делаем (берём ПЕРВЫЙ).
-    const existing = await this.signalRepo.findOne({
-      where: { topicId: topic.topicId, windowStart },
-    });
-    if (existing) return;
-
-    const signalAt = msg.date ? new Date(msg.date * 1000) : new Date();
-
-    const entity = this.signalRepo.create({
-      topicId: topic.topicId,
-      topicLabel: topic.label,
-      symbol: parsed.symbol || null,
-      direction: parsed.direction || null,
-      windowStart,
-      sourceMessageId: String(msg.message_id),
-      signalAt,
-      entryZone: parsed.entryZone || null,
-      targets: parsed.targets || [],
-      stopLoss: parsed.stopLoss || null,
-      status: 'active',
-      position: 'given',
-      profitPercent: null,
-      rawText: text.slice(0, 4000),
-    });
-
-    try {
-      await this.signalRepo.save(entity);
-      this.logger.log(`[Signals] сигнал дня зафиксирован: ${topic.label} ${parsed.symbol} ${parsed.direction}`);
-    } catch (e) {
-      // уникальный индекс мог сработать при гонке — это ок (первый уже записан)
-      this.logger.warn(`[Signals] save race: ${e.message}`);
-    }
-  }
-
-  // Применяем отработку (reply на исходное сообщение сигнала) к сигналу дня
-  private async applyOutcome(
-    topic: { topicId: string; label: string },
-    repliedMessageId: number,
-    text: string,
-  ) {
-    // Находим сигнал дня этого топика, чьё исходное сообщение = тому, на которое ответили
-    const signal = await this.signalRepo.findOne({
-      where: { topicId: topic.topicId, sourceMessageId: String(repliedMessageId) },
-    });
-    if (!signal) {
-      // Отработка не на наш сигнал дня (или на сигнал прошлого окна) — игнор
-      return;
-    }
-    if (signal.status === 'closed') {
-      // Уже закрыт — больше не меняем
-      return;
-    }
-
-    const outcome = parseOutcome(text);
-    if (outcome.kind === 'none') return;
-
-    const TP_ORDER = ['given', 'in_zone', 'tp1', 'tp2', 'tp3', 'tp4', 'tp5'];
-    const rank = (pos: string) => {
-      const i = TP_ORDER.indexOf(pos);
-      return i === -1 ? 0 : i;
+  // Преобразуем строку из signals_db в формат для фронта
+  private mapRow(row: any) {
+    const targets = Array.isArray(row.profitTargets)
+      ? row.profitTargets.map((t: any) => String(t))
+      : [];
+    return {
+      symbol: this.prettySymbol(row.symbol),
+      rawSymbol: row.symbol,
+      direction: (row.direction || '').toLowerCase(),       // long / short
+      timeframe: row.timeframe,                             // минуты
+      entryZone: [row.entry1, row.entry2].filter((v) => v != null).join('-'),
+      targets,
+      stopLoss: row.stopLoss != null ? String(row.stopLoss) : null,
+      status: row.status,                                   // active / closed
+      position: this.positionFromReached(row.reachedTargets, row.status, row.closePrice),
+      profitPercent: row.totalProfit != null ? `${Number(row.totalProfit).toFixed(2)}%` : null,
+      closePrice: row.closePrice != null ? String(row.closePrice) : null,
+      signalAt: row.createdAt,
+      closedAt: row.closedAt,
     };
+  }
 
-    if (outcome.kind === 'tp' && outcome.tpNumber) {
-      const newPos = `tp${outcome.tpNumber}`;
-      // Применяем только если новый TP «дальше» текущего (без отката от дублей/гонки)
-      if (rank(newPos) > rank(signal.position)) {
-        signal.position = newPos;
-        if (outcome.profitPercent) signal.profitPercent = outcome.profitPercent;
-      }
-      // status остаётся active — сигнал ещё в работе
-    } else if (outcome.kind === 'all_targets') {
-      signal.position = 'all_targets';
-      signal.status = 'closed';
-      if (outcome.profitPercent) signal.profitPercent = outcome.profitPercent;
-    } else if (outcome.kind === 'closed_opposite') {
-      signal.position = 'closed_opposite';
-      signal.status = 'closed';
-      if (outcome.profitPercent) signal.profitPercent = outcome.profitPercent;
+  // Актуальный (самый свежий) сигнал по теме: channelMessages содержит ключ "<group>_<topic>"
+  private async currentForTopic(topicId: string) {
+    const key = `${this.groupId}_${topicId}`;
+    const rows = await this.signalsDb.query(
+      `SELECT * FROM "Signals"
+       WHERE "channelMessages" ? $1
+       ORDER BY "createdAt" DESC
+       LIMIT 1`,
+      [key],
+    );
+    return rows.length ? this.mapRow(rows[0]) : null;
+  }
+
+  // Бегущая лента: последние 20 ЗАКРЫТЫХ сигналов нашей группы (по любому ключу группы)
+  private async closedTape() {
+    // Ключи нашей группы выглядят как "-100...."(сам канал) или "-100..._<topic>".
+    // Матчим по префиксу ключа группы среди ключей jsonb channelMessages.
+    const rows = await this.signalsDb.query(
+      `SELECT * FROM "Signals"
+       WHERE "status" = 'closed'
+         AND EXISTS (
+           SELECT 1 FROM jsonb_object_keys("channelMessages") AS k
+           WHERE k = $1 OR k LIKE $2
+         )
+       ORDER BY "closedAt" DESC NULLS LAST
+       LIMIT 20`,
+      [this.groupId, `${this.groupId}\\_%`],
+    );
+    return rows.map((r: any) => ({
+      symbol: this.prettySymbol(r.symbol),
+      direction: (r.direction || '').toLowerCase(),
+      profitPercent: r.totalProfit != null ? Number(r.totalProfit) : 0,
+      closedAt: r.closedAt,
+    }));
+  }
+
+  // Главный метод для фронта: актуальные сигналы по темам + лента. С кэшем.
+  async getCurrentSignals() {
+    if (this.cache && this.cache.expires > Date.now()) {
+      return this.cache.data;
     }
 
-    await this.signalRepo.save(signal);
-    this.logger.log(
-      `[Signals] отработка: ${topic.label} ${signal.symbol} → ${signal.position} (${signal.status}) ${signal.profitPercent || ''}`,
-    );
+    const topics = this.getTopics();
+    const signals = [];
+    for (const t of topics) {
+      let signal = null;
+      try {
+        signal = await this.currentForTopic(t.topicId);
+      } catch (e) {
+        this.logger.error(`currentForTopic ${t.topicId} error: ${e.message}`);
+      }
+      signals.push({ topicId: t.topicId, label: t.label, signal });
+    }
+
+    let tape = [];
+    try {
+      tape = await this.closedTape();
+    } catch (e) {
+      this.logger.error(`closedTape error: ${e.message}`);
+    }
+
+    const data = { signals, tape, updatedAt: new Date().toISOString() };
+    this.cache = { data, expires: Date.now() + this.cacheTtlMs };
+    return data;
   }
 }
