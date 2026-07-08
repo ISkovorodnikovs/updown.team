@@ -1,8 +1,19 @@
-import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { setLang, lang } from '@/i18n'
+import { LANDING_LANGS } from '@/seo-meta'
 
-const routes = [
-  { path: '/', component: () => import('@/views/LandingView.vue') },
+const LANDING = () => import('@/views/LandingView.vue')
+
+// Языковые версии лендинга для SEO: '/', '/de', '/es', ... — все рендерят
+// LandingView, язык выставляется из префикса пути (см. beforeEach ниже).
+const landingRoutes = LANDING_LANGS.map((code) => ({
+  path: code === 'en' ? '/' : `/${code}`,
+  component: LANDING,
+  meta: { landingLang: code },
+}))
+
+export const routes = [
+  ...landingRoutes,
   { path: '/partner-apply', component: () => import('@/views/PartnerApplyView.vue') },
   { path: '/login', component: () => import('@/views/auth/AuthView.vue'), meta: { guest: true, key: 'auth' } },
   { path: '/register', component: () => import('@/views/auth/AuthView.vue'), meta: { guest: true, key: 'auth' } },
@@ -48,19 +59,23 @@ const routes = [
   { path: '/:pathMatch(.*)*', redirect: '/' }
 ]
 
-const router = createRouter({
-  history: createWebHistory(),
-  routes,
-  scrollBehavior: () => ({ top: 0 })
-})
+// Регистрация guard'ов. Вызывается из main.js (в setup-функции ViteSSG),
+// т.к. роутер создаёт vite-ssg, а не мы напрямую.
+export function setupRouter(router) {
+  router.beforeEach(async (to) => {
+    // Язык из префикса пути для SEO-версий лендинга ('/de' → de).
+    // На сервере (пререндер) корень '/' форсим в 'en'; на клиенте корень
+    // оставляем как определил detectInitial (сохранённый/браузерный язык).
+    if (to.meta && to.meta.landingLang) {
+      if (to.meta.landingLang !== 'en') setLang(to.meta.landingLang)
+      else if (typeof window === 'undefined') lang.value = 'en'
+    }
 
-router.beforeEach(async (to) => {
-  const auth = useAuthStore()
-  if (!auth.user && auth.token) await auth.fetchMe()
-  if (to.meta.requiresAuth && !auth.isAuthenticated) return '/login'
-  if (to.meta.guest && auth.isAuthenticated) return '/dashboard'
-  if (to.meta.roles && !to.meta.roles.includes(auth.role)) return '/dashboard'
-  return true
-})
-
-export default router
+    const auth = useAuthStore()
+    if (!auth.user && auth.token) await auth.fetchMe()
+    if (to.meta.requiresAuth && !auth.isAuthenticated) return '/login'
+    if (to.meta.guest && auth.isAuthenticated) return '/dashboard'
+    if (to.meta.roles && !to.meta.roles.includes(auth.role)) return '/dashboard'
+    return true
+  })
+}

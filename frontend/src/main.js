@@ -1,13 +1,18 @@
-import { createApp } from 'vue'
+import { ViteSSG } from 'vite-ssg'
 import { createPinia } from 'pinia'
 import App from './App.vue'
-import router from './router'
+import { routes, setupRouter } from './router'
 import { applyDom } from './i18n'
 import './assets/styles/main.scss'
 
-applyDom() // выставляет <html lang="…" dir="…"> до первого рендера
-
-const app = createApp(App)
-app.use(createPinia())
-app.use(router)
-app.mount('#app')
+// ViteSSG создаёт роутер сам (memory-history на сервере, web-history на клиенте)
+// и пререндерит указанные в vite.config маршруты в статический HTML.
+export const createApp = ViteSSG(
+  App,
+  { routes, scrollBehavior: () => ({ top: 0 }) },
+  ({ app, router, isClient }) => {
+    app.use(createPinia())
+    setupRouter(router)
+    if (isClient) applyDom() // выставляем <html lang/dir> и SEO на клиенте
+  },
+)

@@ -440,7 +440,7 @@ import { lang, useT } from '@/i18n'
 import dict from '@/i18n/dicts/landing'
 
 // ---- THEME ----
-const theme = ref(localStorage.getItem('ud-theme') || 'dark')
+const theme = ref((typeof localStorage !== 'undefined' ? localStorage.getItem('ud-theme') : null) || 'dark')
 function toggleTheme() {
   theme.value = theme.value === 'dark' ? 'light' : 'dark'
   localStorage.setItem('ud-theme', theme.value)

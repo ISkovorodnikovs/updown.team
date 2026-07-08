@@ -3,7 +3,7 @@ import { ref, computed } from 'vue'
 import { authApi, usersApi } from '@/api'
 
 export const useAuthStore = defineStore('auth', () => {
-  const token = ref(localStorage.getItem('token') || null)
+  const token = ref((typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null) || null)
   const user = ref(null)
 
   const isAuthenticated = computed(() => !!token.value)

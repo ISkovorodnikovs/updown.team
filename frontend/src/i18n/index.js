@@ -23,8 +23,20 @@ const CODES = LANGS.map(l => l.code)
 
 function detectInitial() {
   try {
+    // 0) языковой префикс пути (/de, /es, ...) — совпадение с пререндеренной версией
+    const p = (window.location.pathname || '').match(/^\/(de|es|it|pt|ru|zh|ar)(?=\/|$)/)
+    if (p) return p[1]
+    // 1) ?lang=xx из URL
+    const q = (new URLSearchParams(window.location.search).get('lang') || '')
+      .slice(0, 2).toLowerCase()
+    if (q && CODES.includes(q)) {
+      try { localStorage.setItem('ud-lang', q) } catch { /* ignore */ }
+      return q
+    }
+    // 2) сохранённый выбор
     const saved = localStorage.getItem('ud-lang')
     if (saved && CODES.includes(saved)) return saved
+    // 3) язык браузера
     const nav = (navigator.language || 'en').slice(0, 2).toLowerCase()
     if (CODES.includes(nav)) return nav
   } catch { /* SSR / приватный режим */ }
@@ -37,11 +49,33 @@ export const lang = ref(detectInitial())
 /** true, если текущий язык пишется справа налево (арабский). */
 export const isRtl = computed(() => lang.value === 'ar')
 
-/** Проставляет lang/dir на <html> — вызывается при старте и при смене языка. */
+// ── SEO: локализованные title и description для <head> ──────
+// Строки берём из общего модуля seo-meta (его же использует конфиг сборки
+// для инъекции мета-тегов в пререндеренные страницы).
+// На клиенте обновляем title/description под выбранный язык; пререндер
+// проставляет их статически в HTML каждой языковой версии.
+import { SEO } from '@/seo-meta'
+
+/** Обновляет <title> и meta description под текущий язык. */
+export function applySeo(code = lang.value) {
+  if (typeof document === 'undefined') return
+  const s = SEO[code] || SEO.en
+  document.title = s.title
+  let m = document.querySelector('meta[name="description"]')
+  if (!m) {
+    m = document.createElement('meta')
+    m.setAttribute('name', 'description')
+    document.head.appendChild(m)
+  }
+  m.setAttribute('content', s.desc)
+}
+
+/** Проставляет lang/dir на <html> и обновляет SEO — при старте и при смене языка. */
 export function applyDom(code = lang.value) {
   if (typeof document === 'undefined') return
   document.documentElement.setAttribute('lang', code)
   document.documentElement.setAttribute('dir', code === 'ar' ? 'rtl' : 'ltr')
+  applySeo(code)
 }
 
 /** Смена языка: обновляет ref, localStorage и атрибуты <html>. */

@@ -1,0 +1,19 @@
+# robots.txt — updown.team
+User-agent: *
+Allow: /
+
+# AI / LLM crawlers (explicitly allowed for visibility in AI answers)
+User-agent: GPTBot
+Allow: /
+User-agent: OAI-SearchBot
+Allow: /
+User-agent: PerplexityBot
+Allow: /
+User-agent: ClaudeBot
+Allow: /
+User-agent: Google-Extended
+Allow: /
+User-agent: Bingbot
+Allow: /
+
+Sitemap: https://updown.team/sitemap.xml
