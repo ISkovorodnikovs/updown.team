@@ -10,11 +10,11 @@ import { ref, computed } from 'vue'
 
 export const LANGS = [
   { code: 'en', label: 'English' },
-  { code: 'ru', label: 'Русский' },
   { code: 'de', label: 'Deutsch' },
   { code: 'es', label: 'Español' },
   { code: 'it', label: 'Italiano' },
   { code: 'pt', label: 'Português' },
+  { code: 'ru', label: 'Русский' },
   { code: 'zh', label: '中文' },
   { code: 'ar', label: 'العربية' },
 ]

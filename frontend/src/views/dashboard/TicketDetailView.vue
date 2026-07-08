@@ -59,12 +59,12 @@ const replyLoading = ref(false)
 const messagesEl = ref(null)
 
 onMounted(async () => {
-  const [msgs, myTickets] = await Promise.all([
+  const [msgs, tk] = await Promise.all([
     ticketsApi.getMessages(ticketId),
-    ticketsApi.getMyTickets()
+    ticketsApi.getTicket(ticketId)
   ])
   messages.value = msgs.data
-  ticket.value = myTickets.data.find(x => x.id === ticketId)
+  ticket.value = tk.data
   loading.value = false
   await nextTick()
   scrollToBottom()

@@ -250,13 +250,28 @@ export class PartnerBotService {
     let sent = 0;
     let failed = 0;
     for (const user of users) {
+      const chatId = user.telegramUserId.toString();
       try {
-        await this.sendMessage(bot.token, user.telegramUserId.toString(), message);
+        await this.sendMessage(bot.token, chatId, message);
         sent++;
-        await new Promise((r) => setTimeout(r, 40)); // лимит Telegram
-      } catch {
-        failed++;
+      } catch (e: any) {
+        // 429 Too Many Requests: Telegram присылает retry_after — ждём и пробуем ещё раз
+        const status = e?.response?.status;
+        const retryAfter = e?.response?.data?.parameters?.retry_after;
+        if (status === 429 && retryAfter) {
+          await new Promise((r) => setTimeout(r, (retryAfter + 1) * 1000));
+          try {
+            await this.sendMessage(bot.token, chatId, message);
+            sent++;
+          } catch {
+            failed++;
+          }
+        } else {
+          // 403 (бот заблокирован пользователем) и прочее — штатно пропускаем
+          failed++;
+        }
       }
+      await new Promise((r) => setTimeout(r, 40)); // ~25 msg/сек, в пределах лимита Telegram
     }
     return { sent, failed };
   }

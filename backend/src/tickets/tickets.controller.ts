@@ -46,6 +46,11 @@ export class TicketsController {
     return this.ticketsService.getAllTickets(+page, +limit);
   }
 
+  @Get(':id')
+  getTicket(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.ticketsService.getTicket(id, user.id, user.role);
+  }
+
   @Get(':id/messages')
   getMessages(@Param('id') id: string, @CurrentUser() user: any) {
     return this.ticketsService.getMessages(id, user.id, user.role);

@@ -16,6 +16,7 @@ import { Subscription, SubscriptionStatus } from '../database/entities/subscript
 import { UserProduct, UserProductStatus } from '../database/entities/user-product.entity';
 import { PartnerChannel } from '../database/entities/partner-channel.entity';
 import { Partner } from '../database/entities/partner.entity';
+import { Banner, BannerTargetType } from '../database/entities/banner.entity';
 import { TelegramMainService } from '../telegram/telegram-main.service';
 
 const REFERRAL_PERCENT = 20;
@@ -46,11 +47,44 @@ export class PaymentService {
     @InjectRepository(UserProduct) private userProductRepo: Repository<UserProduct>,
     @InjectRepository(PartnerChannel) private partnerChannelRepo: Repository<PartnerChannel>,
     @InjectRepository(Partner) private partnerRepo: Repository<Partner>,
+    @InjectRepository(Banner) private bannerRepo: Repository<Banner>,
     private dataSource: DataSource,
     private telegramService: TelegramMainService,
   ) {}
 
   // ─── Расчёт цены одной позиции ─────────────────────────────────────────────
+
+  /**
+   * Серверный расчёт скидки баннера для данного типа позиции и периода.
+   * Клиентское значение полностью игнорируется. Возвращает 0, если активного
+   * применимого баннера нет. targetType баннера должен быть ALL или совпадать
+   * с типом позиции (планы / индикаторы / каналы).
+   */
+  private async serverBannerDiscount(type: TransactionType, months: number): Promise<number> {
+    const now = new Date();
+    const banners = await this.bannerRepo.find({
+      where: { isActive: true },
+      order: { createdAt: 'DESC' },
+    });
+    const banner = banners.find((b) => b.isActive && (!b.endsAt || new Date(b.endsAt) > now));
+    if (!banner) return 0;
+
+    // Соответствие типа позиции и targetType баннера
+    const map: Record<string, BannerTargetType> = {
+      [TransactionType.SUBSCRIPTION]: BannerTargetType.PLANS,
+      [TransactionType.INDICATOR]: BannerTargetType.INDICATORS,
+      [TransactionType.CHANNEL]: BannerTargetType.CHANNELS,
+    };
+    const applies =
+      banner.targetType === BannerTargetType.ALL || banner.targetType === map[type];
+    if (!applies) return 0;
+
+    // Скидка по периоду, иначе базовая; жёстко ограничиваем 0..90
+    const pd = banner.periodDiscounts;
+    const raw = pd && pd[months] != null ? Number(pd[months]) : Number(banner.discountPercent || 0);
+    if (!Number.isFinite(raw) || raw <= 0) return 0;
+    return Math.min(90, Math.max(0, raw));
+  }
 
   private async priceLineItem(item: {
     type: TransactionType;
@@ -72,10 +106,9 @@ export class PaymentService {
     if (!ALLOWED_PERIODS.includes(periodMonths)) {
       throw new BadRequestException('Invalid period. Allowed: 1, 3, 6, 12 months');
     }
-    const bannerDiscount = item.bannerDiscountPercent ?? 0;
-    if (bannerDiscount < 0 || bannerDiscount > 90) {
-      throw new BadRequestException('Invalid discount');
-    }
+    // ВНИМАНИЕ: скидку баннера НЕ берём из запроса клиента (это позволяло бы
+    // указать любой процент и заплатить меньше). Считаем её на сервере ниже,
+    // сверяясь с реально активным баннером и его targetType.
 
     let basePrice = 0;
     let description = '';
@@ -99,6 +132,8 @@ export class PaymentService {
       throw new BadRequestException('Invalid payment params');
     }
 
+    // Скидка баннера — только серверная, из активного применимого баннера
+    const bannerDiscount = await this.serverBannerDiscount(item.type, periodMonths);
     const periodDiscount = PERIOD_DISCOUNTS[periodMonths] ?? 0;
     const discountPercent = Math.max(periodDiscount, bannerDiscount);
     const originalAmount = +(basePrice * periodMonths).toFixed(2);
@@ -395,7 +430,13 @@ export class PaymentService {
         await this.telegramService.sendMessage(
           `⚠️ Оплачено неверно (меньше)\n👤 ${userTag}\n💵 ожидалось ${tx.amount}, получено ${data.payment_amount ?? '?'}\n🆔 ${tx.orderId}`,
         );
-      } else if ([TransactionStatus.FAILED, TransactionStatus.CANCEL, TransactionStatus.SYSTEM_FAIL].includes(status as any)) {
+      } else if (status === TransactionStatus.CANCEL) {
+        // Счёт не оплачен: пользователь закрыл окно или истекло время. Это НЕ ошибка.
+        this.logger.log(`Счёт не оплачен (cancel/expired): ${tx.orderId}`);
+        await this.telegramService.sendMessage(
+          `⏳ Счёт не оплачен (отменён или истёк по времени)\n👤 ${userTag}\n💵 ${tx.amount} USDT\n📦 ${tx.description || tx.type}\n🆔 ${tx.orderId}`,
+        );
+      } else if ([TransactionStatus.FAILED, TransactionStatus.SYSTEM_FAIL].includes(status as any)) {
         await this.telegramService.sendMessage(
           `❌ Ошибка оплаты [${status}]\n👤 ${userTag}\n💵 ${tx.amount} USDT\n🆔 ${tx.orderId}`,
         );

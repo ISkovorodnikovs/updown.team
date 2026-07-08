@@ -43,6 +43,19 @@ export class TicketsService {
     return { items, total };
   }
 
+  async getTicket(ticketId: string, userId: string, role: UserRole) {
+    const ticket = await this.ticketRepo.findOne({
+      where: { id: ticketId },
+      relations: ['user'],
+    });
+    if (!ticket) throw new NotFoundException();
+
+    const isAdmin = [UserRole.ADMIN, UserRole.OWNER].includes(role);
+    if (!isAdmin && ticket.userId !== userId) throw new ForbiddenException();
+
+    return ticket;
+  }
+
   async getMessages(ticketId: string, userId: string, role: UserRole) {
     const ticket = await this.ticketRepo.findOne({ where: { id: ticketId } });
     if (!ticket) throw new NotFoundException();

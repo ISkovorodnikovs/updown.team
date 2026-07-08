@@ -84,6 +84,7 @@ export const ticketsApi = {
   create: (data) => api.post('/tickets', data),
   getMyTickets: () => api.get('/tickets/my'),
   getAllTickets: (params) => api.get('/tickets/all', { params }),
+  getTicket: (id) => api.get(`/tickets/${id}`),
   getMessages: (id) => api.get(`/tickets/${id}/messages`),
   reply: (id, message) => api.post(`/tickets/${id}/reply`, { message }),
   close: (id) => api.put(`/tickets/${id}/close`),

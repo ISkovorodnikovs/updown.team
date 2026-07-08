@@ -20,28 +20,65 @@ export class ExpiryService {
     private telegram: TelegramMainService,
   ) {}
 
+  // ─── Устойчивость к кратким обрывам связи с БД ────────────────────────────
+  private isTransientDbError(e: any): boolean {
+    const msg = String(e?.message || e).toLowerCase();
+    const code = String(e?.code || '');
+    return (
+      ['ETIMEDOUT', 'ECONNRESET', 'ECONNREFUSED', 'EPIPE'].includes(code) ||
+      msg.includes('etimedout') ||
+      msg.includes('econnreset') ||
+      msg.includes('connection terminated') ||
+      msg.includes('server closed the connection') ||
+      msg.includes('timeout')
+    );
+  }
+
+  private async withDbRetry<T>(fn: () => Promise<T>, label: string, attempts = 4, delayMs = 5000): Promise<T> {
+    let lastErr: any;
+    for (let i = 1; i <= attempts; i++) {
+      try {
+        return await fn();
+      } catch (e) {
+        lastErr = e;
+        if (!this.isTransientDbError(e) || i === attempts) throw e;
+        this.logger.warn(`${label}: транзиентная ошибка БД (попытка ${i}/${attempts}): ${e.message} — повтор через ${delayMs}мс`);
+        await new Promise((r) => setTimeout(r, delayMs));
+      }
+    }
+    throw lastErr;
+  }
+
   // ─── 1. Пометка истёкших (ежедневно в 5:30 UTC, до дайджеста) ──────────────
   @Cron('30 5 * * *')
   async markExpired() {
     const now = new Date();
     try {
-      const s = await this.subRepo.update(
-        { status: SubscriptionStatus.ACTIVE, expiresAt: LessThan(now) },
-        { status: SubscriptionStatus.EXPIRED },
-      );
-      const p = await this.userProductRepo.update(
-        { status: UserProductStatus.ACTIVE, expiresAt: LessThan(now) },
-        { status: UserProductStatus.EXPIRED },
-      );
-      // Партнёрские каналы: статуса нет, гасим isActive
-      const c = await this.channelRepo.update(
-        { isActive: true, expiresAt: LessThan(now) },
-        { isActive: false },
-      );
+      const { s, p, c } = await this.withDbRetry(async () => {
+        const s = await this.subRepo.update(
+          { status: SubscriptionStatus.ACTIVE, expiresAt: LessThan(now) },
+          { status: SubscriptionStatus.EXPIRED },
+        );
+        const p = await this.userProductRepo.update(
+          { status: UserProductStatus.ACTIVE, expiresAt: LessThan(now) },
+          { status: UserProductStatus.EXPIRED },
+        );
+        // Партнёрские каналы: статуса нет, гасим isActive
+        const c = await this.channelRepo.update(
+          { isActive: true, expiresAt: LessThan(now) },
+          { isActive: false },
+        );
+        return { s, p, c };
+      }, 'markExpired');
       this.logger.log(`Expiry: subs=${s.affected ?? 0}, products=${p.affected ?? 0}, channels=${c.affected ?? 0}`);
     } catch (e) {
       this.logger.error(`markExpired error: ${e.message}`);
-      await this.telegram.sendMessage(`❗ Ошибка крона истечения: ${e.message}`).catch(() => {});
+      const transient = this.isTransientDbError(e);
+      await this.telegram.sendMessage(
+        transient
+          ? `⏱ Крон истечения: БД недоступна после нескольких попыток — ${e.message}. Прогон повторится по расписанию.`
+          : `❗ Ошибка крона истечения: ${e.message}`,
+      ).catch(() => {});
     }
   }
 
@@ -108,7 +145,12 @@ export class ExpiryService {
       }
     } catch (e) {
       this.logger.error(`sendExpiryDigest error: ${e.message}`);
-      await this.telegram.sendMessage(`❗ Ошибка дайджеста истечения: ${e.message}`).catch(() => {});
+      const transient = this.isTransientDbError(e);
+      await this.telegram.sendMessage(
+        transient
+          ? `⏱ Дайджест истечения: временная недоступность БД — ${e.message}. Повтор по расписанию.`
+          : `❗ Ошибка дайджеста истечения: ${e.message}`,
+      ).catch(() => {});
     }
   }
 

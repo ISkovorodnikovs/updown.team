@@ -37,8 +37,22 @@ import databaseConfig from './config/database.config';
         database: config.get('DB_DATABASE', 'updown_db'),
         entities: [__dirname + '/database/entities/*.entity{.ts,.js}'],
         migrations: [__dirname + '/database/migrations/*{.ts,.js}'],
-        synchronize: true, // TypeORM auto-creates/updates tables on start
+        // ПРОД: synchronize должен быть false (иначе TypeORM может молча удалить
+        // колонку/данные при изменении сущности). Управляется через env:
+        // в dev можно выставить DB_SYNCHRONIZE=true, в проде — не задавать (=false).
+        synchronize: config.get('DB_SYNCHRONIZE') === 'true',
         logging: config.get('LOG_SQL') === 'true',
+        // Устойчивость к кратким обрывам связи с БД (причина ETIMEDOUT в кронах):
+        // повторные попытки начального подключения и keep-alive пула.
+        retryAttempts: 10,
+        retryDelay: 3000,
+        keepConnectionAlive: true,
+        extra: {
+          max: parseInt(config.get('DB_POOL_MAX', '10')),
+          connectionTimeoutMillis: 10000,
+          idleTimeoutMillis: 30000,
+          keepAlive: true,
+        },
       }),
       inject: [ConfigService],
     }),
