@@ -21,3 +21,10 @@ jobs:
             cd /opt/apps/UpDown
             git pull origin main
             docker compose up -d --build
+            # IndexNow: notify Bing / Yandex / Seznam / Naver that landing pages changed.
+            # Google does not participate in IndexNow (uses sitemap + Search Console).
+            sleep 5
+            curl -sS -X POST "https://api.indexnow.org/indexnow" \
+              -H "Content-Type: application/json; charset=utf-8" \
+              -d '{"host":"updown.team","key":"fb2bd78cf69a0ba08a90c1485580817d","keyLocation":"https://updown.team/fb2bd78cf69a0ba08a90c1485580817d.txt","urlList":["https://updown.team/","https://updown.team/de","https://updown.team/es","https://updown.team/it","https://updown.team/pt","https://updown.team/ru","https://updown.team/zh","https://updown.team/ar"]}' \
+              && echo "IndexNow: pinged" || echo "IndexNow: ping failed (non-fatal)"
