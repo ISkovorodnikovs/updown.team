@@ -12,12 +12,12 @@
         <table class="data-table">
           <thead>
             <tr>
-              <th>Email</th>
-              <th>UUID</th>
-              <th>Реф. код</th>
-              <th>Реферер UUID</th>
-              <th>Баланс</th>
-              <th>Действия</th>
+              <th>{{ t.email || 'Email' }}</th>
+              <th>{{ t.userId }}</th>
+              <th>Ref. code</th>
+              <th>{{ t.newReferrer }}</th>
+              <th>{{ t.balance }}</th>
+              <th>{{ t.actions }}</th>
             </tr>
           </thead>
           <tbody>
@@ -25,7 +25,7 @@
               <td>{{ u.email }}</td>
               <td class="mono-cell">
                 {{ u.id.substring(0,10) }}…
-                <button class="btn-cp" @click="copy(u.id)" title="Копировать UUID">📋</button>
+                <button class="btn-cp" @click="copy(u.id)" :title="t.copyUuid">📋</button>
               </td>
               <td class="mono-cell">
                 <span v-if="u.referralCode">{{ u.referralCode }}</span>
@@ -40,10 +40,10 @@
               <td :class="{ 'acc': Number(u.referralBalance) > 0 }">{{ Number(u.referralBalance||0).toFixed(2) }} $</td>
               <td>
                 <div class="row-actions">
-                  <button class="btn btn--sm btn--accent" @click="prefillCredit(u)">💰 Начислить</button>
-                  <button class="btn btn--sm btn--outline" @click="prefillReassign(u)">🔄 Реферер</button>
-                  <button class="btn btn--sm btn--outline" @click="loadUserEarnings(u)">📋 История</button>
-                  <button class="btn btn--sm btn--danger" @click="prefillZero(u)">🔴 Обнулить</button>
+                  <button class="btn btn--sm btn--accent" @click="prefillCredit(u)">{{ t.btnCredit }}</button>
+                  <button class="btn btn--sm btn--outline" @click="prefillReassign(u)">{{ t.btnReferrer }}</button>
+                  <button class="btn btn--sm btn--outline" @click="loadUserEarnings(u)">{{ t.btnHistory }}</button>
+                  <button class="btn btn--sm btn--danger" @click="prefillZero(u)">{{ t.btnZero }}</button>
                 </div>
               </td>
             </tr>
@@ -89,7 +89,7 @@
         </div>
         <div class="form-group">
           <label>{{ t.newReferrer }}</label>
-          <input class="inp" v-model="reassign.newReferrerId" placeholder="Referrer UUID (пусто = сброс)" />
+          <input class="inp" v-model="reassign.newReferrerId" :placeholder="t.resetHint" />
         </div>
       </div>
       <button class="btn btn--accent" @click="doReassign" :disabled="reassignLoading">{{ reassignLoading ? '...' : t.reassignBtn }}</button>
@@ -152,8 +152,9 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { referralApi } from '@/api'
+import { useT } from '@/i18n'
+import dict from '@/i18n/dicts/adminReferral'
 
-const lang = computed(() => localStorage.getItem('ud-lang') || 'en')
 const userSearch = ref(''); const userList = ref([]); const searched = ref(false)
 const copyMsg = ref('')
 let searchTimer = null
@@ -187,7 +188,7 @@ function loadUserEarnings(u) {
 
 function copy(text) {
   navigator.clipboard.writeText(text)
-  copyMsg.value = 'Скопировано!'
+  copyMsg.value = t.value.copied
   setTimeout(() => copyMsg.value = '', 2000)
 }
 
@@ -214,7 +215,7 @@ async function doReassign() {
 // Zero
 const zeroUserId = ref(''); const zeroLoading = ref(false); const zeroOk = ref(false); const zeroErr = ref('')
 async function doZero() {
-  if (!confirm(lang.value === 'ru' ? 'Обнулить баланс? Данные аудита сохранятся.' : 'Zero balance? Audit data is preserved.')) return
+  if (!confirm(t.value.confirmZero)) return
   zeroLoading.value = true; zeroOk.value = false; zeroErr.value = ''
   try { await referralApi.zeroBalance(zeroUserId.value); zeroOk.value = true; zeroUserId.value = '' }
   catch (e) { zeroErr.value = e.response?.data?.message || 'Error' }
@@ -230,42 +231,7 @@ async function loadEarnings() {
   finally { earningsLoading.value = false }
 }
 
-const t = computed(() => {
-  const r = lang.value === 'ru'
-  return {
-    title: r ? 'Управление рефералами' : 'Referral Management',
-    searchTitle: r ? 'Поиск пользователя' : 'Find User',
-    searchPh: r ? 'Email или реферальный код...' : 'Email or referral code...',
-    noUsers: r ? 'Пользователи не найдены' : 'No users found',
-    userId: r ? 'UUID пользователя' : 'User UUID',
-    creditTitle: r ? 'Ручное начисление' : 'Manual Credit',
-    amount: r ? 'Сумма (USDT)' : 'Amount (USDT)',
-    percent: r ? 'Процент' : 'Percent',
-    note: r ? 'Примечание' : 'Note',
-    notePh: r ? 'Причина...' : 'Reason...',
-    creditBtn: r ? 'Начислить' : 'Credit',
-    creditOk: r ? 'Начислено' : 'Credited',
-    reassignTitle: r ? 'Переназначить реферера' : 'Reassign Referrer',
-    newReferrer: r ? 'Новый реферер UUID' : 'New Referrer UUID',
-    reassignBtn: r ? 'Переназначить' : 'Reassign',
-    reassignOk: r ? 'Обновлено' : 'Updated',
-    zeroTitle: r ? 'Обнулить баланс' : 'Zero Balance',
-    zeroSub: r ? 'Записи получают isZeroed=true, история сохраняется.' : 'Records get isZeroed=true, history preserved.',
-    zeroBtn: r ? 'Обнулить' : 'Zero Out',
-    zeroOk: r ? 'Обнулено' : 'Zeroed',
-    earningsTitle: r ? 'История начислений' : 'Earnings History',
-    load: r ? 'Загрузить' : 'Load',
-    date: r ? 'Дата' : 'Date',
-    amount2: r ? 'Сумма' : 'Amount',
-    percent2: r ? '%' : '%',
-    type: r ? 'Тип' : 'Type',
-    zeroed: r ? 'Обнулено' : 'Zeroed',
-    manual: r ? 'Ручное' : 'Manual',
-    auto: r ? 'Авто' : 'Auto',
-    yes: r ? 'да' : 'yes',
-    noEarnings: r ? 'Нет записей' : 'No records',
-  }
-})
+const t = useT(dict)
 </script>
 
 <style lang="scss" scoped>

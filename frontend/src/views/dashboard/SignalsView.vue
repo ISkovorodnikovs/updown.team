@@ -108,8 +108,9 @@
 import { ref, computed, onMounted } from 'vue'
 import { shopApi, signalsApi } from '@/api'
 import { useCartStore } from '@/stores/cart'
+import { useT } from '@/i18n'
+import dict from '@/i18n/dicts/signals'
 
-const lang = computed(() => localStorage.getItem('ud-lang') || 'en')
 const channels = ref([])
 const signalsData = ref({ signals: [], tape: [], updatedAt: null })
 const cartStore = useCartStore()
@@ -135,18 +136,16 @@ const fmtTape = (d) => {
 const tfLabel = (tf) => tf != null ? `M${tf}` : ''
 
 function statusLabel(sig) {
-  const r = lang.value === 'ru'
-  if (!sig) return r ? 'Ожидание' : 'Awaiting'
-  return sig.status === 'closed' ? (r ? 'Закрыт' : 'Closed') : (r ? 'Активен' : 'Active')
+  if (!sig) return t.value.stAwaiting
+  return sig.status === 'closed' ? t.value.stClosed : t.value.stActive
 }
 function positionLabel(sig) {
-  const r = lang.value === 'ru'
   const map = {
-    given: r ? 'Сигнал дан' : 'Signal given',
-    in_zone: r ? 'В зоне набора' : 'In entry zone',
+    given: t.value.posGiven,
+    in_zone: t.value.posInZone,
     tp1: 'TP1', tp2: 'TP2', tp3: 'TP3', tp4: 'TP4', tp5: 'TP5', sl: 'Stop Loss',
-    all_targets: r ? 'Все цели достигнуты' : 'All targets hit',
-    closed_opposite: r ? 'Закрыт' : 'Closed',
+    all_targets: t.value.posAllTargets,
+    closed_opposite: t.value.posClosed,
   }
   return map[sig?.position] || '—'
 }
@@ -157,39 +156,7 @@ function addToCart(ch) {
 }
 function isInCart(id) { return !!cartStore.items.find(i => i.id === id) }
 
-const t = computed(() => {
-  const r = lang.value === 'ru'
-  return {
-    title: r ? 'Сигналы' : 'Signals',
-    signalDay: r ? 'Актуальный сигнал от индикатора AiView' : 'Actual signal from AiView indicator',
-    given: r ? 'Дан' : 'Given',
-    zone: r ? 'Зона набора' : 'Entry zone',
-    targets: r ? 'Тейки' : 'Targets',
-    stop: 'Stop',
-    position: r ? 'Положение' : 'Position',
-    profit: r ? 'Профит' : 'Profit',
-    closedAt: r ? 'Закрыт' : 'Closed at',
-    awaiting: r ? 'Сигнал по этой теме пока недоступен.' : 'No signal for this topic yet.',
-    disc1: r
-      ? 'Прошлые результаты не гарантируют будущих.'
-      : 'Past performance does not guarantee future results.',
-    disc2: r
-      ? 'Это не является финансовой рекомендацией. Оценивайте свои возможности и риски.'
-      : 'This is not financial advice. Assess your own capabilities and risks.',
-    disc3: r
-      ? 'Если вы не можете оценить риски самостоятельно — рекомендуем пройти'
-      : 'If you cannot assess the risks on your own, we recommend taking the',
-    discEdu: r ? 'обучение' : 'education course',
-    channels: r ? 'Сигнальные каналы' : 'Signal Channels',
-    mo: r ? 'мес' : 'mo',
-    addToCart: r ? 'В корзину' : 'Add to Cart',
-    owned: r ? 'Куплено' : 'Owned',
-    inCart: r ? 'В корзине' : 'In Cart',
-    cart: r ? 'Корзина' : 'Cart',
-    items: r ? 'тов.' : 'items',
-    goToCheckout: r ? 'Перейти к оплате' : 'Go to Checkout',
-  }
-})
+const t = useT(dict)
 </script>
 
 <style lang="scss" scoped>

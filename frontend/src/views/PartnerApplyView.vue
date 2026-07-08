@@ -13,7 +13,7 @@
             <svg v-if="theme === 'dark'" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
             <svg v-else width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
           </button>
-          <button class="lang-btn" @click="toggleLang">{{ lang === 'ru' ? 'EN' : 'RU' }}</button>
+          <LangSwitcher />
           <router-link to="/" class="back-link">← {{ t.backHome }}</router-link>
         </div>
       </div>
@@ -145,6 +145,9 @@
 import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { partnersApi } from '@/api'
+import LangSwitcher from '@/components/LangSwitcher.vue'
+import { useT } from '@/i18n'
+import dict from '@/i18n/dicts/partnerApply'
 
 const auth = useAuthStore()
 const loading = ref(false)
@@ -154,73 +157,10 @@ const existing = ref(null)
 const form = ref({ companyName: '', description: '' })
 
 const theme = ref(localStorage.getItem('ud-theme') || 'dark')
-const lang = ref(localStorage.getItem('ud-lang') || 'en')
 
 function toggleTheme() { theme.value = theme.value === 'dark' ? 'light' : 'dark'; localStorage.setItem('ud-theme', theme.value) }
-function toggleLang() { lang.value = lang.value === 'ru' ? 'en' : 'ru'; localStorage.setItem('ud-lang', lang.value) }
 
-const translations = {
-  en: {
-    backHome: 'Back to Home', applyNow: 'Apply Now →',
-    badge: 'Partnership Program',
-    heroTitle: 'Build your business on UpDown infrastructure',
-    heroSub: 'Join a network of partners with access to professional signals, analytics, and complete white-label tools to scale your trading business.',
-    benefitsLabel: 'What you get', benefitsTitle: 'Exclusive partner conditions',
-    benefits: [
-      { icon: '💰', title: 'Referral Bonuses', desc: 'Earn from every user you bring in. Transparent revenue share from day one — no caps, no delays.' },
-      { icon: '📡', title: 'Premium Signals', desc: 'Full access to UpDown crypto & forex signals with AI-powered analytics for your audience.' },
-      { icon: '🤖', title: 'Your Own Telegram Bot', desc: 'A branded bot with custom buttons, mass broadcasts and real-time audience statistics.' },
-      { icon: '📊', title: 'Advanced Analytics', desc: 'Real-time dashboard: user count, link clicks, conversions and growth dynamics.' },
-      { icon: '🔬', title: 'R&D Access', desc: 'First access to new indicators, tools and platform features before public release.' },
-      { icon: '🎯', title: 'Priority Support', desc: 'Dedicated partner support channel. Your requests are handled first, 7 days a week.' },
-    ],
-    stats: [{ num: '85%', label: 'Revenue Share' }, { num: '24h', label: 'Review time' }, { num: '6+', label: 'Products included' }, { num: '∞', label: 'Audience scale' }],
-    perks: ['Access to all signals and indicators', 'Revenue share from the first client', 'Technical resources and priority support', 'White Label bot with full customisation', 'Analytics dashboard and broadcast tools', 'Early access to new platform features'],
-    formSectionLabel: 'Apply', formSectionTitle: 'Ready to partner with us?',
-    formSectionSub: 'Fill in the form — we review every application within 24 hours and reach out personally.',
-    authRequired: 'Sign in to apply', authRequiredSub: 'Create a free account or sign in to submit your partner application.',
-    signIn: 'Sign In', register: 'Create Account',
-    successTitle: 'Application submitted!', successSub: 'We will notify you by email about the decision within 24 hours.',
-    toDashboard: 'Go to Dashboard',
-    appStatus: { pending: 'Application under review', approved: 'Application approved', rejected: 'Application rejected' },
-    rejectionReason: 'Reason', approvedHint: 'Your application is approved. Set up your Telegram bot and start growing your audience in the dashboard.',
-    formTitle: 'Partner Application', formSub: 'Tell us about your project and audience',
-    companyLabel: 'Company / Project name *', companyPlaceholder: 'e.g. CryptoSignals Pro',
-    descLabel: 'Description *', descPlaceholder: 'Tell us about your business, target audience and why you want to become a partner...',
-    submitBtn: 'SUBMIT APPLICATION', sending: 'Sending...', formNote: 'All applications are reviewed manually within 24 hours.',
-  },
-  ru: {
-    backHome: 'На главную', applyNow: 'Подать заявку →',
-    badge: 'Партнёрская программа',
-    heroTitle: 'Строй бизнес на инфраструктуре UpDown',
-    heroSub: 'Присоединяйся к сети партнёров с доступом к профессиональным сигналам, аналитике и полноценным white-label инструментам для масштабирования торгового бизнеса.',
-    benefitsLabel: 'Что вы получите', benefitsTitle: 'Уникальные условия для партнёров',
-    benefits: [
-      { icon: '💰', title: 'Реферальные бонусы', desc: 'Зарабатывай с каждого приведённого пользователя. Прозрачный revenue share с первого клиента — без потолка.' },
-      { icon: '📡', title: 'Лучшие сигналы', desc: 'Полный доступ к крипто и форекс сигналам UpDown с AI-аналитикой для вашей аудитории.' },
-      { icon: '🤖', title: 'Собственный Telegram-бот', desc: 'Брендированный бот с кастомными кнопками, рассылками и статистикой аудитории в реальном времени.' },
-      { icon: '📊', title: 'Передовая аналитика', desc: 'Дашборд в реальном времени: количество пользователей, переходы, конверсии и рост.' },
-      { icon: '🔬', title: 'Доступ к разработкам', desc: 'Первый доступ к новым индикаторам, инструментам и функциям платформы до публичного релиза.' },
-      { icon: '🎯', title: 'Приоритетная поддержка', desc: 'Выделенный канал поддержки. Ваши запросы обрабатываются первыми, 7 дней в неделю.' },
-    ],
-    stats: [{ num: '85%', label: 'Revenue Share' }, { num: '24ч', label: 'Рассмотрение' }, { num: '6+', label: 'Продуктов' }, { num: '∞', label: 'Масштаб' }],
-    perks: ['Доступ ко всем сигналам и индикаторам', 'Revenue share с первого клиента', 'Технические ресурсы и приоритетная поддержка', 'White Label бот с полной кастомизацией', 'Аналитический дашборд и инструменты рассылок', 'Ранний доступ к новым функциям платформы'],
-    formSectionLabel: 'Подать заявку', formSectionTitle: 'Готовы стать партнёром?',
-    formSectionSub: 'Заполните форму — мы рассматриваем каждую заявку в течение 24 часов и выходим на связь лично.',
-    authRequired: 'Войдите для подачи заявки', authRequiredSub: 'Создайте бесплатный аккаунт или войдите чтобы отправить заявку.',
-    signIn: 'Войти', register: 'Создать аккаунт',
-    successTitle: 'Заявка отправлена!', successSub: 'Мы уведомим вас по email о решении в течение 24 часов.',
-    toDashboard: 'В личный кабинет',
-    appStatus: { pending: 'Заявка на рассмотрении', approved: 'Заявка одобрена', rejected: 'Заявка отклонена' },
-    rejectionReason: 'Причина', approvedHint: 'Ваша заявка одобрена. Настройте Telegram-бот и начните развивать аудиторию в личном кабинете.',
-    formTitle: 'Заявка партнёра', formSub: 'Расскажите о вашем проекте и аудитории',
-    companyLabel: 'Название компании / проекта *', companyPlaceholder: 'например, CryptoSignals Pro',
-    descLabel: 'Описание *', descPlaceholder: 'Расскажите о вашем бизнесе, целевой аудитории и почему хотите стать партнёром...',
-    submitBtn: 'ОТПРАВИТЬ ЗАЯВКУ', sending: 'Отправка...', formNote: 'Все заявки рассматриваются вручную в течение 24 часов.',
-  }
-}
-
-const t = computed(() => translations[lang.value])
+const t = useT(dict)
 
 onMounted(async () => {
   if (auth.isAuthenticated) {
@@ -231,7 +171,7 @@ onMounted(async () => {
 async function submit() {
   loading.value = true; error.value = ''
   try { await partnersApi.apply(form.value); submitted.value = true }
-  catch (e) { error.value = e.response?.data?.message || (lang.value === 'ru' ? 'Ошибка отправки' : 'Submission failed') }
+  catch (e) { error.value = e.response?.data?.message || t.value.submitError }
   finally { loading.value = false }
 }
 </script>

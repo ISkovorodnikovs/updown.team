@@ -1,8 +1,9 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { partnersApi, paymentApi } from '@/api'
+import { useT } from '@/i18n'
+import dict from '@/i18n/dicts/partnerChannels'
 
-const L = computed(() => (localStorage.getItem('ud-lang') || 'en') === 'ru')
 const channels = ref([])
 const loading = ref(true)
 
@@ -40,7 +41,7 @@ const isActive = (c) => c.isActive && (!c.expiresAt || new Date(c.expiresAt) > n
 const fmtDate = (d) => d ? new Date(d).toISOString().slice(0, 10) : '—'
 
 async function payConnect() {
-  if (!form.value.name) { connectErr.value = L.value ? 'Введите название' : 'Enter a name'; return }
+  if (!form.value.name) { connectErr.value = t.value.enterName; return }
   paying.value = true; connectErr.value = ''; payUrl.value = ''
   try {
     const { data } = await paymentApi.createChannelInvoice({ ...form.value })
@@ -77,31 +78,7 @@ const preview = computed(() => {
   return out
 })
 
-const t = computed(() => {
-  const r = L.value
-  return {
-    title: r ? 'Мои каналы' : 'My Channels',
-    sub: r ? 'Каналы с поставкой сигналов под вашим брендом' : 'White-label signal channels',
-    connect: r ? '+ Подключить канал' : '+ Connect Channel',
-    empty: r ? 'У вас пока нет подключённых каналов.' : 'No channels yet.',
-    loading: r ? 'Загрузка…' : 'Loading…',
-    active: r ? 'Активен' : 'Active', inactive: r ? 'Ожидает настройки' : 'Pending setup',
-    until: r ? 'до' : 'until', price: r ? 'Стоимость' : 'Price',
-    tpl: r ? 'Шаблон' : 'Template',
-    name: r ? 'Название канала' : 'Channel name',
-    asset: r ? 'Класс актива' : 'Asset', tf: 'Timeframe', dir: r ? 'Направление' : 'Direction',
-    period: r ? 'Период' : 'Period', mo: r ? 'мес' : 'mo',
-    total: r ? 'Итого' : 'Total', pay: r ? 'Оплатить' : 'Pay', cancel: r ? 'Отмена' : 'Cancel',
-    payLink: r ? 'Перейти к оплате' : 'Go to payment',
-    afterPay: r ? 'После оплаты администратор настроит поставку сигналов и активирует канал.' : 'After payment, admin sets up signal delivery and activates the channel.',
-    crypto: r ? 'Крипта' : 'Crypto', forex: r ? 'Форекс' : 'Forex', stocks: r ? 'Фонда' : 'Stocks', gold: r ? 'Золото' : 'Gold',
-    both: r ? 'Оба' : 'Both',
-    editTpl: r ? 'Шаблон сообщения' : 'Message Template',
-    tplHint: r ? 'Плейсхолдеры: {emoji} {symbol} {direction} {timeframe} {entry} {targets} {stop}' : 'Placeholders: {emoji} {symbol} {direction} {timeframe} {entry} {targets} {stop}',
-    livePreview: r ? 'Превью' : 'Preview',
-    save: r ? 'Сохранить' : 'Save',
-  }
-})
+const t = useT(dict)
 </script>
 
 <template>

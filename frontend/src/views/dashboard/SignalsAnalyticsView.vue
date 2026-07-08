@@ -2,9 +2,10 @@
 import { ref, computed, onMounted } from 'vue'
 import { analyticsApi, partnersApi } from '@/api'
 import { useAuthStore } from '@/stores/auth'
+import { useT } from '@/i18n'
+import dict from '@/i18n/dicts/signalsAnalytics'
 
 const auth = useAuthStore()
-const lang = computed(() => localStorage.getItem('ud-lang') || 'en')
 const isAdmin = computed(() => auth.isAdmin || auth.isOwner)
 
 const myChannels = ref([])
@@ -31,7 +32,7 @@ async function run() {
   const channelId = isAdmin.value && adminChannelId.value
     ? adminChannelId.value.trim()
     : selectedChannelId.value
-  if (!channelId) { error.value = lang.value === 'ru' ? 'Выберите канал' : 'Select a channel'; return }
+  if (!channelId) { error.value = t.value.selectChannel; return }
   loading.value = true
   try {
     const fromIso = new Date(from.value).toISOString()
@@ -66,27 +67,7 @@ const chart = computed(() => {
   return { w, h, line, area, first: deps[0], last: deps[deps.length - 1] }
 })
 
-const t = computed(() => {
-  const r = lang.value === 'ru'
-  return {
-    title: r ? 'Аналитика сигналов' : 'Signals Analytics',
-    sub: r ? 'Статистика и доходность по каналу' : 'Channel statistics and performance',
-    channel: r ? 'Канал' : 'Channel',
-    adminInput: r ? 'Или channelId вручную (админ)' : 'Or channelId manually (admin)',
-    from: r ? 'С' : 'From', to: r ? 'По' : 'To',
-    run: r ? 'Сформировать' : 'Run',
-    noChannels: r ? 'Нет подключённых каналов с настроенной поставкой.' : 'No configured channels.',
-    deals: r ? 'Всего сделок' : 'Total deals',
-    win: r ? 'В плюс' : 'Wins', loss: r ? 'В минус' : 'Losses',
-    wl: r ? 'П/У' : 'W/L', long: 'LONG', short: 'SHORT',
-    roi: 'ROI', pnl: 'PnL', deposit: r ? 'Депозит' : 'Deposit',
-    tps: r ? 'Достижение тейков' : 'Take-profit hits',
-    growth: r ? 'Рост депозита (от 1000 USDT, 1% на сделку)' : 'Deposit growth (from 1000 USDT, 1%/trade)',
-    table: r ? 'Сделки' : 'Trades',
-    empty: r ? 'Нет данных за период' : 'No data for period',
-    note3m: r ? 'Партнёрам доступен период до 3 месяцев.' : 'Partners: up to 3 months range.',
-  }
-})
+const t = useT(dict)
 
 function fmt(d) { return d ? new Date(d).toISOString().slice(0, 16).replace('T', ' ') : '—' }
 </script>

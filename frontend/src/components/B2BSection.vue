@@ -2,6 +2,8 @@
 import { ref, computed, onMounted } from 'vue'
 import { partnersApi } from '@/api'
 import { useAuthStore } from '@/stores/auth'
+import { useT } from '@/i18n'
+import dict from '@/i18n/dicts/b2b'
 
 const props = defineProps({
   source: { type: String, required: true },      // 'whitelabel' | 'affiliate' | 'development'
@@ -12,7 +14,6 @@ const props = defineProps({
 })
 
 const auth = useAuthStore()
-const L = computed(() => (localStorage.getItem('ud-lang') || 'en') === 'ru')
 const isPartner = computed(() => auth.isPartner || auth.isAdmin || auth.isOwner)
 
 const application = ref(null)
@@ -35,7 +36,7 @@ const status = computed(() => application.value?.status || null)
 
 async function submit() {
   if (!companyName.value || !description.value) {
-    error.value = L.value ? 'Заполните название и описание' : 'Fill in name and description'
+    error.value = t.value.fillNameDesc
     return
   }
   submitting.value = true; error.value = ''
@@ -53,25 +54,7 @@ async function submit() {
   } finally { submitting.value = false }
 }
 
-const t = computed(() => {
-  const r = L.value
-  return {
-    apply: r ? 'Оставить заявку' : 'Apply',
-    pending: r ? 'Ваша заявка на рассмотрении — мы свяжемся с вами.' : 'Your application is under review — we will contact you.',
-    rejected: r ? 'Предыдущая заявка отклонена. Вы можете подать новую.' : 'Previous application was rejected. You can re-apply.',
-    partnerBadge: r ? 'Вы партнёр UpDown' : 'You are a UpDown partner',
-    toBot: r ? 'Мой бот' : 'My Bot',
-    toChannels: r ? 'Мои каналы' : 'My Channels',
-    toAnalytics: r ? 'Аналитика' : 'Analytics',
-    company: r ? 'Компания / имя' : 'Company / name',
-    descr: r ? 'Опишите, что вы хотите' : 'Describe what you want',
-    descrPh: r ? 'Расскажите о вашем проекте, аудитории, целях сотрудничества…' : 'Tell us about your project, audience, goals…',
-    send: r ? 'Отправить заявку' : 'Send application',
-    cancel: r ? 'Отмена' : 'Cancel',
-    sent: r ? 'Заявка отправлена! Мы свяжемся с вами.' : 'Application sent! We will contact you.',
-    benefits: r ? 'Что вы получаете' : 'What you get',
-  }
-})
+const t = useT(dict)
 </script>
 
 <template>

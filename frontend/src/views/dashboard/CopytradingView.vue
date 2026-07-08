@@ -1,31 +1,8 @@
 <script setup>
-import { computed } from 'vue'
+import { useT } from '@/i18n'
+import dict from '@/i18n/dicts/copytrading'
 
-const L = computed(() => (localStorage.getItem('ud-lang') || 'en') === 'ru')
-const d = computed(() => L.value ? ru : en)
-
-const ru = {
-  title: 'Копитрейдинг',
-  badge: 'Скоро',
-  tagline: 'Уже в ближайшее время — готовые торговые боты UpDown. Настройте их под свои стратегии, автоматизируйте сделки и ведите аналитику в одном месте.',
-  blocks: [
-    { icon: '🤖', h: 'Торговые боты', p: 'Подключайте готовых ботов и запускайте автоматическую торговлю по проверенным алгоритмам — без ручного контроля каждой сделки.' },
-    { icon: '⚙️', h: 'Гибкая настройка', p: 'Настраивайте ботов под свою стратегию: риск, объёмы, инструменты и таймфреймы. Ваш стиль торговли — ваши правила.' },
-    { icon: '📊', h: 'Аналитика результатов', p: 'Полная статистика по каждому боту: доходность, просадки, история сделок. Видите, что работает, и оптимизируете.' },
-  ],
-  soon: 'Раздел в активной разработке. Совсем скоро вы сможете подключать и настраивать торговых ботов прямо здесь.',
-}
-const en = {
-  title: 'Copytrading',
-  badge: 'Soon',
-  tagline: 'Coming very soon — ready-made UpDown trading bots. Configure them for your strategies, automate trades and track analytics in one place.',
-  blocks: [
-    { icon: '🤖', h: 'Trading bots', p: 'Connect ready bots and run automated trading on proven algorithms — without manually watching every trade.' },
-    { icon: '⚙️', h: 'Flexible setup', p: 'Tune bots to your strategy: risk, volumes, instruments and timeframes. Your trading style — your rules.' },
-    { icon: '📊', h: 'Performance analytics', p: 'Full stats per bot: returns, drawdowns, trade history. See what works and optimize.' },
-  ],
-  soon: 'This section is in active development. Very soon you will be able to connect and configure trading bots right here.',
-}
+const d = useT(dict)
 </script>
 
 <template>

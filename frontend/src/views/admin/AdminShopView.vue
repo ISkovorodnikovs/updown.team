@@ -1,8 +1,9 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { shopApi } from '@/api'
+import { useT } from '@/i18n'
+import dict from '@/i18n/dicts/adminShop'
 
-const lang = computed(() => localStorage.getItem('ud-lang') || 'en')
 const products = ref([])
 const showForm = ref(false)
 const editing = ref(null)
@@ -58,11 +59,11 @@ function openForm(p) {
 
 async function save() {
   if (!form.name || form.price === '' || form.price === null) {
-    formError.value = lang.value === 'ru' ? 'Заполните название и цену' : 'Name and price are required'
+    formError.value = t.value.errNamePrice
     return
   }
   if (Number(form.price) < 0) {
-    formError.value = lang.value === 'ru' ? 'Цена не может быть отрицательной' : 'Price cannot be negative'
+    formError.value = t.value.errNegPrice
     return
   }
   saving.value = true; formError.value = ''
@@ -95,40 +96,19 @@ async function save() {
 }
 
 async function removeProduct(p) {
-  const msg = lang.value === 'ru'
-    ? `Деактивировать "${p.name}"? Действующие доступы продолжат работать.`
-    : `Deactivate "${p.name}"? Existing accesses keep working.`
+  const msg = t.value.confirmDeactivate.replace('{name}', p.name)
   if (!confirm(msg)) return
   await shopApi.remove(p.id).catch(() => {})
   await load()
 }
 
 const typeLabel = (tp) => {
-  const r = lang.value === 'ru'
-  if (tp === 'education') return r ? 'Обучение' : 'Education'
-  if (tp === 'signal_channel') return r ? 'Канал' : 'Channel'
-  return r ? 'Индикатор' : 'Indicator'
+  if (tp === 'education') return t.value.tEducation
+  if (tp === 'signal_channel') return t.value.tChannel
+  return t.value.tIndicator
 }
 
-const t = computed(() => {
-  const r = lang.value === 'ru'
-  return {
-    title: r ? 'Управление магазином' : 'Manage Shop',
-    sub: r ? 'Индикаторы и сигнальные каналы — цены и доступность' : 'Indicators and signal channels — prices and availability',
-    add: r ? '+ Новый товар' : '+ New Product',
-    all: r ? 'Все' : 'All', ind: r ? 'Индикаторы' : 'Indicators', ch: r ? 'Каналы' : 'Channels',
-    edu: r ? 'Обучение' : 'Education',
-    seatsTotal: r ? 'Всего мест' : 'Total seats', seatsTaken: r ? 'Занято мест' : 'Seats taken',
-    name: r ? 'Название' : 'Name', type: r ? 'Тип' : 'Type', price: r ? 'Цена (USDT/мес)' : 'Price (USDT/mo)',
-    desc: r ? 'Описание' : 'Description', tv: 'TradingView URL', img: r ? 'URL картинки' : 'Image URL',
-    features: r ? 'Фичи (по одной на строку)' : 'Features (one per line)', badge: r ? 'Бейдж' : 'Badge',
-    sort: r ? 'Порядок' : 'Sort', active: r ? 'Активен' : 'Active',
-    edit: r ? 'Изменить' : 'Edit', deactivate: r ? 'Деактивировать' : 'Deactivate',
-    save: r ? 'Сохранить' : 'Save', cancel: r ? 'Отмена' : 'Cancel',
-    inactive: r ? 'НЕАКТИВЕН' : 'INACTIVE', empty: r ? 'Товаров пока нет' : 'No products yet',
-    loading: r ? 'Загрузка…' : 'Loading…',
-  }
-})
+const t = useT(dict)
 </script>
 
 <template>

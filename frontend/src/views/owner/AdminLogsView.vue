@@ -1,15 +1,15 @@
 <template>
   <div>
     <div class="page-header">
-      <h1>Лог действий администраторов</h1>
-      <p>Иммутабельный журнал всех действий</p>
+      <h1>{{ t.title }}</h1>
+      <p>{{ t.subtitle }}</p>
     </div>
 
     <div v-if="loading" class="spinner"></div>
     <div v-else class="card" style="padding:0;overflow:hidden">
       <table class="table">
         <thead>
-          <tr><th>Время</th><th>Администратор</th><th>Действие</th><th>Детали</th></tr>
+          <tr><th>{{ t.time }}</th><th>{{ t.admin }}</th><th>{{ t.action }}</th><th>{{ t.details }}</th></tr>
         </thead>
         <tbody>
           <tr v-for="log in logs" :key="log.id">
@@ -27,6 +27,9 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { adminApi } from '@/api'
+import { useT, fmtDateTime } from '@/i18n'
+import dict from '@/i18n/dicts/adminLogs'
+const t = useT(dict)
 
 const logs = ref([])
 const loading = ref(true)
@@ -37,7 +40,5 @@ onMounted(async () => {
   loading.value = false
 })
 
-function formatDate(d) {
-  return new Date(d).toLocaleString('ru-RU', { dateStyle: 'short', timeStyle: 'medium' })
-}
+function formatDate(d) { return fmtDateTime(d, { dateStyle: 'short', timeStyle: 'medium' }) }
 </script>

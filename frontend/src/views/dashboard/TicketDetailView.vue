@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="page-header" style="display:flex;align-items:center;gap:16px">
-      <router-link to="/dashboard/tickets" class="btn btn--outline btn--sm">← Назад</router-link>
+      <router-link to="/dashboard/tickets" class="btn btn--outline btn--sm">← {{ t.back }}</router-link>
       <div>
         <h1>{{ ticket?.subject }}</h1>
         <span v-if="ticket" :class="['badge', ticket.status === 'open' ? 'badge--green' : 'badge--gray']">
@@ -22,17 +22,17 @@
       </div>
 
       <div class="chat-input" v-if="ticket?.status === 'open'">
-        <textarea class="input" v-model="reply" placeholder="Напишите ответ..." rows="3" @keydown.ctrl.enter="sendReply"></textarea>
+        <textarea class="input" v-model="reply" :placeholder="t.replyPh" rows="3" @keydown.ctrl.enter="sendReply"></textarea>
         <div style="display:flex;gap:10px;margin-top:10px;align-items:center">
-          <button class="btn btn--primary btn--sm" @click="sendReply" :disabled="replyLoading || !reply">Отправить</button>
+          <button class="btn btn--primary btn--sm" @click="sendReply" :disabled="replyLoading || !reply">{{ t.send }}</button>
           <small style="color:var(--text-muted)">Ctrl+Enter</small>
           <button v-if="auth.isAdmin" class="btn btn--outline btn--sm" @click="closeTicket" style="margin-left:auto">
-            Закрыть тикет
+            {{ t.closeTicket }}
           </button>
         </div>
       </div>
       <div v-else class="closed-notice">
-        <span>🔒 Тикет закрыт</span>
+        <span>🔒 {{ t.closed }}</span>
       </div>
     </div>
   </div>
@@ -43,6 +43,9 @@ import { ref, onMounted, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { ticketsApi } from '@/api'
+import { useT, fmtDateTime } from '@/i18n'
+import dict from '@/i18n/dicts/ticketDetail'
+const t = useT(dict)
 
 const route = useRoute()
 const auth = useAuthStore()
@@ -61,7 +64,7 @@ onMounted(async () => {
     ticketsApi.getMyTickets()
   ])
   messages.value = msgs.data
-  ticket.value = myTickets.data.find(t => t.id === ticketId)
+  ticket.value = myTickets.data.find(x => x.id === ticketId)
   loading.value = false
   await nextTick()
   scrollToBottom()
@@ -89,9 +92,7 @@ async function closeTicket() {
   ticket.value = { ...ticket.value, status: 'closed' }
 }
 
-function formatDate(d) {
-  return new Date(d).toLocaleString('ru-RU', { dateStyle: 'short', timeStyle: 'short' })
-}
+function formatDate(d) { return fmtDateTime(d, { dateStyle: 'short', timeStyle: 'short' }) }
 </script>
 
 <style lang="scss" scoped>

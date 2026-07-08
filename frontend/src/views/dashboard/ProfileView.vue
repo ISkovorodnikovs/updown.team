@@ -1,83 +1,83 @@
 <template>
   <div>
     <div class="page-header">
-      <h1>Профиль</h1>
-      <p>Управление личными данными</p>
+      <h1>{{ t.title }}</h1>
+      <p>{{ t.subtitle }}</p>
     </div>
 
     <div class="profile-grid">
       <!-- Personal info -->
       <div class="card">
-        <h3>Личные данные</h3>
+        <h3>{{ t.personal }}</h3>
         <form @submit.prevent="saveProfile" style="margin-top:20px">
           <div v-if="profileMsg" :class="['alert', profileMsg.type === 'error' ? 'alert--error' : 'alert--success']">{{ profileMsg.text }}</div>
           <div class="form-group">
-            <label>Имя</label>
-            <input class="input" v-model="profile.firstName" placeholder="Иван" />
+            <label>{{ t.firstName }}</label>
+            <input class="input" v-model="profile.firstName" :placeholder="t.firstNamePh" />
           </div>
           <div class="form-group">
-            <label>Фамилия</label>
-            <input class="input" v-model="profile.lastName" placeholder="Иванов" />
+            <label>{{ t.lastName }}</label>
+            <input class="input" v-model="profile.lastName" :placeholder="t.lastNamePh" />
           </div>
           <div class="form-group">
-            <label>Email</label>
+            <label>{{ t.email }}</label>
             <input class="input" :value="auth.user?.email" disabled />
           </div>
           <button class="btn btn--primary" :disabled="profileLoading">
-            {{ profileLoading ? 'Сохраняем...' : 'Сохранить' }}
+            {{ profileLoading ? t.saving : t.save }}
           </button>
         </form>
       </div>
 
       <!-- Change email -->
       <div class="card">
-        <h3>Смена email</h3>
+        <h3>{{ t.changeEmail }}</h3>
         <form @submit.prevent="initiateEmailChange" style="margin-top:20px" v-if="!emailCodeSent">
           <div v-if="emailMsg" :class="['alert', emailMsg.type === 'error' ? 'alert--error' : 'alert--success']">{{ emailMsg.text }}</div>
           <div class="form-group">
-            <label>Новый email</label>
+            <label>{{ t.newEmail }}</label>
             <input class="input" v-model="newEmail" type="email" placeholder="new@email.com" required />
           </div>
-          <button class="btn btn--primary" :disabled="emailLoading">Получить код</button>
+          <button class="btn btn--primary" :disabled="emailLoading">{{ t.getCode }}</button>
         </form>
         <div v-if="emailCodeSent">
-          <div class="alert alert--info">Код отправлен на {{ newEmail }}</div>
+          <div class="alert alert--info">{{ t.codeSentTo }} {{ newEmail }}</div>
           <div class="form-group">
-            <label>Код подтверждения</label>
+            <label>{{ t.confirmCode }}</label>
             <input class="input" v-model="emailCode" placeholder="123456" maxlength="6" />
           </div>
-          <button class="btn btn--primary" @click="confirmEmailChange" :disabled="emailLoading">Подтвердить</button>
+          <button class="btn btn--primary" @click="confirmEmailChange" :disabled="emailLoading">{{ t.confirm }}</button>
         </div>
       </div>
 
       <!-- Change password -->
       <div class="card">
-        <h3>Смена пароля</h3>
+        <h3>{{ t.changePw }}</h3>
         <form @submit.prevent="changePassword" style="margin-top:20px">
           <div v-if="pwMsg" :class="['alert', pwMsg.type === 'error' ? 'alert--error' : 'alert--success']">{{ pwMsg.text }}</div>
           <div class="form-group">
-            <label>Текущий пароль</label>
+            <label>{{ t.currentPw }}</label>
             <input class="input" v-model="pw.current" type="password" required />
           </div>
           <div class="form-group">
-            <label>Новый пароль</label>
+            <label>{{ t.newPw }}</label>
             <input class="input" v-model="pw.new" type="password" required />
           </div>
           <div class="form-group">
-            <label>Повторите новый</label>
+            <label>{{ t.repeatNew }}</label>
             <input class="input" v-model="pw.confirm" type="password" required />
           </div>
-          <button class="btn btn--primary" :disabled="pwLoading">Изменить пароль</button>
+          <button class="btn btn--primary" :disabled="pwLoading">{{ t.changePwBtn }}</button>
         </form>
       </div>
 
       <!-- Security -->
       <div class="card">
-        <h3>Безопасность</h3>
+        <h3>{{ t.security }}</h3>
         <div class="security-item" style="margin-top:20px">
           <div>
-            <strong>Двухфакторная аутентификация</strong>
-            <p>Код на email при каждом входе</p>
+            <strong>{{ t.twoFa }}</strong>
+            <p>{{ t.twoFaHint }}</p>
           </div>
           <label class="toggle">
             <input type="checkbox" v-model="twoFaEnabled" @change="toggle2FA" />
@@ -94,6 +94,9 @@
 import { ref, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { usersApi } from '@/api'
+import { useT } from '@/i18n'
+import dict from '@/i18n/dicts/profile'
+const t = useT(dict)
 
 const auth = useAuthStore()
 
@@ -125,8 +128,8 @@ async function saveProfile() {
   try {
     const { data } = await usersApi.updateMe(profile.value)
     auth.user = { ...auth.user, ...data }
-    profileMsg.value = { type: 'success', text: 'Данные сохранены' }
-  } catch (e) { profileMsg.value = { type: 'error', text: 'Ошибка сохранения' } }
+    profileMsg.value = { type: 'success', text: t.value.saved }
+  } catch (e) { profileMsg.value = { type: 'error', text: t.value.saveError } }
   finally { profileLoading.value = false }
 }
 
@@ -136,7 +139,7 @@ async function initiateEmailChange() {
     await usersApi.changeEmail({ newEmail: newEmail.value })
     emailCodeSent.value = true
     emailMsg.value = null
-  } catch (e) { emailMsg.value = { type: 'error', text: e.response?.data?.message || 'Ошибка' } }
+  } catch (e) { emailMsg.value = { type: 'error', text: e.response?.data?.message || t.value.error } }
   finally { emailLoading.value = false }
 }
 
@@ -146,29 +149,29 @@ async function confirmEmailChange() {
     await usersApi.confirmEmail({ code: emailCode.value })
     auth.user = { ...auth.user, email: newEmail.value }
     emailCodeSent.value = false
-    emailMsg.value = { type: 'success', text: 'Email обновлён' }
+    emailMsg.value = { type: 'success', text: t.value.emailUpdated }
     newEmail.value = ''; emailCode.value = ''
-  } catch (e) { emailMsg.value = { type: 'error', text: 'Неверный код' } }
+  } catch (e) { emailMsg.value = { type: 'error', text: t.value.invalidCode } }
   finally { emailLoading.value = false }
 }
 
 async function changePassword() {
   if (pw.value.new !== pw.value.confirm) {
-    pwMsg.value = { type: 'error', text: 'Пароли не совпадают' }; return
+    pwMsg.value = { type: 'error', text: t.value.pwMismatch }; return
   }
   pwLoading.value = true
   try {
     await usersApi.changePassword({ currentPassword: pw.value.current, newPassword: pw.value.new })
-    pwMsg.value = { type: 'success', text: 'Пароль изменён' }
+    pwMsg.value = { type: 'success', text: t.value.pwChanged }
     pw.value = { current: '', new: '', confirm: '' }
-  } catch (e) { pwMsg.value = { type: 'error', text: e.response?.data?.message || 'Ошибка' } }
+  } catch (e) { pwMsg.value = { type: 'error', text: e.response?.data?.message || t.value.error } }
   finally { pwLoading.value = false }
 }
 
 async function toggle2FA() {
   try {
     await usersApi.toggle2FA(twoFaEnabled.value)
-    secMsg.value = `2FA ${twoFaEnabled.value ? 'включена' : 'отключена'}`
+    secMsg.value = `2FA ${twoFaEnabled.value ? t.value.twoFaOn : t.value.twoFaOff}`
     auth.user = { ...auth.user, twoFaEnabled: twoFaEnabled.value }
     setTimeout(() => secMsg.value = '', 3000)
   } catch { twoFaEnabled.value = !twoFaEnabled.value }

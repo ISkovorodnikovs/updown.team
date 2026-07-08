@@ -45,8 +45,9 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { subscriptionsApi } from '@/api'
+import { useT, fmtDate } from '@/i18n'
+import dict from '@/i18n/dicts/subscriptions'
 
-const lang = computed(() => localStorage.getItem('ud-lang') || 'ru')
 const activeSubs = ref([])
 const history = ref([])
 
@@ -55,13 +56,10 @@ onMounted(async () => {
   history.value = await subscriptionsApi.getMyHistory().then(r => r.data).catch(() => [])
 })
 
-function formatDate(d) { return new Date(d).toLocaleDateString(lang.value === 'ru' ? 'ru-RU' : 'en-US') }
+function formatDate(d) { return fmtDate(d) }
 function daysLeft(d) { return Math.max(0, Math.ceil((new Date(d) - new Date()) / 86400000)) }
 
-const t = computed(() => ({
-  ru: { active: 'Активна', expires: 'Истекает', days: 'дн.', noSubs: 'Нет активных подписок', noSubsDesc: 'Выберите тариф чтобы получить доступ к продуктам', goShop: 'Перейти в магазин', history: 'История подписок', plan: 'Тариф', status: 'Статус', started: 'Начало', },
-  en: { active: 'Active', expires: 'Expires', days: 'days', noSubs: 'No active subscriptions', noSubsDesc: 'Choose a plan to get access to products', goShop: 'Go to shop', history: 'Subscription history', plan: 'Plan', status: 'Status', started: 'Started', },
-}[lang.value]))
+const t = useT(dict)
 </script>
 
 <style lang="scss" scoped>

@@ -1,8 +1,8 @@
 <template>
   <div>
     <div class="page-header">
-      <h1>Управление ботом</h1>
-      <p>Настройте и запустите Telegram-бота</p>
+      <h1>{{ t.title }}</h1>
+      <p>{{ t.subtitle }}</p>
     </div>
 
     <div v-if="loading" class="spinner"></div>
@@ -10,74 +10,74 @@
     <div v-else class="bot-grid">
       <!-- Status card -->
       <div class="card">
-        <h3>Статус бота</h3>
+        <h3>{{ t.botStatus }}</h3>
         <div class="bot-status" style="margin-top:16px">
           <div v-if="bot">
             <div class="status-row">
-              <span>Статус:</span>
+              <span>{{ t.statusLabel }}</span>
               <span :class="['badge', bot.status === 'RUNNING' ? 'badge--green' : bot.status === 'ERROR' ? 'badge--red' : 'badge--gray']">
                 {{ bot.status }}
               </span>
             </div>
             <div class="status-row">
-              <span>Username:</span>
+              <span>{{ t.username }}</span>
               <strong>{{ bot.username ? '@' + bot.username : '—' }}</strong>
             </div>
             <div class="status-row">
-              <span>Пользователей:</span>
+              <span>{{ t.users }}</span>
               <strong>{{ bot.totalUsers }}</strong>
             </div>
             <div class="status-row">
-              <span>Переходов:</span>
+              <span>{{ t.clicks }}</span>
               <strong>{{ bot.totalClicks }}</strong>
             </div>
             <div class="status-row">
-              <span>Конверсия:</span>
+              <span>{{ t.conversion }}</span>
               <strong>{{ bot.conversion }}%</strong>
             </div>
             <div v-if="bot.errorMessage" class="alert alert--error" style="margin-top:12px">{{ bot.errorMessage }}</div>
           </div>
-          <p v-else class="text-muted">Бот не настроен</p>
+          <p v-else class="text-muted">{{ t.notConfigured }}</p>
         </div>
 
         <div class="bot-actions" style="margin-top:20px">
           <button v-if="bot?.status !== 'RUNNING'" class="btn btn--success" @click="startBot" :disabled="!bot || actionLoading">
-            ▶ Запустить
+            {{ t.start }}
           </button>
           <button v-if="bot?.status === 'RUNNING'" class="btn btn--danger btn--sm" @click="stopBot" :disabled="actionLoading">
-            ⏹ Остановить
+            {{ t.stop }}
           </button>
         </div>
       </div>
 
       <!-- Token setup -->
       <div class="card">
-        <h3>Токен бота</h3>
+        <h3>{{ t.botToken }}</h3>
         <p style="color:var(--text-muted);font-size:14px;margin:8px 0 16px">
-          Получите токен в @BotFather в Telegram
+          {{ t.tokenHint }}
         </p>
         <div v-if="tokenMsg" :class="['alert', tokenMsg.type === 'error' ? 'alert--error' : 'alert--success']">{{ tokenMsg.text }}</div>
         <div class="form-group">
-          <label>Telegram Bot Token</label>
+          <label>{{ t.tokenLabel }}</label>
           <input class="input" v-model="newToken" placeholder="123456:ABC-..." />
         </div>
         <button class="btn btn--primary" @click="setToken" :disabled="tokenLoading || !newToken">
-          {{ tokenLoading ? 'Проверяем...' : 'Сохранить токен' }}
+          {{ tokenLoading ? t.checking : t.saveToken }}
         </button>
       </div>
 
       <!-- Button URLs -->
       <div class="card" style="grid-column: 1 / -1">
-        <h3>Кнопки бота (до 6 штук)</h3>
+        <h3>{{ t.buttonsTitle }}</h3>
         <p style="color:var(--text-muted);font-size:14px;margin:8px 0 16px">
-          Настройте кнопки-ссылки в приветственном сообщении
+          {{ t.buttonsHint }}
         </p>
         <div v-if="btnMsg" :class="['alert', 'alert--success']">{{ btnMsg }}</div>
 
         <div class="buttons-grid">
           <div v-for="(btn, i) in buttons" :key="i" class="button-row">
             <span class="btn-num">{{ i + 1 }}</span>
-            <input class="input" v-model="btn.label" placeholder="Текст кнопки" />
+            <input class="input" v-model="btn.label" :placeholder="t.btnLabelPh" />
             <input class="input" v-model="btn.url" placeholder="https://..." />
             <button class="btn btn--outline btn--sm" @click="removeButton(i)" v-if="buttons.length > 1">✕</button>
           </div>
@@ -85,26 +85,25 @@
 
         <div style="margin-top:16px;display:flex;gap:12px;flex-wrap:wrap">
           <button class="btn btn--outline btn--sm" @click="addButton" :disabled="buttons.length >= 6">
-            + Добавить кнопку
+            {{ t.addButton }}
           </button>
           <button class="btn btn--primary btn--sm" @click="saveButtons" :disabled="btnLoading">
-            {{ btnLoading ? 'Сохраняем...' : 'Сохранить кнопки' }}
+            {{ btnLoading ? t.savingBtns : t.saveButtons }}
           </button>
         </div>
       </div>
 
       <!-- Recipients whitelist -->
       <div class="card">
-        <h3>Кому отвечает бот</h3>
+        <h3>{{ t.recipientsTitle }}</h3>
         <p style="color:var(--text-muted);font-size:14px;margin:8px 0 12px">
-          Оставьте пустым — бот отвечает всем. Либо укажите, кому можно (по одному в строке):
-          Telegram ID (например 123456789) или @username.
+{{ t.recipientsHint }}
         </p>
         <textarea v-model="recipientsText" rows="4" class="recipients-area"
           placeholder="@myusername&#10;123456789"></textarea>
         <div style="margin-top:10px">
           <button class="btn btn--primary btn--sm" @click="saveRecipients" :disabled="recLoading">
-            {{ recLoading ? 'Сохраняем...' : 'Сохранить список' }}
+            {{ recLoading ? t.savingList : t.saveList }}
           </button>
           <span v-if="recMsg" style="margin-left:10px;color:var(--accent);font-size:13px">{{ recMsg }}</span>
         </div>
@@ -112,12 +111,12 @@
 
       <!-- Ticket -->
       <div class="card">
-        <h3>Нужна помощь?</h3>
+        <h3>{{ t.needHelp }}</h3>
         <p style="color:var(--text-muted);font-size:14px;margin:8px 0 16px">
-          Создайте тикет и получите ответ от администратора
+          {{ t.ticketHint }}
         </p>
         <router-link to="/dashboard/tickets" class="btn btn--outline btn--sm">
-          🎫 Создать тикет
+          {{ t.createTicket }}
         </router-link>
       </div>
     </div>
@@ -127,6 +126,9 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { botsApi } from '@/api'
+import { useT } from '@/i18n'
+import dict from '@/i18n/dicts/bot'
+const t = useT(dict)
 
 const loading = ref(true)
 const actionLoading = ref(false)
@@ -156,7 +158,7 @@ async function saveRecipients() {
     const list = recipientsText.value.split('\n').map(s => s.trim()).filter(Boolean)
     const { data } = await botsApi.updateRecipients(list)
     bot.value = data
-    recMsg.value = 'Список сохранён'
+    recMsg.value = t.value.listSaved
     setTimeout(() => recMsg.value = '', 3000)
   } finally { recLoading.value = false }
 }
@@ -166,9 +168,9 @@ async function setToken() {
   try {
     const { data } = await botsApi.setToken(newToken.value)
     bot.value = { ...bot.value, ...data }
-    tokenMsg.value = { type: 'success', text: 'Токен сохранён, бот готов к запуску' }
+    tokenMsg.value = { type: 'success', text: t.value.tokenSaved }
     newToken.value = ''
-  } catch (e) { tokenMsg.value = { type: 'error', text: e.response?.data?.message || 'Неверный токен' } }
+  } catch (e) { tokenMsg.value = { type: 'error', text: e.response?.data?.message || t.value.invalidToken } }
   finally { tokenLoading.value = false }
 }
 
@@ -196,7 +198,7 @@ async function saveButtons() {
   try {
     const { data } = await botsApi.updateButtons(buttons.value.filter(b => b.label && b.url))
     bot.value = data
-    btnMsg.value = 'Кнопки сохранены!'
+    btnMsg.value = t.value.buttonsSaved
     setTimeout(() => btnMsg.value = '', 3000)
   } finally { btnLoading.value = false }
 }

@@ -69,10 +69,10 @@
 import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { subscriptionsApi } from '@/api'
+import { useT } from '@/i18n'
+import dict from '@/i18n/dicts/dashboardHome'
 
 const auth = useAuthStore()
-const lang = computed(() => localStorage.getItem('ud-lang') || 'ru')
-
 const activePlan = ref(null)
 const subscriptions = ref([])
 
@@ -89,38 +89,23 @@ function daysLeft(date) {
 
 const hasFeature = (key) => subscriptions.value.some(s => s.plan?.[key])
 
-const t = computed(() => ({
-  ru: {
-    welcome: 'Добро пожаловать', welcomeSub: 'Добро пожаловать в экосистему UpDown / AiView',
-    expiresIn: 'Истекает через', days: 'дн.', getStarted: 'Выбрать тариф',
-    products: 'Ваши продукты', upgrade: 'Апгрейд', active: 'Активно',
-    quickActions: 'Быстрые действия', mySubscriptions: 'Мои подписки',
-    support: 'Поддержка', profile: 'Профиль', finances: 'Финансы',
-  },
-  en: {
-    welcome: 'Welcome', welcomeSub: 'Welcome to the UpDown / AiView ecosystem',
-    expiresIn: 'Expires in', days: 'days', getStarted: 'Choose a plan',
-    products: 'Your products', upgrade: 'Upgrade', active: 'Active',
-    quickActions: 'Quick actions', mySubscriptions: 'My subscriptions',
-    support: 'Support', profile: 'Profile', finances: 'Finances',
-  }
-}[lang.value]))
+const t = useT(dict)
 
 const stats = computed(() => [
-  { icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>', value: subscriptions.value.length, label: lang.value === 'ru' ? 'Активных подписок' : 'Active subscriptions' },
+  { icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>', value: subscriptions.value.length, label: t.value.activeSubscriptions },
   { icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>', value: hasFeature('hasSignalsCrypto') ? '∞' : '—', label: 'Crypto Signals' },
   { icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>', value: hasFeature('hasTablePredictor') ? '✓' : '—', label: 'Table Predictor' },
-  { icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/></svg>', value: hasFeature('hasCopytrading') ? '✓' : '—', label: lang.value === 'ru' ? 'Копитрейдинг' : 'Copy Trading' },
+  { icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/></svg>', value: hasFeature('hasCopytrading') ? '✓' : '—', label: t.value.copytrading },
 ])
 
 const products = computed(() => [
-  { key: 'signals', icon: '📡', name: lang.value === 'ru' ? 'Сигналы' : 'Signals', available: hasFeature('hasSignalsCrypto'), route: '/dashboard/signals' },
+  { key: 'signals', icon: '📡', name: t.value.signals, available: hasFeature('hasSignalsCrypto'), route: '/dashboard/signals' },
   { key: 'predictor', icon: '📊', name: 'Table Predictor', available: hasFeature('hasTablePredictor'), route: '/dashboard/indicators' },
   { key: 'levels', icon: '📈', name: 'Strong Levels', available: hasFeature('hasStrongLevels'), route: '/dashboard/indicators' },
   { key: 'liquidity', icon: '💧', name: 'Liquidity Zones', available: hasFeature('hasLiquidityZones'), route: '/dashboard/indicators' },
   { key: 'pump', icon: '🚀', name: 'Pump & MM', available: hasFeature('hasPumpMM'), route: '/dashboard/indicators' },
-  { key: 'copy', icon: '⚡', name: lang.value === 'ru' ? 'Копитрейдинг' : 'Copy Trading', available: hasFeature('hasCopytrading'), route: '/dashboard/copytrading' },
-  { key: 'education', icon: '🎓', name: lang.value === 'ru' ? 'Обучение' : 'Education', available: hasFeature('hasEducation'), route: '/dashboard/education' },
+  { key: 'copy', icon: '⚡', name: t.value.copytrading, available: hasFeature('hasCopytrading'), route: '/dashboard/copytrading' },
+  { key: 'education', icon: '🎓', name: t.value.education, available: hasFeature('hasEducation'), route: '/dashboard/education' },
   { key: 'ai', icon: '🤖', name: 'AI Analytics', available: hasFeature('hasAiAnalytics'), route: '/dashboard/analytics' },
 ])
 </script>

@@ -1,31 +1,31 @@
 <template>
   <div>
     <div class="page-header">
-      <h1>Рассылка</h1>
-      <p>Отправьте сообщение пользователям ботов</p>
+      <h1>{{ t.title }}</h1>
+      <p>{{ t.subtitle }}</p>
     </div>
 
     <div class="broadcast-grid">
       <div class="card">
-        <h3>Новая рассылка</h3>
+        <h3>{{ t.newBroadcast }}</h3>
 
         <div v-if="result" :class="['alert', 'alert--success']" style="margin-top:16px">
-          Рассылка запущена! ID: <code>{{ result.broadcastId }}</code>
+          {{ t.started }} <code>{{ result.broadcastId }}</code>
         </div>
         <div v-if="error" class="alert alert--error" style="margin-top:16px">{{ error }}</div>
 
         <div style="margin-top:20px">
           <!-- Bot selector for admin/owner -->
           <div v-if="isAdmin" class="form-group">
-            <label>Целевые боты</label>
+            <label>{{ t.targetBots }}</label>
             <select class="input" v-model="targetMode">
-              <option value="all">Все боты</option>
-              <option value="selected">Выбранные боты</option>
+              <option value="all">{{ t.allBots }}</option>
+              <option value="selected">{{ t.selectedBots }}</option>
             </select>
           </div>
 
           <div v-if="isAdmin && targetMode === 'selected'" class="form-group">
-            <label>Выберите боты</label>
+            <label>{{ t.selectBots }}</label>
             <div class="bots-list">
               <label v-for="b in allBots" :key="b.id" class="bot-check">
                 <input type="checkbox" :value="b.id" v-model="selectedBots" />
@@ -35,24 +35,24 @@
           </div>
 
           <div class="form-group">
-            <label>Текст сообщения</label>
-            <textarea class="input" v-model="message" placeholder="Введите текст рассылки..." rows="6" required></textarea>
-            <small style="color:var(--text-muted)">{{ message.length }}/4096 символов</small>
+            <label>{{ t.messageText }}</label>
+            <textarea class="input" v-model="message" :placeholder="t.messagePh" rows="6" required></textarea>
+            <small style="color:var(--text-muted)">{{ message.length }}/4096 {{ t.chars }}</small>
           </div>
 
           <button class="btn btn--primary" @click="sendBroadcast" :disabled="loading || !message">
-            {{ loading ? 'Отправляем...' : '📢 Отправить рассылку' }}
+            {{ loading ? t.sending : t.send }}
           </button>
         </div>
       </div>
 
       <!-- History -->
       <div class="card">
-        <h3>История рассылок</h3>
+        <h3>{{ t.history }}</h3>
         <div v-if="historyLoading" class="spinner"></div>
         <div v-else-if="history.length === 0" class="empty">
           <div class="empty-icon">📭</div>
-          <p>Рассылок ещё не было</p>
+          <p>{{ t.empty }}</p>
         </div>
         <div v-else class="history-list">
           <div v-for="item in history" :key="item.id" class="history-item">
@@ -64,7 +64,7 @@
             </div>
             <p class="history-item__msg">{{ item.message.slice(0, 100) }}{{ item.message.length > 100 ? '...' : '' }}</p>
             <div class="history-item__stats" v-if="item.status === 'done'">
-              ✅ {{ item.sentCount }} отправлено &nbsp; ❌ {{ item.failedCount }} ошибок
+              ✅ {{ item.sentCount }} {{ t.sent }} &nbsp; ❌ {{ item.failedCount }} {{ t.failed }}
             </div>
           </div>
         </div>
@@ -77,6 +77,9 @@
 import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { broadcastsApi, botsApi } from '@/api'
+import { useT, fmtDateTime } from '@/i18n'
+import dict from '@/i18n/dicts/broadcast'
+const t = useT(dict)
 
 const auth = useAuthStore()
 const isAdmin = computed(() => auth.isAdmin)
@@ -115,13 +118,11 @@ async function sendBroadcast() {
     // Refresh history
     const { data: h } = await broadcastsApi.history()
     history.value = h.items
-  } catch (e) { error.value = e.response?.data?.message || 'Ошибка рассылки' }
+  } catch (e) { error.value = e.response?.data?.message || t.value.error }
   finally { loading.value = false }
 }
 
-function formatDate(d) {
-  return new Date(d).toLocaleString('ru-RU', { dateStyle: 'short', timeStyle: 'short' })
-}
+function formatDate(d) { return fmtDateTime(d, { dateStyle: 'short', timeStyle: 'short' }) }
 </script>
 
 <style lang="scss" scoped>

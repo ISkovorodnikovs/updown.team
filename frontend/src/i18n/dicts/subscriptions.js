@@ -1,0 +1,10 @@
+export default {
+  en: { active: 'Active', expires: 'Expires', days: 'days', noSubs: 'No active subscriptions', noSubsDesc: 'Choose a plan to get access to products', goShop: 'Go to shop', history: 'Subscription history', plan: 'Plan', status: 'Status', started: 'Started' },
+  ru: { active: 'Активна', expires: 'Истекает', days: 'дн.', noSubs: 'Нет активных подписок', noSubsDesc: 'Выберите тариф чтобы получить доступ к продуктам', goShop: 'Перейти в магазин', history: 'История подписок', plan: 'Тариф', status: 'Статус', started: 'Начало' },
+  de: { active: 'Aktiv', expires: 'Läuft ab', days: 'Tage', noSubs: 'Keine aktiven Abonnements', noSubsDesc: 'Wählen Sie einen Tarif, um Zugriff auf die Produkte zu erhalten', goShop: 'Zum Shop', history: 'Abonnement-Verlauf', plan: 'Tarif', status: 'Status', started: 'Beginn' },
+  es: { active: 'Activa', expires: 'Expira', days: 'días', noSubs: 'Sin suscripciones activas', noSubsDesc: 'Elige un plan para acceder a los productos', goShop: 'Ir a la tienda', history: 'Historial de suscripciones', plan: 'Plan', status: 'Estado', started: 'Inicio' },
+  it: { active: 'Attivo', expires: 'Scade', days: 'giorni', noSubs: 'Nessun abbonamento attivo', noSubsDesc: 'Scegli un piano per accedere ai prodotti', goShop: 'Vai al negozio', history: 'Cronologia abbonamenti', plan: 'Piano', status: 'Stato', started: 'Inizio' },
+  pt: { active: 'Ativa', expires: 'Expira', days: 'dias', noSubs: 'Nenhuma assinatura ativa', noSubsDesc: 'Escolha um plano para ter acesso aos produtos', goShop: 'Ir para a loja', history: 'Histórico de assinaturas', plan: 'Plano', status: 'Status', started: 'Início' },
+  zh: { active: '有效', expires: '到期', days: '天', noSubs: '暂无有效订阅', noSubsDesc: '选择套餐即可使用相关产品', goShop: '前往商店', history: '订阅历史', plan: '套餐', status: '状态', started: '开始日期' },
+  ar: { active: 'نشط', expires: 'ينتهي', days: 'يوم', noSubs: 'لا توجد اشتراكات نشطة', noSubsDesc: 'اختر باقة للوصول إلى المنتجات', goShop: 'الذهاب إلى المتجر', history: 'سجل الاشتراكات', plan: 'الباقة', status: 'الحالة', started: 'البداية' },
+}

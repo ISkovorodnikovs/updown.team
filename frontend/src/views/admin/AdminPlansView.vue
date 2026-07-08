@@ -1,8 +1,9 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { plansApi } from '@/api'
+import { useT } from '@/i18n'
+import dict from '@/i18n/dicts/adminPlans'
 
-const lang = computed(() => localStorage.getItem('ud-lang') || 'en')
 const plans = ref([])
 const showForm = ref(false)
 const editing = ref(null)
@@ -66,11 +67,11 @@ function openForm(plan) {
 
 async function save() {
   if (!form.name || form.price === '' || form.price === null) {
-    formError.value = lang.value === 'ru' ? 'Заполните название и цену' : 'Name and price are required'
+    formError.value = t.value.errNamePrice
     return
   }
   if (Number(form.price) < 0) {
-    formError.value = lang.value === 'ru' ? 'Цена не может быть отрицательной' : 'Price cannot be negative'
+    formError.value = t.value.errNegPrice
     return
   }
   saving.value = true; formError.value = ''
@@ -98,37 +99,13 @@ async function save() {
 }
 
 async function removePlan(p) {
-  const msg = lang.value === 'ru'
-    ? `Деактивировать тариф "${p.name}"? Существующие подписки продолжат работать.`
-    : `Deactivate plan "${p.name}"? Existing subscriptions keep working.`
+  const msg = t.value.confirmDeactivate.replace('{name}', p.name)
   if (!confirm(msg)) return
   await plansApi.remove(p.id).catch(() => {})
   await load()
 }
 
-const t = computed(() => {
-  const r = lang.value === 'ru'
-  return {
-    title: r ? 'Управление тарифами' : 'Manage Plans',
-    sub: r ? 'Создание, редактирование и деактивация тарифов в реальном времени' : 'Create, edit and deactivate plans in real time',
-    add: r ? '+ Новый тариф' : '+ New Plan',
-    name: r ? 'Название' : 'Name',
-    type: r ? 'Тип' : 'Type',
-    price: r ? 'Цена (USDT/мес)' : 'Price (USDT/mo)',
-    desc: r ? 'Описание' : 'Description',
-    features: r ? 'Фичи (по одной на строку)' : 'Features (one per line)',
-    sort: r ? 'Порядок' : 'Sort order',
-    active: r ? 'Активен' : 'Active',
-    includes: r ? 'Что включено' : 'Included',
-    edit: r ? 'Изменить' : 'Edit',
-    deactivate: r ? 'Деактивировать' : 'Deactivate',
-    save: r ? 'Сохранить' : 'Save',
-    cancel: r ? 'Отмена' : 'Cancel',
-    inactive: r ? 'НЕАКТИВЕН' : 'INACTIVE',
-    empty: r ? 'Тарифов пока нет' : 'No plans yet',
-    loading: r ? 'Загрузка…' : 'Loading…',
-  }
-})
+const t = useT(dict)
 </script>
 
 <template>

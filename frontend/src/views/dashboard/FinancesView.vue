@@ -83,8 +83,9 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { referralApi, subscriptionsApi } from '@/api'
+import { useT } from '@/i18n'
+import dict from '@/i18n/dicts/finances'
 
-const lang = computed(() => localStorage.getItem('ud-lang') || 'en')
 const referralInfo = ref(null)
 const transactions = ref([])
 const showWithdrawHint = ref(false)
@@ -108,31 +109,7 @@ function copyLink() {
   setTimeout(() => copied.value = false, 2000)
 }
 
-const t = computed(() => {
-  const r = lang.value === 'ru'
-  return {
-    title: r ? 'Финансы' : 'Finances',
-    referralBalance: r ? 'Реферальный баланс' : 'Referral Balance',
-    referrals: r ? 'Рефералов привлечено' : 'Referrals',
-    withdraw: r ? '💸 Вывести средства' : '💸 Withdraw Funds',
-    withdrawHint: r ? 'Для вывода средств обратитесь в поддержку: ' : 'To withdraw funds contact support: ',
-    toSupport: r ? 'Служба поддержки' : 'Support',
-    yourLink: r ? 'Ваша реферальная ссылка' : 'Your Referral Link',
-    copy: r ? 'Копировать' : 'Copy',
-    code: r ? 'Код' : 'Code',
-    earningsHistory: r ? 'История начислений' : 'Earnings History',
-    noEarnings: r ? 'Начислений пока нет' : 'No earnings yet',
-    date: r ? 'Дата' : 'Date',
-    amount: r ? 'Сумма' : 'Amount',
-    percent: r ? 'Процент' : 'Percent',
-    type: r ? 'Тип' : 'Type',
-    note: r ? 'Примечание' : 'Note',
-    manual: r ? 'Ручное' : 'Manual',
-    auto: r ? 'Авто' : 'Auto',
-    transactions: r ? 'История транзакций' : 'Transaction History',
-    noTx: r ? 'Транзакций нет' : 'No transactions',
-  }
-})
+const t = useT(dict)
 </script>
 
 <style lang="scss" scoped>

@@ -1,12 +1,12 @@
 <template>
   <div>
-    <div class="page-header"><h1>Все боты</h1></div>
+    <div class="page-header"><h1>{{ t.title }}</h1></div>
 
     <div v-if="loading" class="spinner"></div>
     <div v-else class="card" style="padding:0;overflow:hidden">
       <table class="table">
         <thead>
-          <tr><th>Бот</th><th>Партнёр</th><th>Статус</th><th>Пользователи</th><th>Переходы</th><th>Конверсия</th></tr>
+          <tr><th>{{ t.bot }}</th><th>{{ t.partner }}</th><th>{{ t.status }}</th><th>{{ t.users }}</th><th>{{ t.clicks }}</th><th>{{ t.conversion }}</th></tr>
         </thead>
         <tbody>
           <tr v-for="b in bots" :key="b.id">
@@ -28,6 +28,9 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { botsApi } from '@/api'
+import { useT } from '@/i18n'
+import dict from '@/i18n/dicts/botsOverview'
+const t = useT(dict)
 
 const bots = ref([])
 const loading = ref(true)

@@ -146,8 +146,9 @@
 import { ref, computed, onMounted } from 'vue'
 import { plansApi, paymentApi, shopApi, bannersApi } from '@/api'
 import { useCartStore } from '@/stores/cart'
+import { useT } from '@/i18n'
+import dict from '@/i18n/dicts/shop'
 
-const lang = computed(() => localStorage.getItem('ud-lang') || 'en')
 const cart = useCartStore()
 const plans = ref([])
 const indicators = ref([])
@@ -160,15 +161,12 @@ const showCart = ref(false)
 const countdown = ref('')
 let timerInterval = null
 
-const periods = computed(() => {
-  const r = lang.value === 'ru'
-  return [
-    { months: 1,  label: r ? '1 мес' : '1 mo',  discount: 0 },
-    { months: 3,  label: r ? '3 мес' : '3 mo',  discount: 3 },
-    { months: 6,  label: r ? '6 мес' : '6 mo',  discount: 5 },
-    { months: 12, label: r ? '12 мес' : '12 mo', discount: 15 },
-  ]
-})
+const periods = computed(() => [
+  { months: 1,  label: t.value.mo1,  discount: 0 },
+  { months: 3,  label: t.value.mo3,  discount: 3 },
+  { months: 6,  label: t.value.mo6,  discount: 5 },
+  { months: 12, label: t.value.mo12, discount: 15 },
+])
 
 function getDiscount(months) {
   const base = cart.PERIOD_DISCOUNTS[months] ?? 0
@@ -216,7 +214,7 @@ function startTimer() {
     const h = Math.floor((diff % 86400000) / 3600000).toString().padStart(2,'0')
     const m = Math.floor((diff % 3600000) / 60000).toString().padStart(2,'0')
     const s = Math.floor((diff % 60000) / 1000).toString().padStart(2,'0')
-    countdown.value = d > 0 ? `${d}д ${h}:${m}:${s}` : `${h}:${m}:${s}`
+    countdown.value = d > 0 ? `${d}${t.value.daysShort} ${h}:${m}:${s}` : `${h}:${m}:${s}`
   }, 1000)
 }
 
@@ -237,38 +235,11 @@ async function checkout() {
     paymentUrl.value = res.data.paymentUrl
     showCart.value = false
   } catch (e) {
-    error.value = e.response?.data?.message || (lang.value === 'ru' ? 'Ошибка создания платежа' : 'Payment error')
+    error.value = e.response?.data?.message || t.value.paymentError
   } finally { paying.value = false }
 }
 
-const t = computed(() => {
-  const r = lang.value === 'ru'
-  return {
-    promo: r ? 'Акция' : 'Special Offer',
-    endsIn: r ? 'Заканчивается через' : 'Ends in',
-    period: r ? 'Период:' : 'Period:',
-    cart: r ? 'Корзина' : 'Cart',
-    yourCart: r ? 'Ваша корзина' : 'Your Cart',
-    plans: r ? 'Тарифы' : 'Plans',
-    popular: r ? 'Популярный' : 'Popular',
-    channels: r ? 'Сигнальные каналы' : 'Signal Channels',
-    channelsSub: r ? 'Подробнее о каналах:' : 'More details:',
-    detailsInSignals: r ? '→ Раздел Сигналы' : '→ Signals section',
-    indicators: r ? 'Индикаторы' : 'Indicators',
-    indicatorsSub: r ? 'Подробнее:' : 'Full details:',
-    detailsInIndicators: r ? '→ Раздел Индикаторы' : '→ Indicators section',
-    addToCart: r ? 'В корзину' : 'Add to Cart',
-    inCart: r ? 'В корзине' : 'In Cart',
-    total: r ? 'Итого' : 'Total',
-    saving: r ? 'Экономия' : 'Saving',
-    payNow: r ? '💳 Оплатить' : '💳 Pay Now',
-    payNowLink: r ? 'Перейти к оплате' : 'Proceed to Payment',
-    payTitle: r ? 'Оплата' : 'Payment',
-    payDesc: r ? 'Нажмите кнопку чтобы перейти к оплате через Heleket (USDT)' : 'Click below to pay via Heleket (USDT)',
-    clearCart: r ? 'Очистить корзину' : 'Clear Cart',
-    close: r ? 'Закрыть' : 'Close',
-  }
-})
+const t = useT(dict)
 </script>
 
 <style lang="scss" scoped>

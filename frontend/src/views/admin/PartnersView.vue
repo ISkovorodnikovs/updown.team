@@ -1,16 +1,16 @@
 <template>
   <div>
     <div class="page-header">
-      <h1>Партнёры</h1>
-      <p>Управление заявками и партнёрами</p>
+      <h1>{{ t.title }}</h1>
+      <p>{{ t.subtitle }}</p>
     </div>
 
     <div class="filters card" style="margin-bottom:20px;padding:16px">
       <select class="input" v-model="statusFilter" style="width:200px" @change="load">
-        <option value="">Все статусы</option>
-        <option value="pending">Ожидают</option>
-        <option value="approved">Одобрены</option>
-        <option value="rejected">Отклонены</option>
+        <option value="">{{ t.allStatuses }}</option>
+        <option value="pending">{{ t.pending }}</option>
+        <option value="approved">{{ t.approved }}</option>
+        <option value="rejected">{{ t.rejected }}</option>
       </select>
     </div>
 
@@ -19,12 +19,12 @@
       <table class="table">
         <thead>
           <tr>
-            <th>Компания</th>
-            <th>Email</th>
-            <th>Описание</th>
-            <th>Статус</th>
-            <th>Дата</th>
-            <th>Действия</th>
+            <th>{{ t.company }}</th>
+            <th>{{ t.email }}</th>
+            <th>{{ t.description }}</th>
+            <th>{{ t.status }}</th>
+            <th>{{ t.date }}</th>
+            <th>{{ t.actions }}</th>
           </tr>
         </thead>
         <tbody>
@@ -40,11 +40,11 @@
             <td>{{ formatDate(p.createdAt) }}</td>
             <td>
               <div style="display:flex;gap:8px" v-if="p.status === 'pending'">
-                <button class="btn btn--success btn--sm" @click="review(p, 'approved')">Одобрить</button>
-                <button class="btn btn--danger btn--sm" @click="openReject(p)">Отклонить</button>
+                <button class="btn btn--success btn--sm" @click="review(p, 'approved')">{{ t.approve }}</button>
+                <button class="btn btn--danger btn--sm" @click="openReject(p)">{{ t.reject }}</button>
               </div>
               <div style="display:flex;gap:8px" v-else-if="p.status === 'approved'">
-                <button class="btn btn--outline btn--sm" @click="openChannels(p)">Каналы</button>
+                <button class="btn btn--outline btn--sm" @click="openChannels(p)">{{ t.channels }}</button>
               </div>
             </td>
           </tr>
@@ -55,14 +55,14 @@
     <!-- Reject modal -->
     <div v-if="rejectModal" class="modal-overlay" @click.self="rejectModal = null">
       <div class="modal card">
-        <h3>Причина отклонения</h3>
+        <h3>{{ t.rejectReason }}</h3>
         <div class="form-group" style="margin-top:16px">
-          <label>Причина (необязательно)</label>
-          <textarea class="input" v-model="rejectReason" placeholder="Укажите причину..." rows="3"></textarea>
+          <label>{{ t.reasonOptional }}</label>
+          <textarea class="input" v-model="rejectReason" :placeholder="t.reasonPh" rows="3"></textarea>
         </div>
         <div style="display:flex;gap:10px">
-          <button class="btn btn--danger" @click="confirmReject">Отклонить</button>
-          <button class="btn btn--outline" @click="rejectModal = null">Отмена</button>
+          <button class="btn btn--danger" @click="confirmReject">{{ t.reject }}</button>
+          <button class="btn btn--outline" @click="rejectModal = null">{{ t.cancel }}</button>
         </div>
       </div>
     </div>
@@ -70,11 +70,11 @@
     <!-- Channels modal -->
     <div v-if="channelsModal" class="modal-overlay" @click.self="channelsModal = null">
       <div class="modal card" style="max-width:680px;width:100%">
-        <h3>Каналы партнёра: {{ channelsModal.companyName }}</h3>
+        <h3>{{ t.partnerChannels }} {{ channelsModal.companyName }}</h3>
 
         <div v-if="channelsLoading" class="spinner"></div>
         <table v-else-if="channels.length" class="table" style="margin:12px 0">
-          <thead><tr><th>Название</th><th>Параметры</th><th>signalsChannelId</th><th>Цена</th><th>До</th><th></th></tr></thead>
+          <thead><tr><th>{{ t.name }}</th><th>{{ t.params }}</th><th>signalsChannelId</th><th>{{ t.price }}</th><th>{{ t.until }}</th><th></th></tr></thead>
           <tbody>
             <tr v-for="c in channels" :key="c.id">
               <td>{{ c.name }}</td>
@@ -89,68 +89,68 @@
             </tr>
           </tbody>
         </table>
-        <p v-else style="color:var(--text-2);font-size:13px;margin:12px 0">Каналов пока нет.</p>
+        <p v-else style="color:var(--text-2);font-size:13px;margin:12px 0">{{ t.noChannels }}</p>
 
         <!-- Edit channel form -->
         <div v-if="editing" class="ch-form" style="border-color:var(--accent)">
-          <h4 style="margin:8px 0">Редактировать: {{ editing.name }}</h4>
+          <h4 style="margin:8px 0">{{ t.editChannel }} {{ editing.name }}</h4>
           <div class="ch-grid">
-            <input class="input" v-model="editForm.name" placeholder="Название" />
-            <input class="input" v-model="editForm.signalsChannelId" placeholder="signalsChannelId (из signals_db)" />
+            <input class="input" v-model="editForm.name" :placeholder="t.namePh" />
+            <input class="input" v-model="editForm.signalsChannelId" :placeholder="t.sigIdPh" />
             <select class="input" v-model="editForm.asset">
-              <option value="crypto">Крипта</option><option value="forex">Форекс</option>
-              <option value="stocks">Фонда</option><option value="gold">Золото</option>
+              <option value="crypto">{{ t.crypto }}</option><option value="forex">{{ t.forex }}</option>
+              <option value="stocks">{{ t.stocks }}</option><option value="gold">{{ t.gold }}</option>
             </select>
             <select class="input" v-model="editForm.timeframe">
               <option>M1</option><option>M3</option><option>M5</option><option>M10</option>
               <option>M15</option><option>H1</option><option>H4</option>
             </select>
             <select class="input" v-model="editForm.direction">
-              <option value="both">Оба</option><option value="long">Long</option><option value="short">Short</option>
+              <option value="both">{{ t.both }}</option><option value="long">Long</option><option value="short">Short</option>
             </select>
-            <input class="input" v-model.number="editForm.price" type="number" min="0" placeholder="Цена USDT" />
-            <input class="input" v-model.number="editForm.discountPercent" type="number" min="0" placeholder="Скидка %" />
+            <input class="input" v-model.number="editForm.price" type="number" min="0" :placeholder="t.pricePh" />
+            <input class="input" v-model.number="editForm.discountPercent" type="number" min="0" :placeholder="t.discountPh" />
             <label style="display:flex;align-items:center;gap:8px;color:var(--text-2);font-size:13px">
-              <input type="checkbox" v-model="editForm.isActive" /> Активен
+              <input type="checkbox" v-model="editForm.isActive" /> {{ t.active }}
             </label>
           </div>
           <p v-if="!editForm.signalsChannelId" style="font-size:12px;color:#B9770E;margin:8px 0">
-            Без signalsChannelId канал останется неактивным (услуга не оказана).
+            {{ t.noSigIdWarn }}
           </p>
           <div style="display:flex;gap:10px;margin-top:8px">
-            <button class="btn btn--primary btn--sm" @click="saveEdit" :disabled="savingEdit">Сохранить</button>
-            <button class="btn btn--outline btn--sm" @click="editing = null">Отмена</button>
+            <button class="btn btn--primary btn--sm" @click="saveEdit" :disabled="savingEdit">{{ t.save }}</button>
+            <button class="btn btn--outline btn--sm" @click="editing = null">{{ t.cancel }}</button>
           </div>
         </div>
 
         <div class="ch-form">
-          <h4 style="margin:8px 0">Добавить канал</h4>
+          <h4 style="margin:8px 0">{{ t.addChannel }}</h4>
           <div class="ch-grid">
-            <input class="input" v-model="form.name" placeholder="Название" />
-            <input class="input" v-model="form.signalsChannelId" placeholder="signalsChannelId (из signals_db)" />
+            <input class="input" v-model="form.name" :placeholder="t.namePh" />
+            <input class="input" v-model="form.signalsChannelId" :placeholder="t.sigIdPh" />
             <select class="input" v-model="form.asset">
-              <option value="crypto">Крипта</option>
-              <option value="forex">Форекс</option>
-              <option value="stocks">Фонда</option>
-              <option value="gold">Золото</option>
+              <option value="crypto">{{ t.crypto }}</option>
+              <option value="forex">{{ t.forex }}</option>
+              <option value="stocks">{{ t.stocks }}</option>
+              <option value="gold">{{ t.gold }}</option>
             </select>
             <select class="input" v-model="form.timeframe">
               <option>M1</option><option>M3</option><option>M5</option><option>M10</option>
               <option>M15</option><option>H1</option><option>H4</option>
             </select>
             <select class="input" v-model="form.direction">
-              <option value="both">Оба</option><option value="long">Long</option><option value="short">Short</option>
+              <option value="both">{{ t.both }}</option><option value="long">Long</option><option value="short">Short</option>
             </select>
-            <input class="input" v-model.number="form.discountPercent" type="number" min="0" placeholder="Скидка %" />
-            <input class="input" v-model.number="form.durationDays" type="number" min="0" placeholder="Дней доступа" />
+            <input class="input" v-model.number="form.discountPercent" type="number" min="0" :placeholder="t.discountPh" />
+            <input class="input" v-model.number="form.durationDays" type="number" min="0" :placeholder="t.daysPh" />
           </div>
           <p style="font-size:12px;color:var(--text-2);margin:8px 0">
-            Расчётная цена: <b>{{ calcPrice }} USDT</b>
-            <span v-if="!form.signalsChannelId" style="color:#B9770E"> · без signalsChannelId канал неактивен (услуга не оказана)</span>
+            {{ t.calcPrice }} <b>{{ calcPrice }} USDT</b>
+            <span v-if="!form.signalsChannelId" style="color:#B9770E">{{ t.noSigIdInline }}</span>
           </p>
           <div style="display:flex;gap:10px;margin-top:8px">
-            <button class="btn btn--primary btn--sm" @click="addChannel" :disabled="savingChannel">Добавить</button>
-            <button class="btn btn--outline btn--sm" @click="channelsModal = null">Закрыть</button>
+            <button class="btn btn--primary btn--sm" @click="addChannel" :disabled="savingChannel">{{ t.add }}</button>
+            <button class="btn btn--outline btn--sm" @click="channelsModal = null">{{ t.close }}</button>
           </div>
         </div>
       </div>
@@ -161,6 +161,9 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { partnersApi } from '@/api'
+import { useT, fmtDate } from '@/i18n'
+import dict from '@/i18n/dicts/partners'
+const t = useT(dict)
 
 const partners = ref([])
 const loading = ref(true)
@@ -207,7 +210,7 @@ async function addChannel() {
 }
 
 async function removeChannel(c) {
-  if (!confirm(`Деактивировать канал "${c.name}"?`)) return
+  if (!confirm(`${t.value.confirmDeactivateChannel} "${c.name}"?`)) return
   await partnersApi.removeChannel(c.id).catch(() => {})
   channels.value = await partnersApi.getChannels(channelsModal.value.id).then(r => r.data)
 }
@@ -231,7 +234,7 @@ async function saveEdit() {
     channels.value = await partnersApi.getChannels(channelsModal.value.id).then(r => r.data)
     editing.value = null
   } catch (e) {
-    alert(e.response?.data?.message || 'Ошибка сохранения')
+    alert(e.response?.data?.message || t.value.saveError)
   } finally { savingEdit.value = false }
 }
 
@@ -260,9 +263,7 @@ async function confirmReject() {
   rejectModal.value = null
 }
 
-function formatDate(d) {
-  return new Date(d).toLocaleDateString('ru-RU')
-}
+function formatDate(d) { return fmtDate(d) }
 </script>
 
 <style lang="scss" scoped>

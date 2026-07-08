@@ -207,3 +207,33 @@ textarea.input { resize: vertical; min-height: 100px; }
   .empty-icon { font-size: 48px; margin-bottom: 12px; }
   p { font-size: 15px; }
 }
+
+/* ============================================================
+   RTL-поддержка для арабского языка.
+   Ядро i18n проставляет <html dir="rtl"> при выборе арабского.
+   Базовые правила ниже выравнивают текст и «зеркалят»
+   несколько типовых отступов. Точечные компонентные правки
+   при необходимости добавляются локально в самих .vue.
+   ============================================================ */
+[dir="rtl"] {
+  text-align: right;
+}
+[dir="rtl"] .page-header,
+[dir="rtl"] .form-group,
+[dir="rtl"] .card {
+  text-align: right;
+}
+[dir="rtl"] .table th,
+[dir="rtl"] .table td,
+[dir="rtl"] .data-table th,
+[dir="rtl"] .data-table td,
+[dir="rtl"] .users-table th,
+[dir="rtl"] .users-table td {
+  text-align: right;
+}
+/* Списки-«галочки» и подобное: иконка справа от текста */
+[dir="rtl"] .perks li,
+[dir="rtl"] .feature-list li {
+  padding-left: 0;
+  padding-right: 1.5em;
+}

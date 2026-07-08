@@ -1,12 +1,12 @@
 <template>
   <div class="users-page">
     <div class="page-header">
-      <h1>Пользователи</h1>
-      <span class="user-count">{{ total }} всего</span>
+      <h1>{{ t.title }}</h1>
+      <span class="user-count">{{ total }} {{ t.totalSuffix }}</span>
     </div>
 
     <div class="search-bar">
-      <input class="input" v-model="search" placeholder="Поиск по email..." @input="debouncedLoad" />
+      <input class="input" v-model="search" :placeholder="t.searchPh" @input="debouncedLoad" />
     </div>
 
     <div v-if="loading" class="spinner-wrap"><div class="spinner"></div></div>
@@ -26,16 +26,16 @@
         </colgroup>
         <thead>
           <tr>
-            <th>Email</th>
-            <th>Имя</th>
-            <th>UUID</th>
-            <th>Реф. код</th>
-            <th>Реферер</th>
-            <th>Реф. баланс</th>
-            <th>Роль</th>
+            <th>{{ t.email }}</th>
+            <th>{{ t.name }}</th>
+            <th>{{ t.uuid }}</th>
+            <th>{{ t.refCode }}</th>
+            <th>{{ t.referrer }}</th>
+            <th>{{ t.refBalance }}</th>
+            <th>{{ t.role }}</th>
             <th>✓</th>
-            <th>Дата</th>
-            <th>Действия</th>
+            <th>{{ t.date }}</th>
+            <th>{{ t.actions }}</th>
           </tr>
         </thead>
         <tbody>
@@ -44,12 +44,12 @@
             <td>{{ [u.firstName, u.lastName].filter(Boolean).join(' ') || '—' }}</td>
             <td class="td-uuid">
               <span class="uuid-val" :title="u.id">{{ u.id.substring(0,8) }}…</span>
-              <button class="btn-copy-sm" @click="copy(u.id)" :title="'Скопировать UUID: ' + u.id">📋</button>
+              <button class="btn-copy-sm" @click="copy(u.id)" :title="t.copyUuid + u.id">📋</button>
             </td>
             <td class="td-code">
               <span v-if="u.referralCode">{{ u.referralCode }}</span>
               <span v-else class="text-dim">—</span>
-              <button v-if="u.referralCode" class="btn-copy-sm" @click="copy(u.referralCode)" title="Скопировать код">📋</button>
+              <button v-if="u.referralCode" class="btn-copy-sm" @click="copy(u.referralCode)" :title="t.copyCode">📋</button>
             </td>
             <td class="td-ref">
               <span v-if="u.referredBy" class="uuid-val" :title="u.referredBy">{{ u.referredBy.substring(0,8) }}…</span>
@@ -65,7 +65,7 @@
             <td>{{ formatDate(u.createdAt) }}</td>
             <td>
               <div class="td-actions">
-                <button class="btn btn--accent btn--sm" @click="openGrant(u)" title="Выдать товар">🎁 Выдать</button>
+                <button class="btn btn--accent btn--sm" @click="openGrant(u)" :title="t.grant">{{ t.grant }}</button>
                 <button v-if="u.role !== 'ADMIN' && u.role !== 'OWNER'" class="btn btn--outline btn--sm" @click="assign(u)">→ Admin</button>
                 <button v-if="u.role !== 'PARTNER' && u.role !== 'OWNER'" class="btn btn--outline btn--sm" @click="makePartner(u)">→ Partner</button>
                 <button v-if="u.role === 'ADMIN'" class="btn btn--outline btn--sm" @click="revoke(u)">← User</button>
@@ -78,21 +78,21 @@
     </div>
 
     <div class="pagination" v-if="total > limit">
-      <button class="btn btn--outline btn--sm" :disabled="page === 1" @click="page--; load()">← Пред</button>
+      <button class="btn btn--outline btn--sm" :disabled="page === 1" @click="page--; load()">{{ t.prev }}</button>
       <span>{{ page }} / {{ Math.ceil(total / limit) }}</span>
-      <button class="btn btn--outline btn--sm" :disabled="page * limit >= total" @click="page++; load()">След →</button>
+      <button class="btn btn--outline btn--sm" :disabled="page * limit >= total" @click="page++; load()">{{ t.next }}</button>
     </div>
 
     <!-- Grant modal -->
     <div class="modal-overlay" v-if="showGrant" @click.self="showGrant = false">
       <div class="modal-card">
         <button class="modal-close" @click="showGrant = false">×</button>
-        <h2>🎁 Выдать пользователю</h2>
+        <h2>{{ t.grantTitle }}</h2>
         <p class="modal-user">{{ grantTarget?.email }}</p>
 
         <!-- Cart -->
         <div class="grant-cart" v-if="grantCart.length">
-          <div class="grant-cart__label">Корзина выдачи:</div>
+          <div class="grant-cart__label">{{ t.cart }}</div>
           <div class="grant-cart__items">
             <div class="grant-tag" v-for="(item, idx) in grantCart" :key="idx">
               {{ item.label }}
@@ -102,56 +102,56 @@
         </div>
 
         <div class="grant-tabs">
-          <button :class="['tab', { 'tab--active': grantTab === 'plan' }]" @click="grantTab = 'plan'">Тариф</button>
-          <button :class="['tab', { 'tab--active': grantTab === 'product' }]" @click="grantTab = 'product'">Товар (индикатор / канал)</button>
+          <button :class="['tab', { 'tab--active': grantTab === 'plan' }]" @click="grantTab = 'plan'">{{ t.tabPlan }}</button>
+          <button :class="['tab', { 'tab--active': grantTab === 'product' }]" @click="grantTab = 'product'">{{ t.tabProduct }}</button>
         </div>
 
         <!-- Plan tab -->
         <div v-if="grantTab === 'plan'" class="grant-form">
           <div class="form-group">
-            <label>Тариф</label>
+            <label>{{ t.plan }}</label>
             <select class="input" v-model="grantPlan.planId">
-              <option value="" disabled>Выбрать тариф</option>
+              <option value="" disabled>{{ t.selectPlan }}</option>
               <option v-for="p in plans" :key="p.id" :value="p.id">{{ p.name }} ({{ p.price }} $)</option>
             </select>
           </div>
           <div class="form-group">
-            <label>Дней доступа</label>
+            <label>{{ t.daysAccess }}</label>
             <input class="input" type="number" v-model.number="grantPlan.durationDays" min="1" max="3650" />
           </div>
           <div class="form-group">
-            <label>Примечание</label>
-            <input class="input" v-model="grantPlan.notes" placeholder="Причина выдачи..." />
+            <label>{{ t.note }}</label>
+            <input class="input" v-model="grantPlan.notes" :placeholder="t.notePh" />
           </div>
-          <button class="btn btn--accent" @click="addPlanToCart">+ Добавить в корзину</button>
+          <button class="btn btn--accent" @click="addPlanToCart">{{ t.addToCart }}</button>
         </div>
 
         <!-- Product tab -->
         <div v-if="grantTab === 'product'" class="grant-form">
           <div class="form-group">
-            <label>Товар</label>
+            <label>{{ t.product }}</label>
             <select class="input" v-model="grantProduct.productId">
-              <option value="" disabled>Выбрать товар</option>
-              <optgroup label="Индикаторы">
+              <option value="" disabled>{{ t.selectProduct }}</option>
+              <optgroup :label="t.indicators">
                 <option v-for="p in indicators" :key="p.id" :value="p.id">{{ p.name }} ({{ p.price }} $)</option>
               </optgroup>
-              <optgroup label="Каналы">
+              <optgroup :label="t.channels">
                 <option v-for="p in channels" :key="p.id" :value="p.id">{{ p.name }} ({{ p.price }} $)</option>
               </optgroup>
             </select>
           </div>
           <div class="form-group">
-            <label>Дней доступа</label>
+            <label>{{ t.daysAccess }}</label>
             <input class="input" type="number" v-model.number="grantProduct.durationDays" min="1" max="3650" />
           </div>
-          <button class="btn btn--accent" @click="addProductToCart">+ Добавить в корзину</button>
+          <button class="btn btn--accent" @click="addProductToCart">{{ t.addToCart }}</button>
         </div>
 
         <div class="modal-footer">
           <div v-if="grantError" class="err-msg">❌ {{ grantError }}</div>
-          <div v-if="grantSuccess" class="ok-msg">✅ Выдано!</div>
+          <div v-if="grantSuccess" class="ok-msg">{{ t.granted }}</div>
           <button class="btn btn--primary" @click="executeGrant" :disabled="granting || !grantCart.length">
-            {{ granting ? '...' : `Выдать (${grantCart.length} поз.)` }}
+            {{ granting ? '...' : `${t.grantBtn} (${grantCart.length} ${t.positions})` }}
           </button>
         </div>
       </div>
@@ -164,6 +164,9 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { adminApi, plansApi, shopApi, subscriptionsApi, partnersApi } from '@/api'
+import { useT, fmtDate } from '@/i18n'
+import dict from '@/i18n/dicts/users'
+const t = useT(dict)
 
 const users = ref([])
 const loading = ref(true)
@@ -228,7 +231,7 @@ function addPlanToCart() {
     planId: grantPlan.value.planId,
     durationDays: grantPlan.value.durationDays,
     notes: grantPlan.value.notes,
-    label: `${plan?.name} × ${grantPlan.value.durationDays}д`,
+    label: `${plan?.name} × ${grantPlan.value.durationDays}${t.value.days}`,
   })
   grantPlan.value = { planId: '', durationDays: 30, notes: '' }
 }
@@ -241,7 +244,7 @@ function addProductToCart() {
     type: 'product',
     productId: grantProduct.value.productId,
     durationDays: grantProduct.value.durationDays,
-    label: `${prod?.name} × ${grantProduct.value.durationDays}д`,
+    label: `${prod?.name} × ${grantProduct.value.durationDays}${t.value.days}`,
   })
   grantProduct.value = { productId: '', durationDays: 30 }
 }
@@ -263,37 +266,37 @@ async function executeGrant() {
     grantSuccess.value = true
     grantCart.value = []
   } catch (e) {
-    grantError.value = e.response?.data?.message || 'Ошибка'
+    grantError.value = e.response?.data?.message || t.value.error
   } finally { granting.value = false }
 }
 
 async function assign(u) { await adminApi.assignAdmin(u.id); u.role = 'ADMIN' }
 async function revoke(u) { await adminApi.revokeAdmin(u.id); u.role = 'USER' }
 async function makePartner(u) {
-  const companyName = prompt(`Название компании для партнёра ${u.email}:`, u.email?.split('@')[0] || 'Partner')
+  const companyName = prompt(`${t.value.companyPrompt} ${u.email}:`, u.email?.split('@')[0] || 'Partner')
   if (companyName === null) return
   try {
     await partnersApi.makePartner({ userId: u.id, companyName: companyName || u.email })
     u.role = 'PARTNER'
   } catch (e) {
-    alert(e.response?.data?.message || 'Ошибка назначения партнёра')
+    alert(e.response?.data?.message || t.value.partnerError)
   }
 }
 async function deactivate(u) {
-  if (!confirm(`Деактивировать ${u.email}?`)) return
+  if (!confirm(`${t.value.confirmDeactivate} ${u.email}?`)) return
   await adminApi.deactivateUser(u.id); u.isActive = false
 }
 
 function copy(text) {
   navigator.clipboard.writeText(text)
-  copyMsg.value = 'Скопировано!'
+  copyMsg.value = t.value.copied
   setTimeout(() => copyMsg.value = '', 2000)
 }
 
 function roleColor(role) {
   return { OWNER: 'badge--blue', ADMIN: 'badge--blue', PARTNER: 'badge--green', USER: 'badge--gray' }[role] || 'badge--gray'
 }
-function formatDate(d) { return new Date(d).toLocaleDateString('ru-RU') }
+function formatDate(d) { return fmtDate(d) }
 </script>
 
 <style lang="scss" scoped>

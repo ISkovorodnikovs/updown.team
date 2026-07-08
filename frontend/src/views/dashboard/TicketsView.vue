@@ -1,25 +1,25 @@
 <template>
   <div>
     <div class="page-header">
-      <h1>Мои тикеты</h1>
-      <button class="btn btn--primary btn--sm" @click="showCreate = true">+ Новый тикет</button>
+      <h1>{{ t.title }}</h1>
+      <button class="btn btn--primary btn--sm" @click="showCreate = true">{{ t.newTicket }}</button>
     </div>
 
     <!-- Create modal -->
     <div v-if="showCreate" class="modal-overlay" @click.self="showCreate = false">
       <div class="modal card">
-        <h3>Создать тикет</h3>
+        <h3>{{ t.create }}</h3>
         <div class="form-group" style="margin-top:16px">
-          <label>Тема</label>
-          <input class="input" v-model="newTicket.subject" placeholder="Краткое описание проблемы" />
+          <label>{{ t.subject }}</label>
+          <input class="input" v-model="newTicket.subject" :placeholder="t.subjectPh" />
         </div>
         <div class="form-group">
-          <label>Сообщение</label>
-          <textarea class="input" v-model="newTicket.message" placeholder="Опишите вашу проблему..." rows="5"></textarea>
+          <label>{{ t.message }}</label>
+          <textarea class="input" v-model="newTicket.message" :placeholder="t.messagePh" rows="5"></textarea>
         </div>
         <div style="display:flex;gap:10px">
-          <button class="btn btn--primary" @click="createTicket" :disabled="createLoading">Создать</button>
-          <button class="btn btn--outline" @click="showCreate = false">Отмена</button>
+          <button class="btn btn--primary" @click="createTicket" :disabled="createLoading">{{ t.createBtn }}</button>
+          <button class="btn btn--outline" @click="showCreate = false">{{ t.cancel }}</button>
         </div>
       </div>
     </div>
@@ -28,33 +28,33 @@
 
     <div v-else-if="tickets.length === 0" class="empty">
       <div class="empty-icon">🎫</div>
-      <p>Тикетов нет. Создайте первый!</p>
+      <p>{{ t.empty }}</p>
     </div>
 
     <div v-else class="tickets-list card">
       <table class="table">
         <thead>
           <tr>
-            <th>Тема</th>
-            <th>Статус</th>
-            <th>Создан</th>
-            <th>Обновлён</th>
+            <th>{{ t.subject }}</th>
+            <th>{{ t.status }}</th>
+            <th>{{ t.created }}</th>
+            <th>{{ t.updated }}</th>
             <th></th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="t in tickets" :key="t.id">
-            <td>{{ t.subject }}</td>
+          <tr v-for="tk in tickets" :key="tk.id">
+            <td>{{ tk.subject }}</td>
             <td>
-              <span :class="['badge', t.status === 'open' ? 'badge--green' : 'badge--gray']">
-                {{ t.status }}
+              <span :class="['badge', tk.status === 'open' ? 'badge--green' : 'badge--gray']">
+                {{ tk.status }}
               </span>
             </td>
-            <td>{{ formatDate(t.createdAt) }}</td>
-            <td>{{ formatDate(t.updatedAt) }}</td>
+            <td>{{ formatDate(tk.createdAt) }}</td>
+            <td>{{ formatDate(tk.updatedAt) }}</td>
             <td>
-              <router-link :to="`/dashboard/tickets/${t.id}`" class="btn btn--outline btn--sm">
-                Открыть
+              <router-link :to="`/dashboard/tickets/${tk.id}`" class="btn btn--outline btn--sm">
+                {{ t.open }}
               </router-link>
             </td>
           </tr>
@@ -67,6 +67,9 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { ticketsApi } from '@/api'
+import { useT, fmtDateTime } from '@/i18n'
+import dict from '@/i18n/dicts/tickets'
+const t = useT(dict)
 
 const tickets = ref([])
 const loading = ref(true)
@@ -91,9 +94,7 @@ async function createTicket() {
   } finally { createLoading.value = false }
 }
 
-function formatDate(d) {
-  return new Date(d).toLocaleString('ru-RU', { dateStyle: 'short', timeStyle: 'short' })
-}
+function formatDate(d) { return fmtDateTime(d, { dateStyle: 'short', timeStyle: 'short' }) }
 </script>
 
 <style lang="scss" scoped>

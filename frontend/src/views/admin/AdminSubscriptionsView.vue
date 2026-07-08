@@ -6,7 +6,7 @@
       <div class="form-row">
         <div class="form-group">
           <label>{{ t.userId }}</label>
-          <input class="input" v-model="grant.userId" placeholder="UUID пользователя" />
+          <input class="input" v-model="grant.userId" :placeholder="t.userId" />
         </div>
         <div class="form-group">
           <label>{{ t.plan }}</label>
@@ -66,8 +66,9 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { subscriptionsApi, plansApi } from '@/api'
+import { useT, fmtDate } from '@/i18n'
+import dict from '@/i18n/dicts/adminSubscriptions'
 
-const lang = computed(() => localStorage.getItem('ud-lang') || 'ru')
 const plans = ref([])
 const allSubs = ref([])
 const filter = ref('')
@@ -100,13 +101,10 @@ async function grantSub() {
   finally { granting.value = false }
 }
 
-function formatDate(d) { return new Date(d).toLocaleDateString(lang.value === 'ru' ? 'ru-RU' : 'en-US') }
+function formatDate(d) { return fmtDate(d) }
 function daysLeft(d) { return Math.max(0, Math.ceil((new Date(d) - new Date()) / 86400000)) }
 
-const t = computed(() => ({
-  ru: { grantTitle: 'Выдать подписку', userId: 'ID пользователя', plan: 'Тариф', selectPlan: 'Выберите тариф', days: 'Дней', notes: 'Примечание', notesPlaceholder: 'Тест, промо и т.д.', grant: 'Выдать', grantSuccess: 'Подписка выдана!', fillAll: 'Заполните все поля', error: 'Ошибка', allSubs: 'Все подписки', filterPlaceholder: 'Фильтр по email или тарифу...', user: 'Email', status: 'Статус', started: 'Начало', expires: 'Истекает', grantedBy: 'Источник', admin: 'Админ', payment: 'Оплата' },
-  en: { grantTitle: 'Grant subscription', userId: 'User ID', plan: 'Plan', selectPlan: 'Select plan', days: 'Days', notes: 'Notes', notesPlaceholder: 'Test, promo, etc.', grant: 'Grant', grantSuccess: 'Subscription granted!', fillAll: 'Fill all fields', error: 'Error', allSubs: 'All subscriptions', filterPlaceholder: 'Filter by email or plan...', user: 'Email', status: 'Status', started: 'Started', expires: 'Expires', grantedBy: 'Source', admin: 'Admin', payment: 'Payment' },
-}[lang.value]))
+const t = useT(dict)
 </script>
 
 <style lang="scss" scoped>

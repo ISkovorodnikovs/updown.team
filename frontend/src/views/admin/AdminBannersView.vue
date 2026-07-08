@@ -20,7 +20,7 @@
             <span v-if="b.endsAt">⏱ {{ new Date(b.endsAt).toLocaleString() }}</span>
             <span>🎯 {{ b.targetType }}</span>
             <span v-if="b.periodDiscounts">
-              💸 {{ Object.entries(b.periodDiscounts).map(([m,p]) => `${m}м: ${p}%`).join(' | ') }}
+              💸 {{ Object.entries(b.periodDiscounts).map(([m,p]) => `${m}${t.mo}: ${p}%`).join(' | ') }}
             </span>
           </div>
         </div>
@@ -120,8 +120,9 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { bannersApi } from '@/api'
+import { useT } from '@/i18n'
+import dict from '@/i18n/dicts/adminBanners'
 
-const lang = computed(() => localStorage.getItem('ud-lang') || 'en')
 const banners = ref([])
 const showForm = ref(false)
 const editing = ref(null)
@@ -176,7 +177,7 @@ function openForm(banner) {
 
 async function save() {
   if (!form.title || !form.message) {
-    formError.value = lang.value === 'ru' ? 'Заполните заголовок и сообщение' : 'Title and message are required'
+    formError.value = t.value.errTitleMsg
     return
   }
   saving.value = true; formError.value = ''
@@ -211,45 +212,12 @@ async function toggle(b) {
 }
 
 async function remove(id) {
-  if (!confirm(lang.value === 'ru' ? 'Удалить баннер?' : 'Delete banner?')) return
+  if (!confirm(t.value.confirmDelete)) return
   await bannersApi.remove(id)
   banners.value = banners.value.filter(b => b.id !== id)
 }
 
-const t = computed(() => {
-  const r = lang.value === 'ru'
-  return {
-    title:          r ? 'Конструктор баннеров' : 'Banner Constructor',
-    create:         r ? 'Создать' : 'Create',
-    edit:           r ? 'Редактировать баннер' : 'Edit Banner',
-    active:         r ? '● Активен' : '● Active',
-    inactive:       r ? '● Неактивен' : '● Inactive',
-    enable:         r ? 'Включить' : 'Enable',
-    disable:        r ? 'Выключить' : 'Disable',
-    empty:          r ? 'Баннеров нет. Создайте первый!' : 'No banners yet. Create one!',
-    fTitle:         r ? 'Заголовок' : 'Title',
-    fTitlePh:       r ? 'Горячее предложение 🔥' : 'Hot offer 🔥',
-    fMsg:           r ? 'Сообщение' : 'Message',
-    fMsgPh:         r ? 'Описание акции...' : 'Offer description...',
-    fImage:         r ? 'URL изображения' : 'Image URL',
-    imageHint:      r ? 'Рекомендуется 1200×400px (3:1).' : 'Recommended 1200×400px (3:1).',
-    fTarget:        r ? 'Применяется к' : 'Applies to',
-    targetAll:      r ? 'Всем товарам' : 'All products',
-    targetPlans:    r ? 'Тарифам' : 'Plans',
-    targetIndicators: r ? 'Индикаторам' : 'Indicators',
-    targetChannels: r ? 'Каналам' : 'Channels',
-    fEnds:          r ? 'Конец акции' : 'Ends at',
-    noExpiry:       r ? 'Без ограничения по времени' : 'No expiry',
-    fDiscounts:     r ? 'Скидки по периодам' : 'Period discounts',
-    discountHint:   r ? '0 = без скидки для этого периода' : '0 = no discount for this period',
-    mo:             r ? 'мес' : 'mo',
-    fLanding:       r ? 'Показывать на лендинге' : 'Show on landing',
-    fDashboard:     r ? 'Показывать в ЛК' : 'Show in dashboard',
-    fActive:        r ? 'Активен сразу' : 'Active immediately',
-    save:           r ? 'Сохранить' : 'Save',
-    cancel:         r ? 'Отмена' : 'Cancel',
-  }
-})
+const t = useT(dict)
 </script>
 
 <style lang="scss" scoped>

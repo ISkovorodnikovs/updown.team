@@ -220,6 +220,8 @@ import { ref, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { authApi } from '@/api'
+import { lang, useT } from '@/i18n'
+import dict from '@/i18n/dicts/auth'
 
 const router = useRouter()
 const route = useRoute()
@@ -227,51 +229,10 @@ const auth = useAuthStore()
 
 // Тема и язык из лендинга
 const savedTheme = ref(localStorage.getItem('ud-theme') || 'dark')
-const savedLang = ref(localStorage.getItem('ud-lang') || 'en')
+const savedLang = lang  // общий реактивный язык (используется в классе страницы)
 
-// Переводы для страницы авторизации
-const authT = computed(() => ({
-  signIn: savedLang.value === 'ru' ? 'Войти' : 'Sign In',
-  signInSub: savedLang.value === 'ru' ? 'или использовать аккаунт' : 'or use your account',
-  createAccount: savedLang.value === 'ru' ? 'Создать аккаунт' : 'Create Account',
-  createSub: savedLang.value === 'ru' ? 'или email для регистрации' : 'or use your email for registration',
-  emailPlaceholder: savedLang.value === 'ru' ? 'Email адрес' : 'Email Address',
-  passwordPlaceholder: savedLang.value === 'ru' ? 'Пароль' : 'Password',
-  confirmPlaceholder: savedLang.value === 'ru' ? 'Повторите пароль' : 'Confirm Password',
-  codePlaceholder: savedLang.value === 'ru' ? 'Код из письма' : 'Code from email',
-  loginWithCode: savedLang.value === 'ru' ? 'Войти по коду на email' : 'Login with email code',
-  loginWithPass: savedLang.value === 'ru' ? 'Войти с паролем' : 'Login with password',
-  getCode: savedLang.value === 'ru' ? 'ПОЛУЧИТЬ КОД' : 'GET CODE',
-  signInBtn: savedLang.value === 'ru' ? 'ВОЙТИ' : 'SIGN IN',
-  signUpBtn: savedLang.value === 'ru' ? 'РЕГИСТРАЦИЯ' : 'SIGN UP',
-  helloFriend: savedLang.value === 'ru' ? 'Привет!' : 'Hello, Friend!',
-  helloSub: savedLang.value === 'ru' ? 'Начни своё путешествие — создай аккаунт уже сегодня' : 'Begin your amazing journey by creating an account with us today',
-  welcomeBack: savedLang.value === 'ru' ? 'С возвращением!' : 'Welcome Back!',
-  welcomeSub: savedLang.value === 'ru' ? 'Войди в аккаунт и продолжи работу с платформой' : 'Stay connected by logging in with your credentials and continue your experience',
-  codeSent: savedLang.value === 'ru' ? 'Код отправлен на' : 'Code sent to',
-  enterCode: savedLang.value === 'ru' ? 'Введите код из письма' : 'Enter the code from your email',
-  signInBlue: savedLang.value === 'ru' ? 'ВОЙТИ' : 'SIGN IN',
-  signUpBlue: savedLang.value === 'ru' ? 'РЕГИСТРАЦИЯ' : 'SIGN UP',
-  // Ошибки
-  errInvalidLogin: savedLang.value === 'ru' ? 'Неверный email или пароль' : 'Invalid email or password',
-  errInvalidCode: savedLang.value === 'ru' ? 'Неверный код. Попробуйте ещё раз.' : 'Invalid code. Please try again.',
-  errExpiredCode: savedLang.value === 'ru' ? 'Неверный или устаревший код' : 'Invalid or expired code',
-  errSendCode: savedLang.value === 'ru' ? 'Не удалось отправить код' : 'Could not send code',
-  errPassMatch: savedLang.value === 'ru' ? 'Пароли не совпадают' : 'Passwords do not match',
-  errRegFailed: savedLang.value === 'ru' ? 'Ошибка регистрации. Попробуйте ещё раз.' : 'Registration failed. Please try again.',
-  showPass: savedLang.value === 'ru' ? 'Показать пароль' : 'Show password',
-  hidePass: savedLang.value === 'ru' ? 'Скрыть пароль' : 'Hide password',
-  passwordLabel: savedLang.value === 'ru' ? 'Пароль' : 'Password',
-  emailLabel: savedLang.value === 'ru' ? 'Email' : 'Email Address',
-  forgotPassword: savedLang.value === 'ru' ? 'Забыли пароль?' : 'Forgot password?',
-  resetTitle: savedLang.value === 'ru' ? 'Сброс пароля' : 'Reset Password',
-  resetSub: savedLang.value === 'ru' ? 'введите email для получения кода' : 'enter your email to receive a reset code',
-  sendResetCode: savedLang.value === 'ru' ? 'ОТПРАВИТЬ КОД' : 'SEND CODE',
-  newPasswordLabel: savedLang.value === 'ru' ? 'Новый пароль' : 'New Password',
-  setNewPassword: savedLang.value === 'ru' ? 'СОХРАНИТЬ ПАРОЛЬ' : 'SET NEW PASSWORD',
-  backToLogin: savedLang.value === 'ru' ? 'Назад к входу' : 'Back to Sign In',
-  resetSuccess: savedLang.value === 'ru' ? 'Пароль обновлён! Войдите с новым паролем.' : 'Password updated! You can now sign in.',
-}))
+// Переводы для страницы авторизации (общее ядро i18n)
+const authT = useT(dict)
 
 const isRegister = ref(false)
 const isForgot = ref(false)
@@ -357,7 +318,7 @@ async function loginPassword() {
       ? msg.some(m => typeof m === 'string' && m.toLowerCase().includes('email'))
       : typeof msg === 'string' && msg.toLowerCase().includes('email')
     loginError.value = isEmailErr
-      ? (savedLang.value === 'ru' ? 'Введите корректный email адрес' : 'Enter a valid email address')
+      ? authT.value.errValidEmail
       : authT.value.errInvalidLogin
   }
   finally { loginLoading.value = false }
@@ -376,12 +337,12 @@ function translateBackendError(msg, fallback) {
   if (!msg) return fallback
   const str = Array.isArray(msg) ? msg.join(' ') : String(msg)
   const s = str.toLowerCase()
-  if (s.includes('email')) return savedLang.value === 'ru' ? 'Введите корректный email адрес' : 'Enter a valid email address'
-  if (s.includes('password') && s.includes('short')) return savedLang.value === 'ru' ? 'Пароль слишком короткий' : 'Password is too short'
-  if (s.includes('already')) return savedLang.value === 'ru' ? 'Этот email уже зарегистрирован' : 'This email is already registered'
+  if (s.includes('email')) return authT.value.errValidEmail
+  if (s.includes('password') && s.includes('short')) return authT.value.errPwShort
+  if (s.includes('already')) return authT.value.errEmailTaken
   if (s.includes('not found') || s.includes('unauthorized') || s.includes('invalid credentials')) return fallback
-  if (s.includes('expired')) return savedLang.value === 'ru' ? 'Код устарел, запросите новый' : 'Code expired, request a new one'
-  if (s.includes('code')) return savedLang.value === 'ru' ? 'Неверный код' : 'Invalid code'
+  if (s.includes('expired')) return authT.value.errCodeExpired
+  if (s.includes('code')) return authT.value.errCode
   return fallback
 }
 

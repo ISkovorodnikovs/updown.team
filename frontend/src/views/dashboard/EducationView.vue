@@ -1,8 +1,9 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { shopApi } from '@/api'
+import { useT } from '@/i18n'
+import dict from '@/i18n/dicts/education'
 
-const L = computed(() => (localStorage.getItem('ud-lang') || 'en') === 'ru')
 const courses = ref([])
 const loading = ref(true)
 const enrolling = ref(false)
@@ -20,33 +21,9 @@ onMounted(async () => {
   loading.value = false
 })
 
-const plan = computed(() => L.value ? [
-  'Структура рынка, ликвидность и фракталы',
-  'Индикаторы UpDown',
-  'ФИБА — установка и настройка',
-  'Практическая работа с ФИБА и стратегией',
-  'Экзамен и разбор ошибок',
-] : [
-  'Market structure, liquidity and fractals',
-  'UpDown indicators',
-  'FIBA — setup and configuration',
-  'Practical work with FIBA and the strategy',
-  'Exam and mistake review',
-])
+const plan = computed(() => t.value.plan)
 
-const included = computed(() => L.value ? [
-  'Авторская система работы с Фибоначчи SK TRADE',
-  'Все индикаторы UpDown',
-  'Доступ уровня ELITE на 1 месяц',
-  'Доступ к сигналам и закрытым разборам',
-  'Поддержка во время обучения',
-] : [
-  'SK TRADE author Fibonacci system',
-  'All UpDown indicators',
-  'ELITE level access for 1 month',
-  'Signals and closed reviews access',
-  'Support during the training',
-])
+const included = computed(() => t.value.includedList)
 
 function openEnroll(c) { activeCourse.value = c; note.value = ''; enrollError.value = '' }
 
@@ -61,7 +38,7 @@ async function submitEnroll() {
   } catch (e) {
     enrollError.value = e.response?.data?.message
       ? (Array.isArray(e.response.data.message) ? e.response.data.message.join(', ') : e.response.data.message)
-      : (L.value ? 'Ошибка отправки заявки' : 'Failed to send application')
+      : t.value.enrollError
   } finally {
     enrolling.value = false
   }
@@ -71,28 +48,7 @@ const seatsLeft = (c) => c.meta?.seatsTotal != null
   ? Math.max(0, (c.meta.seatsTotal || 0) - (c.meta.seatsTaken || 0))
   : null
 
-const t = computed(() => {
-  const r = L.value
-  return {
-    title: r ? 'Обучение' : 'Education',
-    sub: r ? 'Авторские интенсивы по стратегии UpDown' : 'Author intensives on the UpDown strategy',
-    loading: r ? 'Загрузка…' : 'Loading…',
-    empty: r ? 'Курсы скоро появятся.' : 'Courses coming soon.',
-    plan: r ? 'Программа обучения' : 'Course plan',
-    included: r ? 'Что входит' : 'What is included',
-    results: r ? 'Результаты учеников' : 'Student results',
-    seats: r ? 'Идёт набор группы' : 'Group enrollment open',
-    seatsLeft: r ? 'осталось мест' : 'seats left',
-    enroll: r ? 'Записаться' : 'Enroll',
-    enrolled: r ? '✓ Заявка отправлена' : '✓ Application sent',
-    lesson: r ? 'Занятие' : 'Lesson',
-    modalTitle: r ? 'Заявка на обучение' : 'Enrollment application',
-    modalHint: r ? 'Оставьте заявку — мы свяжемся с вами, зафиксируем место и подскажем по оплате.' : 'Leave an application — we will contact you, reserve your seat and guide payment.',
-    notePh: r ? 'Ваши вопросы или пожелания (необязательно)' : 'Your questions or notes (optional)',
-    send: r ? 'Отправить заявку' : 'Send application',
-    cancel: r ? 'Отмена' : 'Cancel',
-  }
-})
+const t = useT(dict)
 </script>
 
 <template>
@@ -125,7 +81,7 @@ const t = computed(() => {
 
         <div class="edu-cols">
           <div class="edu-col">
-            <h3>{{ t.plan }}</h3>
+            <h3>{{ t.planTitle }}</h3>
             <ol class="edu-plan">
               <li v-for="(p, i) in plan" :key="i">{{ p }}</li>
             </ol>

@@ -11,19 +11,19 @@
           <div v-else class="bm-glow"></div>
 
           <div class="bm-body">
-            <div class="bm-badge">🔥 {{ isRu ? 'Акция' : 'Special Offer' }}</div>
+            <div class="bm-badge">🔥 {{ t.promo }}</div>
             <h2>{{ banner.title }}</h2>
             <p>{{ banner.message }}</p>
 
             <div class="bm-discounts" v-if="hasDiscounts">
               <div class="bm-disc-row" v-for="(pct, months) in banner.periodDiscounts" :key="months">
-                <span class="bm-disc-period">{{ months }} {{ isRu ? 'мес' : 'mo' }}</span>
+                <span class="bm-disc-period">{{ months }} {{ t.mo }}</span>
                 <span class="bm-disc-val">-{{ pct }}%</span>
               </div>
             </div>
 
             <div class="bm-countdown" v-if="banner.endsAt">
-              <div class="bm-cd-label">⏱ {{ isRu ? 'До конца акции:' : 'Offer ends in:' }}</div>
+              <div class="bm-cd-label">⏱ {{ t.endsLabel }}</div>
               <div class="bm-cd-blocks">
                 <div class="bm-cd-block" v-for="unit in timerUnits" :key="unit.label">
                   <div class="bm-cd-num-wrap">
@@ -38,10 +38,10 @@
 
             <div class="bm-actions">
               <router-link :to="ctaLink" class="bm-btn-primary" @click="close">
-                🎯 {{ isRu ? 'Перейти в магазин' : 'Go to Shop' }}
+                🎯 {{ t.goShop }}
               </router-link>
               <button class="bm-btn-skip" @click="close">
-                {{ isRu ? 'Позже' : 'Later' }}
+                {{ t.later }}
               </button>
             </div>
           </div>
@@ -54,20 +54,22 @@
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { bannersApi } from '@/api'
+import { useT } from '@/i18n'
+import dict from '@/i18n/dicts/bannerModal'
 
 const props = defineProps({ context: { type: String, default: 'landing' } })
 const banner = ref(null)
 const visible = ref(false)
-const isRu = computed(() => (localStorage.getItem('ud-lang') || 'en') === 'ru')
+const t = useT(dict)
 let timer = null
 let showTimer = null
 const initializedFor = ref(null)
 
 const timerUnits = ref([
-  { value: '00', label: 'д' },
-  { value: '00', label: 'ч' },
-  { value: '00', label: 'мин' },
-  { value: '00', label: 'сек' },
+  { value: '00', label: t.value.d },
+  { value: '00', label: t.value.h },
+  { value: '00', label: t.value.min },
+  { value: '00', label: t.value.sec },
 ])
 
 const ctaLink = computed(() => props.context === 'dashboard' ? '/dashboard/shop' : '/login')
@@ -147,13 +149,12 @@ function updateTimer() {
     return
   }
   const diff = new Date(banner.value.endsAt) - new Date()
-  const ru = (localStorage.getItem('ud-lang') || 'en') === 'ru'
   if (diff <= 0) {
     timerUnits.value = [
-      { value: '00', label: ru ? 'д' : 'd' },
-      { value: '00', label: ru ? 'ч' : 'h' },
-      { value: '00', label: ru ? 'мин' : 'min' },
-      { value: '00', label: ru ? 'сек' : 'sec' },
+      { value: '00', label: t.value.d },
+      { value: '00', label: t.value.h },
+      { value: '00', label: t.value.min },
+      { value: '00', label: t.value.sec },
     ]
     clearInterval(timer)
     return
@@ -163,10 +164,10 @@ function updateTimer() {
   const m = Math.floor((diff % 3600000) / 60000)
   const s = Math.floor((diff % 60000) / 1000)
   timerUnits.value = [
-    { value: String(d).padStart(2, '0'), label: ru ? 'д' : 'd' },
-    { value: String(h).padStart(2, '0'), label: ru ? 'ч' : 'h' },
-    { value: String(m).padStart(2, '0'), label: ru ? 'мин' : 'min' },
-    { value: String(s).padStart(2, '0'), label: ru ? 'сек' : 'sec' },
+    { value: String(d).padStart(2, '0'), label: t.value.d },
+    { value: String(h).padStart(2, '0'), label: t.value.h },
+    { value: String(m).padStart(2, '0'), label: t.value.min },
+    { value: String(s).padStart(2, '0'), label: t.value.sec },
   ]
 }
 

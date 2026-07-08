@@ -113,7 +113,7 @@
             <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
           </button>
           <!-- Lang -->
-          <button class="topbar-btn topbar-btn--lang" @click="toggleLang">{{ lang === 'ru' ? 'EN' : 'RU' }}</button>
+          <LangSwitcher />
           <!-- Notifications -->
           <button class="topbar-btn topbar-btn--notif">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"/></svg>
@@ -143,6 +143,9 @@ import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { subscriptionsApi } from '@/api'
 import { useCartStore } from '@/stores/cart'
+import LangSwitcher from '@/components/LangSwitcher.vue'
+import { useT } from '@/i18n'
+import dict from '@/i18n/dicts/dashboardLayout'
 
 const auth = useAuthStore()
 const cartStore = useCartStore()
@@ -152,9 +155,7 @@ const route = useRoute()
 
 // Theme & Lang
 const theme = ref(localStorage.getItem('ud-theme') || 'dark')
-const lang = ref(localStorage.getItem('ud-lang') || 'ru')
 function toggleTheme() { theme.value = theme.value === 'dark' ? 'light' : 'dark'; localStorage.setItem('ud-theme', theme.value) }
-function toggleLang() { lang.value = lang.value === 'ru' ? 'en' : 'ru'; localStorage.setItem('ud-lang', lang.value) }
 
 const collapsed = ref(false)
 const activePlan = ref(null)
@@ -196,61 +197,7 @@ const icons = {
   logs: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>',
 }
 
-// Translations
-const translations = {
-  ru: {
-    nav: {
-      home: 'Главная', subscriptions: 'Подписки', shop: 'Магазин',
-      products: 'Продукты', signals: 'Сигналы', indicators: 'Индикаторы',
-      analytics: 'Аналитика', copytrading: 'Копитрейдинг', education: 'Обучение',
-      business: 'Бизнес', whitelabel: 'White Label', development: 'Разработка', affiliate: 'Партнёрка',
-      account: 'Аккаунт', finances: 'Финансы', support: 'Поддержка', profile: 'Профиль',
-      users: 'Пользователи', adminPlans: 'Тарифы', adminShop: 'Магазин', adminSubs: 'Подписки', banners: 'Баннеры', referral: 'Рефералы', allTickets: 'Все тикеты', logs: 'Логи', partnerZone: 'Партнёрам', myBot: 'Мой бот', myChannels: 'Мои каналы', signalAnalytics: 'Аналитика', broadcast: 'Рассылка', affiliate: 'Аффилиат', partners: 'Партнёры', botsOverview: 'Боты (обзор)',
-    },
-    chartsLink: 'Chart Platform',
-    cart: 'Корзина',
-    goCheckout: 'Оплатить',
-    logout: 'Выйти',
-    pageTitles: {
-      '/dashboard': 'Главная', '/dashboard/subscriptions': 'Мои подписки',
-      '/dashboard/shop': 'Магазин', '/dashboard/signals': 'Сигналы',
-      '/dashboard/indicators': 'Индикаторы', '/dashboard/analytics': 'Аналитика',
-      '/dashboard/copytrading': 'Копитрейдинг', '/dashboard/education': 'Обучение',
-      '/dashboard/whitelabel': 'White Label', '/dashboard/development': 'Разработка',
-      '/dashboard/affiliate': 'Партнёрка', '/dashboard/partner/bot': 'Мой бот', '/dashboard/partner/channels': 'Мои каналы', '/dashboard/partner/analytics': 'Аналитика сигналов', '/dashboard/broadcast': 'Рассылка', '/dashboard/partners': 'Партнёры', '/dashboard/bots-overview': 'Боты (обзор)', '/dashboard/finances': 'Финансы',
-      '/dashboard/support': 'Поддержка', '/dashboard/profile': 'Профиль',
-      '/dashboard/admin/users': 'Пользователи', '/dashboard/admin/subscriptions': 'Управление подписками', '/dashboard/admin/plans': 'Управление тарифами', '/dashboard/admin/shop': 'Управление магазином',
-      '/dashboard/admin/banners': 'Конструктор баннеров', '/dashboard/admin/referral': 'Управление рефералами',
-    }
-  },
-  en: {
-    nav: {
-      home: 'Home', subscriptions: 'Subscriptions', shop: 'Shop',
-      products: 'Products', signals: 'Signals', indicators: 'Indicators',
-      analytics: 'Analytics', copytrading: 'Copy Trading', education: 'Education',
-      business: 'Business', whitelabel: 'White Label', development: 'Development', affiliate: 'Affiliate',
-      account: 'Account', finances: 'Finances', support: 'Support', profile: 'Profile',
-      users: 'Users', adminPlans: 'Plans', adminShop: 'Shop', adminSubs: 'Subscriptions', banners: 'Banners', referral: 'Referrals', allTickets: 'All Tickets', logs: 'Logs', partnerZone: 'Partner Zone', myBot: 'My Bot', myChannels: 'My Channels', signalAnalytics: 'Analytics', broadcast: 'Broadcast', affiliate: 'Affiliate', partners: 'Partners', botsOverview: 'Bots Overview',
-    },
-    chartsLink: 'Chart Platform',
-    cart: 'Cart',
-    goCheckout: 'Checkout',
-    logout: 'Logout',
-    pageTitles: {
-      '/dashboard': 'Home', '/dashboard/subscriptions': 'My Subscriptions',
-      '/dashboard/shop': 'Shop', '/dashboard/signals': 'Signals',
-      '/dashboard/indicators': 'Indicators', '/dashboard/analytics': 'Analytics',
-      '/dashboard/copytrading': 'Copy Trading', '/dashboard/education': 'Education',
-      '/dashboard/whitelabel': 'White Label', '/dashboard/development': 'Development',
-      '/dashboard/affiliate': 'Affiliate', '/dashboard/partner/bot': 'My Bot', '/dashboard/partner/channels': 'My Channels', '/dashboard/partner/analytics': 'Signals Analytics', '/dashboard/broadcast': 'Broadcast', '/dashboard/partners': 'Partners', '/dashboard/bots-overview': 'Bots Overview', '/dashboard/finances': 'Finances',
-      '/dashboard/support': 'Support', '/dashboard/profile': 'Profile',
-      '/dashboard/admin/users': 'Users', '/dashboard/admin/subscriptions': 'Manage Subscriptions', '/dashboard/admin/plans': 'Manage Plans', '/dashboard/admin/shop': 'Manage Shop',
-      '/dashboard/admin/banners': 'Banner Constructor', '/dashboard/admin/referral': 'Referral Management',
-    }
-  }
-}
-
-const t = computed(() => translations[lang.value])
+const t = useT(dict)
 const currentPageTitle = computed(() => t.value.pageTitles[route.path] || '')
 </script>
 

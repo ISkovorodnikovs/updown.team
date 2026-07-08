@@ -34,8 +34,9 @@
 import { ref, computed, onMounted } from 'vue'
 import { shopApi } from '@/api'
 import { useCartStore } from '@/stores/cart'
+import { useT } from '@/i18n'
+import dict from '@/i18n/dicts/indicators'
 
-const lang = computed(() => localStorage.getItem('ud-lang') || 'en')
 const indicators = ref([])
 const cartStore = useCartStore()
 function addToCart(ind) { cartStore.add({ id: ind.id, name: ind.name, price: ind.price, type: 'indicator', shopProductId: ind.id }) }
@@ -45,20 +46,7 @@ onMounted(async () => {
   indicators.value = await shopApi.getIndicators().then(r => r.data).catch(() => [])
 })
 
-const t = computed(() => {
-  const r = lang.value === 'ru'
-  return {
-    title: r ? 'Индикаторы UpDown' : 'UpDown Indicators',
-    sub: r ? 'Профессиональные инструменты для TradingView' : 'Professional tools for TradingView',
-    month: r ? 'мес' : 'mo',
-    addToCart: r ? 'В корзину' : 'Add to Cart',
-    inCart: r ? 'В корзине' : 'In Cart',
-    owned: r ? 'Куплено' : 'Owned',
-    openTv: r ? 'Открыть в TradingView' : 'Open in TradingView',
-    signalDay: r ? 'Сигнал дня' : 'Signal of the Day',
-    signalDaySub: r ? 'Функция находится в разработке. Скоро здесь появится ежедневный торговый сигнал.' : 'This feature is coming soon. Daily trading signal will appear here.',
-  }
-})
+const t = useT(dict)
 </script>
 
 <style lang="scss" scoped>
