@@ -66,13 +66,6 @@ export class ShopController {
     return this.shopService.sendContactRequest(user, body.message, body.language);
   }
 
-  // Запрос настройки инструмента (Скальпинг и т.п.)
-  @Post('access/instrument')
-  @UseGuards(AuthGuard('jwt'))
-  instrumentRequest(@CurrentUser() user: any, @Body() body: { shopProductId: string; instrument: string; language?: string }) {
-    return this.shopService.sendInstrumentRequest(user, body.shopProductId, body.instrument, body.language);
-  }
-
   // Админ выдаёт товар (индикатор/канал) пользователю
   @Post('admin/grant-product')
   @UseGuards(AuthGuard('jwt'), RolesGuard)

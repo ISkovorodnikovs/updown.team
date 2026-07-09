@@ -7,7 +7,6 @@ import { UserProduct, UserProductStatus } from '../database/entities/user-produc
 import { PartnerChannel } from '../database/entities/partner-channel.entity';
 import { ExpiryReminder } from '../database/entities/expiry-reminder.entity';
 import { TelegramMainService } from '../telegram/telegram-main.service';
-import { ChannelAccessService } from '../channel-access/channel-access.service';
 
 @Injectable()
 export class ExpiryService {
@@ -19,7 +18,6 @@ export class ExpiryService {
     @InjectRepository(PartnerChannel) private channelRepo: Repository<PartnerChannel>,
     @InjectRepository(ExpiryReminder) private reminderRepo: Repository<ExpiryReminder>,
     private telegram: TelegramMainService,
-    private channelAccess: ChannelAccessService,
   ) {}
 
   // ─── Устойчивость к кратким обрывам связи с БД ────────────────────────────
@@ -73,13 +71,6 @@ export class ExpiryService {
         return { s, p, c };
       }, 'markExpired');
       this.logger.log(`Expiry: subs=${s.affected ?? 0}, products=${p.affected ?? 0}, channels=${c.affected ?? 0}`);
-      // Кик из Telegram-каналов тех, у кого доступ истёк (ban+unban)
-      try {
-        const kicked = await this.channelAccess.kickExpired();
-        if (kicked) this.logger.log(`Expiry: kicked ${kicked} channel members`);
-      } catch (e) {
-        this.logger.error(`kickExpired error: ${(e as any).message}`);
-      }
     } catch (e) {
       this.logger.error(`markExpired error: ${e.message}`);
       const transient = this.isTransientDbError(e);

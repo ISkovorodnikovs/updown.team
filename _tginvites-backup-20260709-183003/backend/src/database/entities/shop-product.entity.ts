@@ -33,16 +33,6 @@ export class ShopProduct {
   @Column({ nullable: true })
   tradingViewUrl: string;
 
-  // Telegram: ID группы/канала для авто-выдачи доступа (только для type=signal_channel).
-  // Пусто → доступ выдаётся вручную (см. customInstrument).
-  @Column({ nullable: true })
-  telegramChatId: string;
-
-  // Кастомная настройка (напр. «Скальпинг — любой инструмент»): в ЛК пользователь
-  // указывает инструмент и связывается с поддержкой, доступ настраивается вручную.
-  @Column({ default: false })
-  customInstrument: boolean;
-
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   price: number;
 

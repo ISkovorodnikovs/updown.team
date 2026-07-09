@@ -167,7 +167,6 @@ export const shopApi = {
   grantProduct: (data) => api.post('/shop/admin/grant-product', data),
   setTvUsername: (data) => api.post('/shop/access/tv-username', data),
   contactRequest: (data) => api.post('/shop/access/contact', data),
-  instrumentRequest: (data) => api.post('/shop/access/instrument', data),
   // Admin
   getAll: () => api.get('/shop/admin/all'),
   create: (data) => api.post('/shop/products', data, { timeout: 120000 }),

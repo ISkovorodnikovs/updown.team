@@ -8,7 +8,6 @@ import { Subscription, SubscriptionStatus } from '../database/entities/subscript
 import { Plan } from '../database/entities/plan.entity';
 import { NotificationsService } from '../notifications/notifications.service';
 import { NotificationType } from '../database/entities/notification.entity';
-import { ChannelAccessService } from '../channel-access/channel-access.service';
 import { CreateShopProductDto, UpdateShopProductDto } from './dto/shop-product.dto';
 import { TelegramMainService } from '../telegram/telegram-main.service';
 import { TranslationService } from '../translation/translation.service';
@@ -136,7 +135,6 @@ export class ShopService implements OnModuleInit {
     private telegram: TelegramMainService,
     private translation: TranslationService,
     private notifications: NotificationsService,
-    private channelAccess: ChannelAccessService,
   ) {}
 
   // Заявка на обучение («Записаться») — уведомление админу в техчат
@@ -367,30 +365,16 @@ export class ShopService implements OnModuleInit {
       for (const p of prods) map.set(p.id, { product: p, expiresAt: planExpires as Date });
     }
 
-    const list = [...map.values()].filter((x) => x.product.isActive !== false);
-    const products: any[] = [];
-    for (const x of list) {
-      const p = x.product;
-      const item: any = {
-        productId: p.id,
-        name: p.name,
-        nameTranslations: p.nameTranslations ?? null,
-        type: p.type,
-        tradingViewUrl: p.tradingViewUrl ?? null,
-        customInstrument: !!p.customInstrument,
-        hasChat: !!p.telegramChatId,
-        inviteLink: null,
+    const products = [...map.values()]
+      .filter((x) => x.product.isActive !== false)
+      .map((x) => ({
+        productId: x.product.id,
+        name: x.product.name,
+        nameTranslations: x.product.nameTranslations ?? null,
+        type: x.product.type,
+        tradingViewUrl: x.product.tradingViewUrl ?? null,
         expiresAt: x.expiresAt,
-      };
-      // Для сигнальных каналов с привязанным чатом — постоянная инвайт-ссылка
-      if (p.type === ProductType.SIGNAL_CHANNEL && p.telegramChatId && !p.customInstrument) {
-        try {
-          const acc = await this.channelAccess.getOrCreateLink(jwtUser.id, p, x.expiresAt, user?.email);
-          item.inviteLink = acc?.inviteLink ?? null;
-        } catch { /* ссылку добудем при следующем заходе */ }
-      }
-      products.push(item);
-    }
+      }));
 
     return { products, hasSupport, tvUsername: user?.tvUsername ?? null };
   }
@@ -427,20 +411,6 @@ export class ShopService implements OnModuleInit {
       `👤 ${this.escapeMd(name)} (${this.escapeMd(user.email)})\n` +
       `🌐 Язык клиента: ${this.escapeMd(language || 'en')}\n` +
       `💬 ${this.escapeMd(msg) || '(без сообщения)'}`,
-    );
-    return { ok: true };
-  }
-
-  /** Запрос настройки инструмента (напр. «Скальпинг») → уведомление админам. */
-  async sendInstrumentRequest(user: any, shopProductId: string, instrument: string, language?: string) {
-    const product = await this.productRepo.findOne({ where: { id: shopProductId } });
-    const name = [user.firstName, user.lastName].filter(Boolean).join(' ') || '—';
-    await this.telegram.sendMessage(
-      `🛠 Запрос настройки инструмента\n` +
-      `👤 ${this.escapeMd(name)} (${this.escapeMd(user.email)})\n` +
-      `📦 ${this.escapeMd(product?.name || shopProductId)}\n` +
-      `🎯 Инструмент: ${this.escapeMd(String(instrument || '').slice(0, 200)) || '(не указан)'}\n` +
-      `🌐 Язык клиента: ${this.escapeMd(language || 'en')}`,
     );
     return { ok: true };
   }

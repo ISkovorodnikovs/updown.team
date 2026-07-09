@@ -5,7 +5,6 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TranslationModule } from './translation/translation.module';
 import { NotificationsModule } from './notifications/notifications.module';
-import { ChannelAccessModule } from './channel-access/channel-access.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { PartnersModule } from './partners/partners.module';
@@ -76,7 +75,6 @@ import databaseConfig from './config/database.config';
     ScheduleModule.forRoot(),
     TranslationModule,
     NotificationsModule,
-    ChannelAccessModule,
     AuthModule,
     UsersModule,
     PartnersModule,

@@ -35,15 +35,7 @@ export default {
     "subExpires": "Expires",
     "subHistory": "Subscription history",
     "noSub": "No active subscription",
-    "days": "days",
-    "tgJoin": "Join channel",
-    "tgLinkHint": "Your personal one-time invite link — it works once and expires when your access ends. Do not share it.",
-    "scalpTitle": "Scalping — custom setup",
-    "scalpHint": "Enter the instrument you want, then contact support — we set it up manually and add you.",
-    "scalpInfo": "We set up ANY instrument on ANY timeframe for you individually. Enter what you want and reach us in Telegram — we will help and add you to your personal channel.",
-    "scalpPh": "Instrument (e.g. BTCUSDT, XAUUSD)",
-    "scalpSend": "Send request",
-    "scalpSent": "Sent — support will contact you"
+    "days": "days"
   },
   "ru": {
     "title": "Мои доступы",
@@ -81,15 +73,7 @@ export default {
     "subExpires": "Истекает",
     "subHistory": "История подписок",
     "noSub": "Нет активной подписки",
-    "days": "дн.",
-    "tgJoin": "Вступить в канал",
-    "tgLinkHint": "Ваша персональная одноразовая ссылка — срабатывает один раз и истекает с окончанием доступа. Не передавайте её.",
-    "scalpTitle": "Скальпинг — индивидуальная настройка",
-    "scalpHint": "Укажите нужный инструмент и свяжитесь с поддержкой — мы настроим вручную и добавим вас.",
-    "scalpInfo": "Мы индивидуально настроим ЛЮБОЙ инструмент на ЛЮБОМ таймфрейме. Укажите, что хотите, и напишите нам в Telegram — поможем и добавим вас в персональный канал.",
-    "scalpPh": "Инструмент (напр. BTCUSDT, XAUUSD)",
-    "scalpSend": "Отправить запрос",
-    "scalpSent": "Отправлено — поддержка свяжется с вами"
+    "days": "дн."
   },
   "uk": {
     "title": "Мої доступи",
@@ -127,15 +111,7 @@ export default {
     "subExpires": "Спливає",
     "subHistory": "Історія підписок",
     "noSub": "Немає активної підписки",
-    "days": "дн.",
-    "tgJoin": "Вступити в канал",
-    "tgLinkHint": "Ваше персональне одноразове посилання — спрацьовує один раз і спливає із закінченням доступу. Не передавайте його.",
-    "scalpTitle": "Скальпінг — індивідуальне налаштування",
-    "scalpHint": "Вкажіть потрібний інструмент і зв’яжіться з підтримкою — ми налаштуємо вручну та додамо вас.",
-    "scalpInfo": "Ми індивідуально налаштуємо БУДЬ-ЯКИЙ інструмент на БУДЬ-ЯКОМУ таймфреймі. Вкажіть, що хочете, і напишіть нам у Telegram — допоможемо та додамо вас у персональний канал.",
-    "scalpPh": "Інструмент (напр. BTCUSDT, XAUUSD)",
-    "scalpSend": "Надіслати запит",
-    "scalpSent": "Надіслано — підтримка зв’яжеться з вами"
+    "days": "дн."
   },
   "de": {
     "title": "Mein Zugang",
@@ -173,15 +149,7 @@ export default {
     "subExpires": "Läuft ab",
     "subHistory": "Abo-Verlauf",
     "noSub": "Kein aktives Abo",
-    "days": "Tage",
-    "tgJoin": "Kanal beitreten",
-    "tgLinkHint": "Dein persönlicher einmaliger Einladungslink — funktioniert einmal und läuft mit deinem Zugang ab. Nicht weitergeben.",
-    "scalpTitle": "Scalping — individuelle Einrichtung",
-    "scalpHint": "Gib das gewünschte Instrument ein und kontaktiere den Support — wir richten es manuell ein und fügen dich hinzu.",
-    "scalpInfo": "Wir richten JEDES Instrument auf JEDEM Zeitrahmen individuell ein. Sag uns, was du willst, und schreib uns auf Telegram — wir helfen und fügen dich zu deinem persönlichen Kanal hinzu.",
-    "scalpPh": "Instrument (z.B. BTCUSDT, XAUUSD)",
-    "scalpSend": "Anfrage senden",
-    "scalpSent": "Gesendet — der Support meldet sich"
+    "days": "Tage"
   },
   "es": {
     "title": "Mi acceso",
@@ -219,15 +187,7 @@ export default {
     "subExpires": "Vence",
     "subHistory": "Historial de suscripciones",
     "noSub": "Sin suscripción activa",
-    "days": "días",
-    "tgJoin": "Unirse al canal",
-    "tgLinkHint": "Tu enlace personal de un solo uso — funciona una vez y caduca al terminar tu acceso. No lo compartas.",
-    "scalpTitle": "Scalping — configuración personalizada",
-    "scalpHint": "Indica el instrumento que quieres y contacta con soporte — lo configuramos manualmente y te añadimos.",
-    "scalpInfo": "Configuramos CUALQUIER instrumento en CUALQUIER temporalidad de forma individual. Dinos qué quieres y escríbenos por Telegram — te ayudamos y te añadimos a tu canal personal.",
-    "scalpPh": "Instrumento (p. ej. BTCUSDT, XAUUSD)",
-    "scalpSend": "Enviar solicitud",
-    "scalpSent": "Enviado — soporte te contactará"
+    "days": "días"
   },
   "it": {
     "title": "Il mio accesso",
@@ -265,15 +225,7 @@ export default {
     "subExpires": "Scade",
     "subHistory": "Storico abbonamenti",
     "noSub": "Nessun abbonamento attivo",
-    "days": "giorni",
-    "tgJoin": "Entra nel canale",
-    "tgLinkHint": "Il tuo link personale monouso — funziona una volta e scade al termine dell’accesso. Non condividerlo.",
-    "scalpTitle": "Scalping — configurazione personalizzata",
-    "scalpHint": "Inserisci lo strumento desiderato e contatta il supporto — lo configuriamo manualmente e ti aggiungiamo.",
-    "scalpInfo": "Configuriamo QUALSIASI strumento su QUALSIASI timeframe in modo personalizzato. Dicci cosa vuoi e scrivici su Telegram — ti aiutiamo e ti aggiungiamo al tuo canale personale.",
-    "scalpPh": "Strumento (es. BTCUSDT, XAUUSD)",
-    "scalpSend": "Invia richiesta",
-    "scalpSent": "Inviato — il supporto ti contatterà"
+    "days": "giorni"
   },
   "pt": {
     "title": "Meu acesso",
@@ -311,15 +263,7 @@ export default {
     "subExpires": "Expira",
     "subHistory": "Histórico de assinaturas",
     "noSub": "Sem assinatura ativa",
-    "days": "dias",
-    "tgJoin": "Entrar no canal",
-    "tgLinkHint": "Seu link pessoal de uso único — funciona uma vez e expira quando seu acesso termina. Não compartilhe.",
-    "scalpTitle": "Scalping — configuração personalizada",
-    "scalpHint": "Informe o instrumento desejado e contate o suporte — configuramos manualmente e adicionamos você.",
-    "scalpInfo": "Configuramos QUALQUER instrumento em QUALQUER timeframe individualmente. Diga o que quer e fale conosco no Telegram — ajudamos e adicionamos você ao seu canal pessoal.",
-    "scalpPh": "Instrumento (ex. BTCUSDT, XAUUSD)",
-    "scalpSend": "Enviar solicitação",
-    "scalpSent": "Enviado — o suporte entrará em contato"
+    "days": "dias"
   },
   "zh": {
     "title": "我的权限",
@@ -357,15 +301,7 @@ export default {
     "subExpires": "到期",
     "subHistory": "订阅历史",
     "noSub": "无有效订阅",
-    "days": "天",
-    "tgJoin": "加入频道",
-    "tgLinkHint": "你的个人一次性邀请链接——仅可使用一次，访问到期即失效。请勿分享。",
-    "scalpTitle": "剥头皮——定制设置",
-    "scalpHint": "输入你想要的品种，然后联系客服——我们会手动设置并将你加入。",
-    "scalpInfo": "我们会为你单独设置任意品种、任意周期。告诉我们你的需求并在 Telegram 联系我们——我们会协助并把你加入你的专属频道。",
-    "scalpPh": "品种（如 BTCUSDT、XAUUSD）",
-    "scalpSend": "发送请求",
-    "scalpSent": "已发送——客服会联系你"
+    "days": "天"
   },
   "ar": {
     "title": "وصولي",
@@ -403,14 +339,6 @@ export default {
     "subExpires": "ينتهي",
     "subHistory": "سجل الاشتراكات",
     "noSub": "لا يوجد اشتراك نشط",
-    "days": "أيام",
-    "tgJoin": "الانضمام إلى القناة",
-    "tgLinkHint": "رابط دعوتك الشخصي لمرة واحدة — يعمل مرة واحدة وينتهي بانتهاء وصولك. لا تشاركه.",
-    "scalpTitle": "سكالبينغ — إعداد مخصص",
-    "scalpHint": "أدخل الأداة التي تريدها ثم تواصل مع الدعم — نضبطها يدويًا ونضيفك.",
-    "scalpInfo": "نضبط لك أي أداة على أي إطار زمني بشكل فردي. أخبرنا بما تريد وتواصل معنا على تيليجرام — سنساعدك ونضيفك إلى قناتك الشخصية.",
-    "scalpPh": "الأداة (مثل BTCUSDT، XAUUSD)",
-    "scalpSend": "إرسال الطلب",
-    "scalpSent": "تم الإرسال — سيتواصل معك الدعم"
+    "days": "أيام"
   }
 }

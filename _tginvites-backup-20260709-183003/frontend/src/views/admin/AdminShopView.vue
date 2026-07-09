@@ -15,7 +15,6 @@ const filter = ref('all')
 const defaultForm = () => ({
   type: 'indicator', name: '', description: '', tradingViewUrl: '',
   price: 0, currency: 'USDT', imageUrl: '', features: '', badge: '',
-  telegramChatId: '', customInstrument: false,
   isActive: true, sortOrder: 0, seatsTotal: 10, seatsTaken: 0, translateAll: true,
 })
 const form = reactive(defaultForm())
@@ -44,8 +43,6 @@ function openForm(p) {
       name: p.name ?? '',
       description: p.description ?? '',
       tradingViewUrl: p.tradingViewUrl ?? '',
-      telegramChatId: p.telegramChatId ?? '',
-      customInstrument: !!p.customInstrument,
       price: Number(p.price) ?? 0,
       currency: p.currency ?? 'USDT',
       imageUrl: p.imageUrl ?? '',
@@ -77,8 +74,6 @@ async function save() {
       name: form.name,
       description: form.description || undefined,
       tradingViewUrl: form.tradingViewUrl || undefined,
-      telegramChatId: form.telegramChatId || undefined,
-      customInstrument: !!form.customInstrument,
       price: Number(form.price),
       currency: form.currency || 'USDT',
       imageUrl: form.imageUrl || undefined,
@@ -174,10 +169,6 @@ const t = useT(dict)
             <label>{{ t.sort }}<input v-model.number="form.sortOrder" type="number" min="0" /></label>
           </div>
           <label v-if="form.type==='indicator'">{{ t.tv }}<input v-model="form.tradingViewUrl" type="text" /></label>
-          <template v-if="form.type==='signal_channel'">
-            <label>Telegram chat ID<input v-model="form.telegramChatId" type="text" placeholder="-100xxxxxxxxxx" /></label>
-            <label class="sa-chk"><input type="checkbox" v-model="form.customInstrument" /> Кастомный (клиент выбирает инструмент, выдаём вручную)</label>
-          </template>
           <div v-if="form.type==='education'" class="sa-row">
             <label>{{ t.seatsTotal }}<input v-model.number="form.seatsTotal" type="number" min="0" /></label>
             <label>{{ t.seatsTaken }}<input v-model.number="form.seatsTaken" type="number" min="0" /></label>

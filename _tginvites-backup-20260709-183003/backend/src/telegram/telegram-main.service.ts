@@ -24,14 +24,7 @@ export class TelegramMainService implements OnModuleInit {
     }
 
     try {
-      this.bot = new TelegramBot(token, {
-        polling: {
-          params: {
-            // включаем chat_member/join_request — нужны для трекинга входа по инвайт-ссылкам
-            allowed_updates: ['message', 'callback_query', 'chat_member', 'chat_join_request'] as any,
-          },
-        },
-      });
+      this.bot = new TelegramBot(token, { polling: true });
       this.chatId = chatId;
 
       const me = await this.bot.getMe();
@@ -98,61 +91,6 @@ export class TelegramMainService implements OnModuleInit {
         );
       } catch (e) {
         this.logger.warn(`[Telegram] link resolver failed: ${e.message}`);
-      }
-    });
-  }
-
-  /** Создать одноразовую инвайт-ссылку (member_limit=1) с опциональным сроком. */
-  async createChatInviteLink(chatId: string, expireDate?: Date, name?: string): Promise<string | null> {
-    if (!this.bot || !chatId) return null;
-    try {
-      const opts: any = { member_limit: 1 };
-      if (expireDate) opts.expire_date = Math.floor(new Date(expireDate).getTime() / 1000);
-      if (name) opts.name = String(name).slice(0, 32);
-      const res: any = await this.bot.createChatInviteLink(chatId, opts);
-      return res?.invite_link || null;
-    } catch (e: any) {
-      this.logger.warn(`[Telegram] createChatInviteLink failed (${chatId}): ${e.message}`);
-      return null;
-    }
-  }
-
-  /** Удалить пользователя из чата без «чёрного списка»: ban + сразу unban. */
-  async kickUser(chatId: string, telegramUserId: string | number): Promise<boolean> {
-    if (!this.bot || !chatId || !telegramUserId) return false;
-    try {
-      await this.bot.banChatMember(chatId, Number(telegramUserId));
-      await this.bot.unbanChatMember(chatId, Number(telegramUserId), { only_if_banned: true } as any);
-      return true;
-    } catch (e: any) {
-      this.logger.warn(`[Telegram] kick failed (${chatId}/${telegramUserId}): ${e.message}`);
-      return false;
-    }
-  }
-
-  /** На всякий случай снять бан (перед повторной выдачей доступа). */
-  async unban(chatId: string, telegramUserId: string | number): Promise<void> {
-    if (!this.bot || !chatId || !telegramUserId) return;
-    try {
-      await this.bot.unbanChatMember(chatId, Number(telegramUserId), { only_if_banned: true } as any);
-    } catch { /* игнорируем */ }
-  }
-
-  /**
-   * Подписка на chat_member-апдейты (кто вступил/вышел, по какой ссылке).
-   * handler(chatId, telegramUserId, inviteLink, status).
-   */
-  onChatMember(handler: (chatId: string, telegramUserId: string, inviteLink: string | null, status: string) => Promise<void>) {
-    if (!this.bot) return;
-    this.bot.on('chat_member', async (u: any) => {
-      try {
-        const chatId = String(u?.chat?.id || '');
-        const tgUserId = String(u?.new_chat_member?.user?.id || '');
-        const inviteLink = u?.invite_link?.invite_link || null;
-        const status = u?.new_chat_member?.status || '';
-        if (chatId && tgUserId) await handler(chatId, tgUserId, inviteLink, status);
-      } catch (e: any) {
-        this.logger.warn(`[Telegram] chat_member handler failed: ${e.message}`);
       }
     });
   }

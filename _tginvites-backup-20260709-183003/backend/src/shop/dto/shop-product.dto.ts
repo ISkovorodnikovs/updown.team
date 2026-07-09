@@ -22,9 +22,6 @@ export class CreateShopProductDto {
   @MaxLength(500)
   tradingViewUrl?: string;
 
-  @IsOptional() @IsString() @MaxLength(64) telegramChatId?: string;
-  @IsOptional() @IsBoolean() customInstrument?: boolean;
-
   @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0)
   @Max(1000000)
@@ -66,8 +63,6 @@ export class UpdateShopProductDto {
   @IsOptional() @IsString() @MaxLength(120) name?: string;
   @IsOptional() @IsString() @MaxLength(1000) description?: string;
   @IsOptional() @IsString() @MaxLength(500) tradingViewUrl?: string;
-  @IsOptional() @IsString() @MaxLength(64) telegramChatId?: string;
-  @IsOptional() @IsBoolean() customInstrument?: boolean;
   @IsOptional() @IsNumber({ maxDecimalPlaces: 2 }) @Min(0) @Max(1000000) price?: number;
   @IsOptional() @IsString() @MaxLength(8) currency?: string;
   @IsOptional() @IsString() @MaxLength(500) imageUrl?: string;

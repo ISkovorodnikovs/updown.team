@@ -22,20 +22,6 @@ const contactMsg = ref('')
 const contactBusy = ref(false)
 const contactSent = ref(false)
 const chanRequested = ref({})
-const instrument = ref({})
-const scalpBusy = ref({})
-const scalpSent = ref({})
-const scalpInfo = ref({})
-
-async function submitInstrument(it) {
-  const val = (instrument.value[it.productId] || '').trim()
-  if (!val) return
-  scalpBusy.value[it.productId] = true
-  try {
-    await shopApi.instrumentRequest({ shopProductId: it.productId, instrument: val, language: lang.value })
-    scalpSent.value[it.productId] = true
-  } catch { /* ignore */ } finally { scalpBusy.value[it.productId] = false }
-}
 
 const indicators = computed(() => products.value.filter(p => p.type === 'indicator'))
 const channels = computed(() => products.value.filter(p => p.type === 'signal_channel'))
@@ -148,34 +134,7 @@ async function sendContact() {
           <div class="acc-card__name">{{ tDb(it, 'name') }}</div>
           <div class="acc-card__until">{{ t.until }}: {{ fmtDate(it.expiresAt) }}</div>
         </div>
-
-        <!-- Кастомная настройка (Скальпинг): ввод инструмента + поддержка -->
-        <div v-if="it.customInstrument" class="acc-block">
-          <div class="acc-block__title">
-            {{ t.scalpTitle }}
-            <span class="acc-q" @click="scalpInfo[it.productId] = !scalpInfo[it.productId]" title="?">?</span>
-          </div>
-          <p v-if="scalpInfo[it.productId]" class="acc-block__where">{{ t.scalpInfo }}</p>
-          <p class="acc-block__hint">{{ t.scalpHint }}</p>
-          <div class="acc-tv">
-            <input v-model="instrument[it.productId]" :placeholder="t.scalpPh" class="acc-input" />
-            <button class="acc-btn acc-btn--primary" :disabled="scalpBusy[it.productId]" @click="submitInstrument(it)">
-              {{ scalpBusy[it.productId] ? '…' : t.scalpSend }}
-            </button>
-          </div>
-          <div v-if="scalpSent[it.productId]" class="acc-ok">✓ {{ t.scalpSent }}</div>
-          <a class="acc-btn acc-btn--tg" style="margin-top:12px" :href="SUPPORT_URL" target="_blank" rel="noopener">{{ t.supportBtn }}</a>
-        </div>
-
-        <!-- Обычный канал с готовой инвайт-ссылкой -->
-        <div v-else-if="it.inviteLink" class="acc-block">
-          <div class="acc-block__title">{{ t.tgTitle }}</div>
-          <p class="acc-block__hint">{{ t.tgLinkHint }}</p>
-          <a class="acc-btn acc-btn--tg" :href="it.inviteLink" target="_blank" rel="noopener">✈ {{ t.tgJoin }}</a>
-        </div>
-
-        <!-- Фолбэк: чат ещё не привязан — запрос доступа -->
-        <div v-else class="acc-block">
+        <div class="acc-block">
           <div class="acc-block__title">{{ t.tgTitle }}</div>
           <p class="acc-block__hint">{{ t.tgHint }}</p>
           <button class="acc-btn acc-btn--tg" :disabled="chanRequested[it.productId]" @click="requestChannel(it)">
@@ -237,8 +196,6 @@ async function sendContact() {
   .acc-link { margin: 0; } }
 .acc-block { border-top: 1px solid var(--border, #2a2a30); padding-top: 14px; }
 .acc-block__title { font-weight: 700; font-size: 14px; margin-bottom: 6px; }
-.acc-q { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; margin-left: 6px;
-  border-radius: 50%; background: var(--accent); color: #0a0a0b; font-size: 11px; font-weight: 800; cursor: pointer; vertical-align: middle; }
 .acc-block__hint { color: var(--text-2); font-size: 13px; margin: 0 0 8px; line-height: 1.5; }
 .acc-block__where { color: var(--text-3); font-size: 12px; margin: 0 0 12px; line-height: 1.5;
   background: var(--bg-1, #131316); border-radius: 8px; padding: 10px 12px; }
