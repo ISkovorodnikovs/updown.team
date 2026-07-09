@@ -1,4 +1,5 @@
 export default {
+  uk: {"title":"Сигнали","signalDay":"Актуальний сигнал з індикатора AiView","given":"Надано","zone":"Зона входу","targets":"Цілі","stop":"Стоп","position":"Позиція","profit":"Прибуток","closedAt":"Закрито о","awaiting":"Сигналу для цієї теми ще немає.","disc1":"Минулі результати не гарантують майбутніх.","disc2":"Це не фінансова порада. Оцінюйте власні можливості та ризики.","disc3":"Якщо не можете самостійно оцінити ризики, радимо пройти","discEdu":"навчальний курс","channels":"Сигнальні канали","mo":"міс","addToCart":"Додати в кошик","owned":"Придбано","inCart":"У кошику","cart":"Кошик","items":"позицій","goToCheckout":"Оформити","stAwaiting":"Очікування","stClosed":"Закрито","stActive":"Активний","posGiven":"Сигнал надано","posInZone":"У зоні входу","posAllTargets":"Усі цілі досягнуто","posClosed":"Закрито"},
   en: {
     title: 'Signals',
     signalDay: 'Actual signal from AiView indicator',

@@ -1,4 +1,5 @@
 export default {
+  uk: {"title":"Профіль","subtitle":"Керуйте своїми особистими даними","personal":"Особисті дані","firstName":"Ім'я","firstNamePh":"Іван","lastName":"Прізвище","lastNamePh":"Петренко","email":"Email","saving":"Збереження...","save":"Зберегти","changeEmail":"Змінити email","newEmail":"Новий email","getCode":"Отримати код","codeSentTo":"Код надіслано на","confirmCode":"Код підтвердження","confirm":"Підтвердити","changePw":"Змінити пароль","currentPw":"Поточний пароль","newPw":"Новий пароль","repeatNew":"Повторіть новий","changePwBtn":"Змінити пароль","security":"Безпека","twoFa":"Двофакторна автентифікація","twoFaHint":"Код на email при кожному вході","saved":"Дані збережено","saveError":"Помилка збереження","error":"Помилка","emailUpdated":"Email оновлено","invalidCode":"Невірний код","pwMismatch":"Паролі не збігаються","pwChanged":"Пароль змінено","twoFaOn":"увімкнено","twoFaOff":"вимкнено"},
   "en": {
     "title": "Profile",
     "subtitle": "Manage your personal data",

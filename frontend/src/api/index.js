@@ -111,8 +111,8 @@ export const plansApi = {
   getOne: (id) => api.get(`/plans/${id}`),
   // Admin
   getAllAdmin: () => api.get('/plans/admin/all'),
-  create: (data) => api.post('/plans', data),
-  update: (id, data) => api.put(`/plans/${id}`, data),
+  create: (data) => api.post('/plans', data, { timeout: 120000 }),
+  update: (id, data) => api.put(`/plans/${id}`, data, { timeout: 120000 }),
   remove: (id) => api.delete(`/plans/${id}`),
 }
 
@@ -150,8 +150,8 @@ export const referralApi = {
 export const bannersApi = {
   getActive: () => api.get('/banners/active'),
   getAll: () => api.get('/banners'),
-  create: (data) => api.post('/banners', data),
-  update: (id, data) => api.put(`/banners/${id}`, data),
+  create: (data) => api.post('/banners', data, { timeout: 120000 }),
+  update: (id, data) => api.put(`/banners/${id}`, data, { timeout: 120000 }),
   toggle: (id) => api.post(`/banners/${id}/toggle`),
   remove: (id) => api.delete(`/banners/${id}`),
 }
@@ -165,8 +165,8 @@ export const shopApi = {
   getMy: () => api.get('/shop/my'),
   // Admin
   getAll: () => api.get('/shop/admin/all'),
-  create: (data) => api.post('/shop/products', data),
-  update: (id, data) => api.put(`/shop/products/${id}`, data),
+  create: (data) => api.post('/shop/products', data, { timeout: 120000 }),
+  update: (id, data) => api.put(`/shop/products/${id}`, data, { timeout: 120000 }),
   remove: (id) => api.delete(`/shop/products/${id}`),
 }
 

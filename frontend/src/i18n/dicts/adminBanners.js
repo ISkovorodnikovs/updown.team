@@ -1,4 +1,5 @@
 export default {
+  uk: {"title":"Конструктор банерів","create":"Створити","edit":"Редагувати банер","active":"● Активний","inactive":"● Неактивний","enable":"Увімкнути","disable":"Вимкнути","empty":"Банерів ще немає. Створіть!","fTitle":"Заголовок","fTitlePh":"Гаряча пропозиція 🔥","fMsg":"Повідомлення","fMsgPh":"Опис пропозиції...","fImage":"URL зображення","imageHint":"Рекомендовано 1200×400px (3:1).","fTarget":"Застосовується до","targetAll":"Усі продукти","targetPlans":"Плани","targetIndicators":"Індикатори","targetChannels":"Канали","fEnds":"Діє до","noExpiry":"Без обмеження","fDiscounts":"Знижки за періодами","discountHint":"0 = без знижки для цього періоду","mo":"міс","fLanding":"Показувати на лендингу","fDashboard":"Показувати в кабінеті","fActive":"Активний одразу","translateAll":"Перекласти на всі мови (ШІ)","save":"Зберегти","cancel":"Скасувати","errTitleMsg":"Заповніть заголовок і повідомлення","confirmDelete":"Видалити банер?"},
   en: {
     title: 'Banner Constructor', create: 'Create', edit: 'Edit Banner',
     active: '● Active', inactive: '● Inactive', enable: 'Enable', disable: 'Disable',

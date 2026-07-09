@@ -1,4 +1,5 @@
 export default {
+  uk: {"title":"Усі тікети","subject":"Тема","user":"Користувач","status":"Статус","updated":"Оновлено","open":"Відкритий"},
   "en": {
     "title": "All Tickets",
     "subject": "Subject",

@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { shopApi } from '@/api'
-import { useT } from '@/i18n'
+import { useT, tDb } from '@/i18n'
 import dict from '@/i18n/dicts/education'
 
 const courses = ref([])
@@ -65,8 +65,8 @@ const t = useT(dict)
       <div v-for="c in courses" :key="c.id" class="edu-card">
         <div class="edu-card__main">
           <div class="edu-card__info">
-            <h2>{{ c.name }}</h2>
-            <p class="edu-card__desc">{{ c.description }}</p>
+            <h2>{{ tDb(c, 'name') }}</h2>
+            <p class="edu-card__desc">{{ tDb(c, 'description') }}</p>
 
             <div v-if="seatsLeft(c) !== null" class="edu-seats">
               🔥 {{ t.seats }}: {{ seatsLeft(c) }} / {{ c.meta.seatsTotal }} {{ t.seatsLeft }}
@@ -109,7 +109,7 @@ const t = useT(dict)
       <div class="edu-modal">
         <h2>{{ t.modalTitle }}</h2>
         <p class="edu-modal__hint">{{ t.modalHint }}</p>
-        <div class="edu-modal__course">{{ activeCourse.name }} — {{ activeCourse.price }} {{ activeCourse.currency }}</div>
+        <div class="edu-modal__course">{{ tDb(activeCourse, 'name') }} — {{ activeCourse.price }} {{ activeCourse.currency }}</div>
         <textarea v-model="note" rows="3" :placeholder="t.notePh"></textarea>
         <div v-if="enrollError" class="edu-enroll-err">{{ enrollError }}</div>
         <div class="edu-modal__actions">

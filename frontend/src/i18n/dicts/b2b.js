@@ -1,4 +1,5 @@
 export default {
+  uk: {"apply":"Подати заявку","pending":"Вашу заявку розглядають — ми зв'яжемось з вами.","rejected":"Попередню заявку відхилено. Можете подати знову.","partnerBadge":"Ви партнер UpDown","toBot":"Мій бот","toChannels":"Мої канали","toAnalytics":"Аналітика","company":"Компанія / ім'я","descr":"Опишіть, чого хочете","descrPh":"Розкажіть про свій проєкт, аудиторію, цілі…","send":"Надіслати заявку","cancel":"Скасувати","sent":"Заявку надіслано! Ми зв'яжемось з вами.","benefits":"Що ви отримуєте","fillNameDesc":"Заповніть назву та опис"},
   en: {
     apply: 'Apply', pending: 'Your application is under review — we will contact you.',
     rejected: 'Previous application was rejected. You can re-apply.',

@@ -1,4 +1,5 @@
 export default {
+  uk: {"promo":"Спеціальна пропозиція","mo":"міс","endsLabel":"Пропозиція закінчується за:","goShop":"До магазину","later":"Пізніше","d":"д","h":"год","min":"хв","sec":"сек"},
   en: { promo: 'Special Offer', mo: 'mo', endsLabel: 'Offer ends in:', goShop: 'Go to Shop', later: 'Later', d: 'd', h: 'h', min: 'min', sec: 'sec' },
   ru: { promo: 'Акция', mo: 'мес', endsLabel: 'До конца акции:', goShop: 'Перейти в магазин', later: 'Позже', d: 'д', h: 'ч', min: 'мин', sec: 'сек' },
   de: { promo: 'Sonderangebot', mo: 'Mon.', endsLabel: 'Angebot endet in:', goShop: 'Zum Shop', later: 'Später', d: 'T', h: 'Std', min: 'Min', sec: 'Sek' },

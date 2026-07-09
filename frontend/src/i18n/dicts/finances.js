@@ -1,4 +1,5 @@
 export default {
+  uk: {"title":"Фінанси","referralBalance":"Реферальний баланс","referrals":"Реферали","withdraw":"💸 Вивести кошти","withdrawHint":"Для виведення коштів зверніться в підтримку: ","toSupport":"Підтримка","yourLink":"Ваше реферальне посилання","copy":"Копіювати","code":"Код","earningsHistory":"Історія нарахувань","noEarnings":"Нарахувань ще немає","date":"Дата","amount":"Сума","percent":"Відсоток","type":"Тип","note":"Нотатка","manual":"Вручну","auto":"Авто","transactions":"Історія транзакцій","noTx":"Транзакцій немає"},
   en: {
     title: 'Finances', referralBalance: 'Referral Balance', referrals: 'Referrals',
     withdraw: '💸 Withdraw Funds', withdrawHint: 'To withdraw funds contact support: ', toSupport: 'Support',

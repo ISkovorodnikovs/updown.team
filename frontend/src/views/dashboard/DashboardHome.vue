@@ -7,7 +7,7 @@
         <p>{{ t.welcomeSub }}</p>
       </div>
       <div class="plan-badge" v-if="activePlan" :class="`plan-badge--${activePlan.plan?.type?.toLowerCase()}`">
-        <span class="plan-name">{{ activePlan.plan?.name }}</span>
+        <span class="plan-name">{{ tDb(activePlan.plan, 'name') }}</span>
         <span class="plan-expires">{{ t.expiresIn }} {{ daysLeft(activePlan.expiresAt) }} {{ t.days }}</span>
       </div>
       <router-link to="/dashboard/shop" class="upgrade-btn" v-else>
@@ -33,7 +33,7 @@
         :class="{ 'product-tile--locked': !p.available }"
         @click="p.available ? $router.push(p.route) : $router.push('/dashboard/shop')">
         <div class="product-tile__icon">{{ p.icon }}</div>
-        <div class="product-tile__name">{{ p.name }}</div>
+        <div class="product-tile__name">{{ tDb(p, 'name') }}</div>
         <div class="product-tile__status" v-if="!p.available">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
           {{ t.upgrade }}
@@ -69,7 +69,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { subscriptionsApi } from '@/api'
-import { useT } from '@/i18n'
+import { useT, tDb } from '@/i18n'
 import dict from '@/i18n/dicts/dashboardHome'
 
 const auth = useAuthStore()

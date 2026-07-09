@@ -1,4 +1,5 @@
 export default {
+  uk: {"title":"Керування планами","sub":"Створюйте, редагуйте та вимикайте плани в реальному часі","add":"+ Новий план","name":"Назва","type":"Тип","price":"Ціна (USDT/міс)","desc":"Опис","features":"Функції (по одній на рядок)","sort":"Порядок","active":"Активний","includes":"Включено","translateAll":"Перекласти на всі мови (ШІ)","edit":"Редагувати","deactivate":"Деактивувати","save":"Зберегти","cancel":"Скасувати","inactive":"НЕАКТИВНИЙ","empty":"Планів ще немає","loading":"Завантаження…","errNamePrice":"Заповніть назву та ціну","errNegPrice":"Ціна не може бути від'ємною","confirmDeactivate":"Деактивувати план \"{name}\"? Наявні підписки продовжать працювати."},
   en: {
     title: 'Manage Plans', sub: 'Create, edit and deactivate plans in real time',
     add: '+ New Plan', name: 'Name', type: 'Type', price: 'Price (USDT/mo)', desc: 'Description',

@@ -1,4 +1,5 @@
 export default {
+  uk: {"title":"Мої канали","sub":"White-label сигнальні канали","connect":"+ Підключити канал","empty":"Каналів ще немає.","loading":"Завантаження…","active":"Активний","inactive":"Очікує налаштування","until":"до","price":"Ціна","tpl":"Шаблон","name":"Назва каналу","asset":"Актив","tf":"Таймфрейм","dir":"Напрямок","period":"Період","mo":"міс","total":"Разом","pay":"Оплатити","cancel":"Скасувати","payLink":"Перейти до оплати","afterPay":"Після оплати адмін налаштовує доставку сигналів і активує канал.","crypto":"Крипто","forex":"Форекс","stocks":"Акції","gold":"Золото","both":"Обидва","editTpl":"Шаблон повідомлення","tplHint":"Плейсхолдери: {emoji} {symbol} {direction} {timeframe} {entry} {targets} {stop}","livePreview":"Перегляд","save":"Зберегти","enterName":"Введіть назву"},
   en: {
     title: 'My Channels', sub: 'White-label signal channels', connect: '+ Connect Channel',
     empty: 'No channels yet.', loading: 'Loading…', active: 'Active', inactive: 'Pending setup',

@@ -1,4 +1,5 @@
 export default {
+  uk: {"title":"Керування магазином","sub":"Індикатори та сигнальні канали — ціни й доступність","add":"+ Новий товар","all":"Усі","ind":"Індикатори","ch":"Канали","edu":"Навчання","seatsTotal":"Усього місць","seatsTaken":"Зайнято місць","name":"Назва","type":"Тип","price":"Ціна (USDT/міс)","desc":"Опис","tv":"TradingView URL","img":"URL зображення","features":"Функції (по одній на рядок)","badge":"Бейдж","sort":"Порядок","active":"Активний","edit":"Редагувати","deactivate":"Деактивувати","save":"Зберегти","cancel":"Скасувати","inactive":"НЕАКТИВНИЙ","empty":"Товарів ще немає","loading":"Завантаження…","tIndicator":"Індикатор","tChannel":"Канал","tEducation":"Навчання","errNamePrice":"Заповніть назву та ціну","errNegPrice":"Ціна не може бути від'ємною","confirmDeactivate":"Деактивувати \"{name}\"? Наявні доступи продовжать працювати.","translateAll":"Перекласти на всі мови (ШІ)"},
   en: {
     title: 'Manage Shop', sub: 'Indicators and signal channels — prices and availability',
     add: '+ New Product', all: 'All', ind: 'Indicators', ch: 'Channels', edu: 'Education',

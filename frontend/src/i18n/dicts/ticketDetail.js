@@ -1,4 +1,5 @@
 export default {
+  uk: {"back":"Назад","replyPh":"Напишіть відповідь...","send":"Надіслати","closeTicket":"Закрити тікет","closed":"Тікет закрито"},
   "en": {
     "back": "Back",
     "replyPh": "Write a reply...",

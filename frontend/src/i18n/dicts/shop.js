@@ -1,4 +1,5 @@
 export default {
+  uk: {"promo":"Спеціальна пропозиція","endsIn":"Закінчується за","period":"Період:","cart":"Кошик","yourCart":"Ваш кошик","plans":"Плани","popular":"Популярний","channels":"Сигнальні канали","channelsSub":"Детальніше:","detailsInSignals":"→ Розділ «Сигнали»","indicators":"Індикатори","indicatorsSub":"Повні деталі:","detailsInIndicators":"→ Розділ «Індикатори»","addToCart":"Додати в кошик","inCart":"У кошику","total":"Разом","saving":"Економія","payNow":"💳 Сплатити зараз","payNowLink":"Перейти до оплати","payTitle":"Оплата","payDesc":"Натисніть нижче, щоб сплатити через Heleket (USDT)","clearCart":"Очистити кошик","close":"Закрити","mo1":"1 міс","mo3":"3 міс","mo6":"6 міс","mo12":"12 міс","daysShort":"д","paymentError":"Помилка оплати"},
   en: {
     promo: 'Special Offer', endsIn: 'Ends in', period: 'Period:',
     cart: 'Cart', yourCart: 'Your Cart', plans: 'Plans', popular: 'Popular',

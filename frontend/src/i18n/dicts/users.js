@@ -1,4 +1,5 @@
 export default {
+  uk: {"title":"Користувачі","totalSuffix":"усього","searchPh":"Пошук за email...","email":"Email","name":"Ім'я","uuid":"UUID","refCode":"Реф. код","referrer":"Реферер","refBalance":"Реф. баланс","role":"Роль","date":"Дата","actions":"Дії","copyUuid":"Копіювати UUID: ","copyCode":"Копіювати код","grant":"🎁 Видати","prev":"← Назад","next":"Далі →","grantTitle":"🎁 Видати користувачу","cart":"Кошик видачі:","tabPlan":"План","tabProduct":"Продукт (індикатор / канал)","plan":"План","selectPlan":"Оберіть план","daysAccess":"Днів доступу","note":"Нотатка","notePh":"Причина видачі...","addToCart":"+ Додати в кошик","product":"Продукт","selectProduct":"Оберіть продукт","indicators":"Індикатори","channels":"Канали","granted":"✅ Видано!","grantBtn":"Видати","positions":"позицій","error":"Помилка","copied":"Скопійовано!","companyPrompt":"Назва компанії для партнера","partnerError":"Не вдалося призначити партнера","confirmDeactivate":"Деактивувати","days":"д"},
   "en": {
     "title": "Users",
     "totalSuffix": "total",

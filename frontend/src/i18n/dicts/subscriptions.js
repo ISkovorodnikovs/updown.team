@@ -1,4 +1,5 @@
 export default {
+  uk: {"active":"Активна","expires":"Закінчується","days":"днів","noSubs":"Немає активних підписок","noSubsDesc":"Оберіть план, щоб отримати доступ до продуктів","goShop":"До магазину","history":"Історія підписок","plan":"План","status":"Статус","started":"Початок"},
   en: { active: 'Active', expires: 'Expires', days: 'days', noSubs: 'No active subscriptions', noSubsDesc: 'Choose a plan to get access to products', goShop: 'Go to shop', history: 'Subscription history', plan: 'Plan', status: 'Status', started: 'Started' },
   ru: { active: 'Активна', expires: 'Истекает', days: 'дн.', noSubs: 'Нет активных подписок', noSubsDesc: 'Выберите тариф чтобы получить доступ к продуктам', goShop: 'Перейти в магазин', history: 'История подписок', plan: 'Тариф', status: 'Статус', started: 'Начало' },
   de: { active: 'Aktiv', expires: 'Läuft ab', days: 'Tage', noSubs: 'Keine aktiven Abonnements', noSubsDesc: 'Wählen Sie einen Tarif, um Zugriff auf die Produkte zu erhalten', goShop: 'Zum Shop', history: 'Abonnement-Verlauf', plan: 'Tarif', status: 'Status', started: 'Beginn' },

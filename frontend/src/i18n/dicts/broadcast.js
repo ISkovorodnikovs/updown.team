@@ -1,4 +1,5 @@
 export default {
+  uk: {"title":"Розсилка","subtitle":"Надішліть повідомлення користувачам бота","newBroadcast":"Нова розсилка","started":"Розсилку розпочато! ID:","targetBots":"Цільові боти","allBots":"Усі боти","selectedBots":"Обрані боти","selectBots":"Оберіть ботів","messageText":"Текст повідомлення","messagePh":"Введіть текст розсилки...","chars":"символів","sending":"Надсилання...","send":"📢 Надіслати розсилку","history":"Історія розсилок","empty":"Розсилок ще немає","sent":"надіслано","failed":"невдало","error":"Помилка розсилки"},
   "en": {
     "title": "Broadcast",
     "subtitle": "Send a message to bot users",

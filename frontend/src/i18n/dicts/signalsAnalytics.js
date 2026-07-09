@@ -1,4 +1,5 @@
 export default {
+  uk: {"title":"Аналітика сигналів","sub":"Статистика та результати каналів","channel":"Канал","adminInput":"Або channelId вручну (адмін)","from":"Від","to":"До","run":"Запустити","noChannels":"Немає налаштованих каналів.","selectChannel":"Оберіть канал","deals":"Усього угод","win":"Прибуткові","loss":"Збиткові","wl":"П/З","long":"LONG","short":"SHORT","roi":"ROI","pnl":"PnL","deposit":"Депозит","tps":"Досягнуто тейк-профітів","growth":"Зростання депозиту (з 1000 USDT, 1%/угода)","table":"Угоди","empty":"Немає даних за період","note3m":"Партнери: діапазон до 3 місяців."},
   en: {
     title: 'Signals Analytics', sub: 'Channel statistics and performance',
     channel: 'Channel', adminInput: 'Or channelId manually (admin)',

@@ -1,4 +1,5 @@
 export default {
+  uk: {"title":"Журнал дій адміністратора","subtitle":"Незмінний журнал усіх дій","time":"Час","admin":"Адмін","action":"Дія","details":"Деталі"},
   "en": {
     "title": "Admin Action Log",
     "subtitle": "Immutable journal of all actions",

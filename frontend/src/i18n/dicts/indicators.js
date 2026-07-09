@@ -1,4 +1,5 @@
 export default {
+  uk: {"title":"Індикатори UpDown","sub":"Професійні інструменти для TradingView","month":"міс","addToCart":"Додати в кошик","inCart":"У кошику","owned":"Придбано","openTv":"Відкрити в TradingView","signalDay":"Сигнал дня","signalDaySub":"Ця функція незабаром. Тут з'явиться щоденний торговий сигнал."},
   en: {
     title: 'UpDown Indicators', sub: 'Professional tools for TradingView', month: 'mo',
     addToCart: 'Add to Cart', inCart: 'In Cart', owned: 'Owned', openTv: 'Open in TradingView',

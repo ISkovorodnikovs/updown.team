@@ -1,4 +1,5 @@
 export default {
+  uk: {"title":"Мої тікети","newTicket":"+ Новий тікет","create":"Створити тікет","subject":"Тема","subjectPh":"Короткий опис проблеми","message":"Повідомлення","messagePh":"Опишіть свою проблему...","createBtn":"Створити","cancel":"Скасувати","empty":"Тікетів ще немає. Створіть перший!","status":"Статус","created":"Створено","updated":"Оновлено","open":"Відкритий"},
   "en": {
     "title": "My Tickets",
     "newTicket": "+ New Ticket",

@@ -1,4 +1,5 @@
 export default {
+  uk: {"title":"Усі боти","bot":"Бот","partner":"Партнер","status":"Статус","users":"Користувачі","clicks":"Кліки","conversion":"Конверсія"},
   "en": {
     "title": "All Bots",
     "bot": "Bot",

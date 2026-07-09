@@ -1,4 +1,5 @@
 export default {
+  uk: {"welcome":"Ласкаво просимо","welcomeSub":"Ласкаво просимо до екосистеми UpDown / AiView","expiresIn":"Закінчується за","days":"днів","getStarted":"Оберіть план","products":"Ваші продукти","upgrade":"Покращити","active":"Активний","quickActions":"Швидкі дії","mySubscriptions":"Мої підписки","support":"Підтримка","profile":"Профіль","finances":"Фінанси","activeSubscriptions":"Активні підписки","copytrading":"Копітрейдинг","signals":"Сигнали","education":"Навчання"},
   en: {
     welcome: 'Welcome', welcomeSub: 'Welcome to the UpDown / AiView ecosystem',
     expiresIn: 'Expires in', days: 'days', getStarted: 'Choose a plan',
