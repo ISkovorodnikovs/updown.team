@@ -11,8 +11,6 @@ import {
   TicketStatus,
 } from '../database/entities/ticket.entity';
 import { UserRole } from '../database/entities/user.entity';
-import { NotificationsService } from '../notifications/notifications.service';
-import { NotificationType } from '../database/entities/notification.entity';
 
 @Injectable()
 export class TicketsService {
@@ -20,18 +18,11 @@ export class TicketsService {
     @InjectRepository(Ticket) private ticketRepo: Repository<Ticket>,
     @InjectRepository(TicketMessage)
     private messageRepo: Repository<TicketMessage>,
-    private notifications: NotificationsService,
   ) {}
 
   async create(userId: string, subject: string, message: string) {
     const ticket = await this.ticketRepo.save({ userId, subject });
     await this.messageRepo.save({ ticketId: ticket.id, senderId: userId, message });
-    await this.notifications.createForAdmins({
-      type: NotificationType.TICKET,
-      title: 'Новый тикет поддержки',
-      body: subject,
-      meta: { ticketId: ticket.id, link: `/dashboard/tickets/${ticket.id}` },
-    });
     return ticket;
   }
 
@@ -89,23 +80,6 @@ export class TicketsService {
 
     const msg = await this.messageRepo.save({ ticketId, senderId, message });
     await this.ticketRepo.update(ticketId, { updatedAt: new Date() });
-    if (isAdmin) {
-      // ответил админ → уведомляем владельца тикета
-      await this.notifications.create(ticket.userId, {
-        type: NotificationType.TICKET_REPLY,
-        title: 'Ответ поддержки',
-        body: ticket.subject,
-        meta: { ticketId, link: `/dashboard/tickets/${ticketId}` },
-      });
-    } else {
-      // ответил пользователь → уведомляем админов
-      await this.notifications.createForAdmins({
-        type: NotificationType.TICKET_REPLY,
-        title: 'Ответ пользователя в тикете',
-        body: ticket.subject,
-        meta: { ticketId, link: `/dashboard/tickets/${ticketId}` },
-      });
-    }
     return msg;
   }
 

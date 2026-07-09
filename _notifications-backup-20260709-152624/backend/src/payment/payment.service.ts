@@ -18,8 +18,6 @@ import { PartnerChannel } from '../database/entities/partner-channel.entity';
 import { Partner } from '../database/entities/partner.entity';
 import { Banner, BannerTargetType } from '../database/entities/banner.entity';
 import { TelegramMainService } from '../telegram/telegram-main.service';
-import { NotificationsService } from '../notifications/notifications.service';
-import { NotificationType } from '../database/entities/notification.entity';
 
 const REFERRAL_PERCENT = 20;
 
@@ -52,7 +50,6 @@ export class PaymentService {
     @InjectRepository(Banner) private bannerRepo: Repository<Banner>,
     private dataSource: DataSource,
     private telegramService: TelegramMainService,
-    private notifications: NotificationsService,
   ) {}
 
   // ─── Расчёт цены одной позиции ─────────────────────────────────────────────
@@ -525,18 +522,6 @@ export class PaymentService {
 
     // Реферальный бонус считается от полной суммы транзакции (один раз на транзакцию)
     await this.processReferralBonus(tx);
-
-    // Уведомление пользователю об успешной оплате и выдаче доступа
-    try {
-      await this.notifications.create(tx.userId, {
-        type: NotificationType.PAYMENT,
-        title: 'Оплата получена',
-        body: 'Доступ активирован. Откройте «Мои доступы», чтобы получить его.',
-        meta: { link: '/dashboard/access', txId: tx.id },
-      });
-    } catch (e) {
-      this.logger?.warn?.(`payment notify failed: ${(e as any).message}`);
-    }
   }
 
   // Выдача одной единицы доступа (подписка / индикатор / канал)

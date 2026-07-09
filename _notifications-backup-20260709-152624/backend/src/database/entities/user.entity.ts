@@ -55,13 +55,6 @@ export class User {
   @Column({ nullable: true })
   tvUsername: string;
 
-  // Telegram: привязанный аккаунт (для уведомлений) + флаг «слать в Telegram»
-  @Column({ nullable: true })
-  telegramUserId: string;
-
-  @Column({ default: false })
-  notifyTelegram: boolean;
-
   // --- REFERRAL ---
   // Уникальный реферальный код пользователя
   @Column({ unique: true, nullable: true })

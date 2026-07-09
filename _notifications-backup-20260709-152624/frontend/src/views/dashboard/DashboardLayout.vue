@@ -114,7 +114,9 @@
           <!-- Lang -->
           <LangSwitcher />
           <!-- Notifications -->
-          <NotificationBell />
+          <button class="topbar-btn topbar-btn--notif">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          </button>
         </div>
       </header>
 
@@ -141,7 +143,6 @@ import { useAuthStore } from '@/stores/auth'
 import { subscriptionsApi } from '@/api'
 import { useCartStore } from '@/stores/cart'
 import LangSwitcher from '@/components/LangSwitcher.vue'
-import NotificationBell from '@/components/NotificationBell.vue'
 import { useT } from '@/i18n'
 import dict from '@/i18n/dicts/dashboardLayout'
 
@@ -556,8 +557,6 @@ export default { components: { NavItem } }
   flex: 1;
   padding: 28px;
   background: var(--bg);
-  overflow-x: hidden;
-  min-width: 0;
 }
 
 /* Global cart toast */

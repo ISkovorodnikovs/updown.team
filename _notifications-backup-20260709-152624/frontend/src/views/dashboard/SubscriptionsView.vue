@@ -1,6 +1,5 @@
 <template>
   <div class="subs-page">
-    <router-link to="/dashboard/access" class="subs-back">← {{ t.back }}</router-link>
     <div class="subs-grid" v-if="activeSubs.length">
       <div class="sub-card" v-for="sub in activeSubs" :key="sub.id" :class="`sub-card--${sub.plan?.type?.toLowerCase()}`">
         <div class="sub-card__header">
@@ -99,6 +98,4 @@ const t = useT(dict)
 .history-row { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 16px; padding: 12px 20px; font-size: 13px; border-bottom: 1px solid var(--border); &:last-child { border-bottom: none; } &--header { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-3); background: var(--bg-3); } }
 .plan-name { font-weight: 600; color: var(--accent); }
 .status-badge { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 4px; &--active { background: rgba(34,197,94,0.1); color: #22c55e; } &--expired { background: rgba(239,68,68,0.1); color: #ef4444; } &--cancelled { background: rgba(var(--text-3),0.1); color: var(--text-3); } }
-.subs-back { display: inline-flex; align-items: center; gap: 6px; color: var(--text-2); text-decoration: none; font-size: 14px; margin-bottom: 16px; }
-.subs-back:hover { color: var(--accent); }
 </style>

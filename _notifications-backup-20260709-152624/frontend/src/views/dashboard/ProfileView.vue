@@ -86,24 +86,6 @@
         </div>
         <div v-if="secMsg" :class="['alert', 'alert--success']" style="margin-top:12px">{{ secMsg }}</div>
       </div>
-
-      <!-- Telegram notifications -->
-      <div class="card">
-        <h3>{{ t.tgTitle }}</h3>
-        <p style="color:var(--text-2);font-size:13px;margin:6px 0 16px">{{ t.tgHint }}</p>
-        <a v-if="!tgLinked && tgUrl" :href="tgUrl" target="_blank" rel="noopener"
-           class="tg-connect" @click="afterConnect">✈ {{ t.tgConnect }}</a>
-        <div v-else-if="tgLinked" class="security-item">
-          <div>
-            <strong>✓ {{ t.tgConnected }}</strong>
-            <p>{{ t.tgNotify }}</p>
-          </div>
-          <label class="toggle">
-            <input type="checkbox" v-model="notifyTg" @change="toggleTg" />
-            <span class="toggle__slider"></span>
-          </label>
-        </div>
-      </div>
     </div>
   </div>
 </template>
@@ -111,7 +93,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
-import { usersApi, notificationsApi } from '@/api'
+import { usersApi } from '@/api'
 import { useT } from '@/i18n'
 import dict from '@/i18n/dicts/profile'
 const t = useT(dict)
@@ -133,30 +115,12 @@ const pwLoading = ref(false)
 const pwMsg = ref(null)
 
 const twoFaEnabled = ref(false)
-
-// Telegram-уведомления
-const tgLinked = ref(false)
-const notifyTg = ref(false)
-const tgUrl = ref(null)
-async function loadTg() {
-  try {
-    const s = await notificationsApi.tgStatus().then(r => r.data)
-    tgLinked.value = !!s.linked
-    notifyTg.value = !!s.notifyTelegram
-    if (!s.linked) { try { tgUrl.value = await notificationsApi.tgLink().then(r => r.data.url) } catch { /* ignore */ } }
-  } catch { /* ignore */ }
-}
-async function toggleTg() {
-  try { await notificationsApi.tgToggle(notifyTg.value) } catch { notifyTg.value = !notifyTg.value }
-}
-function afterConnect() { setTimeout(loadTg, 5000) }
 const secMsg = ref('')
 
 onMounted(() => {
   profile.value.firstName = auth.user?.firstName || ''
   profile.value.lastName = auth.user?.lastName || ''
   twoFaEnabled.value = auth.user?.twoFaEnabled || false
-  loadTg()
 })
 
 async function saveProfile() {
@@ -266,6 +230,4 @@ async function toggle2FA() {
   input:checked + .toggle__slider { background: var(--primary); }
   input:checked + .toggle__slider::before { transform: translateX(22px); }
 }
-.tg-connect { display: inline-flex; align-items: center; gap: 8px; background: #229ED9; color: #fff; padding: 11px 18px; border-radius: 10px; font-weight: 700; font-size: 14px; text-decoration: none; }
-.tg-connect:hover { opacity: .9; }
 </style>

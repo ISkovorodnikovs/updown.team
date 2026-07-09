@@ -13,8 +13,6 @@ import {
 import { User, UserRole } from '../database/entities/user.entity';
 import { AdminLog } from '../database/entities/admin-log.entity';
 import { PartnerChannel } from '../database/entities/partner-channel.entity';
-import { NotificationsService } from '../notifications/notifications.service';
-import { NotificationType } from '../database/entities/notification.entity';
 import { MailService } from '../mail/mail.service';
 import { TelegramMainService } from '../telegram/telegram-main.service';
 
@@ -33,7 +31,6 @@ export class PartnersService {
     @InjectRepository(PartnerChannel) private channelRepo: Repository<PartnerChannel>,
     private mailService: MailService,
     private telegramMain: TelegramMainService,
-    private notifications: NotificationsService,
   ) {}
 
   async applyForPartner(
@@ -139,14 +136,6 @@ export class PartnersService {
       action,
       reason,
     );
-    await this.notifications.create(partner.userId, {
-      type: NotificationType.PARTNER,
-      title: action === 'approved' ? 'Заявка партнёра одобрена' : 'Заявка партнёра отклонена',
-      body: action === 'approved'
-        ? 'Поздравляем! Настройте бота и каналы в разделе для партнёров.'
-        : (reason || 'К сожалению, заявка отклонена.'),
-      meta: { link: '/dashboard/partner/bot' },
-    });
 
     return partner;
   }

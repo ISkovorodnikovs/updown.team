@@ -1,44 +1,5 @@
 export default {
-  "uk": {
-    "title": "Профіль",
-    "subtitle": "Керуйте своїми особистими даними",
-    "personal": "Особисті дані",
-    "firstName": "Ім'я",
-    "firstNamePh": "Іван",
-    "lastName": "Прізвище",
-    "lastNamePh": "Петренко",
-    "email": "Email",
-    "saving": "Збереження...",
-    "save": "Зберегти",
-    "changeEmail": "Змінити email",
-    "newEmail": "Новий email",
-    "getCode": "Отримати код",
-    "codeSentTo": "Код надіслано на",
-    "confirmCode": "Код підтвердження",
-    "confirm": "Підтвердити",
-    "changePw": "Змінити пароль",
-    "currentPw": "Поточний пароль",
-    "newPw": "Новий пароль",
-    "repeatNew": "Повторіть новий",
-    "changePwBtn": "Змінити пароль",
-    "security": "Безпека",
-    "twoFa": "Двофакторна автентифікація",
-    "twoFaHint": "Код на email при кожному вході",
-    "saved": "Дані збережено",
-    "saveError": "Помилка збереження",
-    "error": "Помилка",
-    "emailUpdated": "Email оновлено",
-    "invalidCode": "Невірний код",
-    "pwMismatch": "Паролі не збігаються",
-    "pwChanged": "Пароль змінено",
-    "twoFaOn": "увімкнено",
-    "twoFaOff": "вимкнено",
-    "tgTitle": "Сповіщення в Telegram",
-    "tgHint": "Прив’яжіть Telegram, щоб отримувати сповіщення й там.",
-    "tgConnect": "Прив’язати Telegram",
-    "tgConnected": "Telegram прив’язано",
-    "tgNotify": "Надсилати сповіщення в Telegram"
-  },
+  uk: {"title":"Профіль","subtitle":"Керуйте своїми особистими даними","personal":"Особисті дані","firstName":"Ім'я","firstNamePh":"Іван","lastName":"Прізвище","lastNamePh":"Петренко","email":"Email","saving":"Збереження...","save":"Зберегти","changeEmail":"Змінити email","newEmail":"Новий email","getCode":"Отримати код","codeSentTo":"Код надіслано на","confirmCode":"Код підтвердження","confirm":"Підтвердити","changePw":"Змінити пароль","currentPw":"Поточний пароль","newPw":"Новий пароль","repeatNew":"Повторіть новий","changePwBtn":"Змінити пароль","security":"Безпека","twoFa":"Двофакторна автентифікація","twoFaHint":"Код на email при кожному вході","saved":"Дані збережено","saveError":"Помилка збереження","error":"Помилка","emailUpdated":"Email оновлено","invalidCode":"Невірний код","pwMismatch":"Паролі не збігаються","pwChanged":"Пароль змінено","twoFaOn":"увімкнено","twoFaOff":"вимкнено"},
   "en": {
     "title": "Profile",
     "subtitle": "Manage your personal data",
@@ -72,12 +33,7 @@ export default {
     "pwMismatch": "Passwords do not match",
     "pwChanged": "Password changed",
     "twoFaOn": "enabled",
-    "twoFaOff": "disabled",
-    "tgTitle": "Telegram notifications",
-    "tgHint": "Link Telegram to receive notifications there too.",
-    "tgConnect": "Connect Telegram",
-    "tgConnected": "Telegram connected",
-    "tgNotify": "Send notifications to Telegram"
+    "twoFaOff": "disabled"
   },
   "ru": {
     "title": "Профиль",
@@ -112,12 +68,7 @@ export default {
     "pwMismatch": "Пароли не совпадают",
     "pwChanged": "Пароль изменён",
     "twoFaOn": "включена",
-    "twoFaOff": "отключена",
-    "tgTitle": "Уведомления в Telegram",
-    "tgHint": "Привяжите Telegram, чтобы получать уведомления ещё и там.",
-    "tgConnect": "Привязать Telegram",
-    "tgConnected": "Telegram привязан",
-    "tgNotify": "Слать уведомления в Telegram"
+    "twoFaOff": "отключена"
   },
   "de": {
     "title": "Profil",
@@ -152,12 +103,7 @@ export default {
     "pwMismatch": "Passwörter stimmen nicht überein",
     "pwChanged": "Passwort geändert",
     "twoFaOn": "aktiviert",
-    "twoFaOff": "deaktiviert",
-    "tgTitle": "Telegram-Benachrichtigungen",
-    "tgHint": "Verbinde Telegram, um Benachrichtigungen auch dort zu erhalten.",
-    "tgConnect": "Telegram verbinden",
-    "tgConnected": "Telegram verbunden",
-    "tgNotify": "Benachrichtigungen an Telegram senden"
+    "twoFaOff": "deaktiviert"
   },
   "es": {
     "title": "Perfil",
@@ -192,12 +138,7 @@ export default {
     "pwMismatch": "Las contraseñas no coinciden",
     "pwChanged": "Contraseña cambiada",
     "twoFaOn": "activada",
-    "twoFaOff": "desactivada",
-    "tgTitle": "Notificaciones de Telegram",
-    "tgHint": "Vincula Telegram para recibir notificaciones también allí.",
-    "tgConnect": "Vincular Telegram",
-    "tgConnected": "Telegram vinculado",
-    "tgNotify": "Enviar notificaciones a Telegram"
+    "twoFaOff": "desactivada"
   },
   "it": {
     "title": "Profilo",
@@ -232,12 +173,7 @@ export default {
     "pwMismatch": "Le password non coincidono",
     "pwChanged": "Password cambiata",
     "twoFaOn": "attivata",
-    "twoFaOff": "disattivata",
-    "tgTitle": "Notifiche Telegram",
-    "tgHint": "Collega Telegram per ricevere le notifiche anche lì.",
-    "tgConnect": "Collega Telegram",
-    "tgConnected": "Telegram collegato",
-    "tgNotify": "Invia notifiche a Telegram"
+    "twoFaOff": "disattivata"
   },
   "pt": {
     "title": "Perfil",
@@ -272,12 +208,7 @@ export default {
     "pwMismatch": "As senhas não coincidem",
     "pwChanged": "Senha alterada",
     "twoFaOn": "ativada",
-    "twoFaOff": "desativada",
-    "tgTitle": "Notificações do Telegram",
-    "tgHint": "Vincule o Telegram para receber notificações lá também.",
-    "tgConnect": "Vincular Telegram",
-    "tgConnected": "Telegram vinculado",
-    "tgNotify": "Enviar notificações ao Telegram"
+    "twoFaOff": "desativada"
   },
   "zh": {
     "title": "个人资料",
@@ -312,12 +243,7 @@ export default {
     "pwMismatch": "两次输入的密码不一致",
     "pwChanged": "密码已修改",
     "twoFaOn": "已开启",
-    "twoFaOff": "已关闭",
-    "tgTitle": "Telegram 通知",
-    "tgHint": "绑定 Telegram，即可在那里也接收通知。",
-    "tgConnect": "绑定 Telegram",
-    "tgConnected": "已绑定 Telegram",
-    "tgNotify": "将通知发送到 Telegram"
+    "twoFaOff": "已关闭"
   },
   "ar": {
     "title": "الملف الشخصي",
@@ -352,11 +278,6 @@ export default {
     "pwMismatch": "كلمتا المرور غير متطابقتين",
     "pwChanged": "تم تغيير كلمة المرور",
     "twoFaOn": "مُفعّلة",
-    "twoFaOff": "مُعطّلة",
-    "tgTitle": "إشعارات تيليجرام",
-    "tgHint": "اربط تيليجرام لتلقّي الإشعارات هناك أيضًا.",
-    "tgConnect": "ربط تيليجرام",
-    "tgConnected": "تم ربط تيليجرام",
-    "tgNotify": "إرسال الإشعارات إلى تيليجرام"
+    "twoFaOff": "مُعطّلة"
   }
 }

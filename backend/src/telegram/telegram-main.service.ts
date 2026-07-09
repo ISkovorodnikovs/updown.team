@@ -47,4 +47,51 @@ export class TelegramMainService implements OnModuleInit {
       this.logger.error(`[Telegram] ❌ Send failed: ${e.message}`);
     }
   }
+
+  /** Отправить сообщение конкретному пользователю (по его telegram id). */
+  async sendToUser(telegramUserId: string | number, text: string): Promise<boolean> {
+    if (!this.bot || !telegramUserId) return false;
+    try {
+      await this.bot.sendMessage(telegramUserId, text);
+      return true;
+    } catch (e) {
+      this.logger.warn(`[Telegram] user send failed (${telegramUserId}): ${e.message}`);
+      return false;
+    }
+  }
+
+  /** Username бота (для deep-link привязки), напр. "updown_bot". */
+  async getBotUsername(): Promise<string | null> {
+    if (!this.bot) return null;
+    try {
+      const me = await this.bot.getMe();
+      return me.username || null;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Подписаться на /start <token> для привязки Telegram к аккаунту сайта.
+   * resolver(token, telegramUserId) должен вернуть true при успешной привязке.
+   */
+  onLinkStart(resolver: (token: string, telegramUserId: string) => Promise<boolean>) {
+    if (!this.bot) return;
+    this.bot.onText(/^\/start\s+(.+)$/, async (msg, match) => {
+      const token = (match?.[1] || '').trim();
+      const tgId = String(msg.from?.id || msg.chat?.id || '');
+      if (!token || !tgId) return;
+      try {
+        const ok = await resolver(token, tgId);
+        await this.bot.sendMessage(
+          msg.chat.id,
+          ok
+            ? '✅ Telegram привязан. Теперь вы будете получать уведомления здесь.'
+            : '⚠️ Ссылка недействительна или устарела. Откройте привязку в личном кабинете заново.',
+        );
+      } catch (e) {
+        this.logger.warn(`[Telegram] link resolver failed: ${e.message}`);
+      }
+    });
+  }
 }

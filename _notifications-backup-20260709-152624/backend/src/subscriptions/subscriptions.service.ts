@@ -5,9 +5,6 @@ import { Subscription, SubscriptionStatus } from '../database/entities/subscript
 import { Transaction, TransactionStatus } from '../database/entities/transaction.entity';
 import { Plan } from '../database/entities/plan.entity';
 import { User } from '../database/entities/user.entity';
-import { NotificationsService } from '../notifications/notifications.service';
-import { NotificationType } from '../database/entities/notification.entity';
-import { TelegramMainService } from '../telegram/telegram-main.service';
 
 @Injectable()
 export class SubscriptionsService {
@@ -16,8 +13,6 @@ export class SubscriptionsService {
     @InjectRepository(Transaction) private txRepo: Repository<Transaction>,
     @InjectRepository(Plan) private planRepo: Repository<Plan>,
     @InjectRepository(User) private userRepo: Repository<User>,
-    private notifications: NotificationsService,
-    private telegram: TelegramMainService,
   ) {}
 
   // Активные подписки пользователя
@@ -109,22 +104,6 @@ export class SubscriptionsService {
       status: TransactionStatus.COMPLETED,
       description: `Выдано администратором на ${dto.durationDays} дней. ${dto.notes || ''}`,
     });
-
-    // Уведомление пользователю (in-app + Telegram, если включено)
-    await this.notifications.create(dto.userId, {
-      type: NotificationType.SUBSCRIPTION,
-      title: 'Вам выдан тариф',
-      body: `${plan.name} — доступ на ${dto.durationDays} дн.`,
-      meta: { planId: plan.id, link: '/dashboard/access' },
-    });
-    // Уведомление админам в общий Telegram-чат
-    const uname = [user.firstName, user.lastName].filter(Boolean).join(' ') || '—';
-    await this.telegram.sendMessage(
-      `🎁 Ручная выдача тарифа\n` +
-      `👤 ${uname} (${user.email})\n` +
-      `📦 ${plan.name} · ${dto.durationDays} дн.\n` +
-      `${dto.notes ? `📝 ${dto.notes}` : ''}`,
-    );
 
     return sub;
   }

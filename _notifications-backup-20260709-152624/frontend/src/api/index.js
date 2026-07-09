@@ -183,13 +183,3 @@ export const analyticsApi = {
 export const signalsApi = {
   getDaily: () => api.get('/signals/daily'),
 }
-
-export const notificationsApi = {
-  list: (before) => api.get('/notifications', { params: before ? { before } : {} }),
-  unreadCount: () => api.get('/notifications/unread-count'),
-  readAll: () => api.post('/notifications/read-all'),
-  read: (id) => api.post(`/notifications/${id}/read`),
-  tgStatus: () => api.get('/notifications/telegram/status'),
-  tgLink: () => api.get('/notifications/telegram/link'),
-  tgToggle: (enabled) => api.post('/notifications/telegram/toggle', { enabled }),
-}

@@ -4,7 +4,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TranslationModule } from './translation/translation.module';
-import { NotificationsModule } from './notifications/notifications.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { PartnersModule } from './partners/partners.module';
@@ -74,7 +73,6 @@ import databaseConfig from './config/database.config';
     }),
     ScheduleModule.forRoot(),
     TranslationModule,
-    NotificationsModule,
     AuthModule,
     UsersModule,
     PartnersModule,
