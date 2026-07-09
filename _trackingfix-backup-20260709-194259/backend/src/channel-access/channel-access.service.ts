@@ -30,7 +30,6 @@ export class ChannelAccessService implements OnModuleInit {
     product: Pick<ShopProduct, 'id' | 'telegramChatId'>,
     expiresAt: Date,
     email?: string,
-    telegramUserId?: string,
   ): Promise<ChannelAccess | null> {
     if (!product?.telegramChatId) return null;
 
@@ -60,16 +59,6 @@ export class ChannelAccessService implements OnModuleInit {
         if (!acc.inviteLink) {
           const link = await this.telegram.createChatInviteLink(product.telegramChatId, acc.expiresAt, acc.inviteLinkName || email);
           if (link) { acc.inviteLink = link; changed = true; }
-        }
-      }
-
-      // Активная проверка членства (для уже вступивших до трекинга) — если Telegram привязан
-      if (!acc.joinedTelegramUserId && telegramUserId) {
-        const st = await this.telegram.getChatMemberStatus(acc.telegramChatId, telegramUserId);
-        if (st && ['member', 'administrator', 'creator', 'restricted'].includes(st)) {
-          acc.joinedTelegramUserId = telegramUserId;
-          acc.joinedAt = new Date();
-          changed = true;
         }
       }
 

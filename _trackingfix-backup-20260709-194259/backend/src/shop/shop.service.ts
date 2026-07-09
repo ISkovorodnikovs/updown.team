@@ -386,7 +386,7 @@ export class ShopService implements OnModuleInit {
       // Для сигнальных каналов с привязанным чатом — постоянная инвайт-ссылка
       if (p.type === ProductType.SIGNAL_CHANNEL && p.telegramChatId && !p.customInstrument) {
         try {
-          const acc = await this.channelAccess.getOrCreateLink(jwtUser.id, p, x.expiresAt, user?.email, user?.telegramUserId);
+          const acc = await this.channelAccess.getOrCreateLink(jwtUser.id, p, x.expiresAt, user?.email);
           item.inviteLink = acc?.inviteLink ?? null;
           item.joined = !!(acc && acc.status === 'active' && acc.joinedTelegramUserId);
         } catch { /* ссылку добудем при следующем заходе */ }

@@ -27,9 +27,8 @@ export class TelegramMainService implements OnModuleInit {
       this.bot = new TelegramBot(token, {
         polling: {
           params: {
-            // ВАЖНО: Telegram ждёт allowed_updates как JSON-строку. Массив библиотека
-            // кодирует как поля формы, и Telegram его игнорирует → chat_member не приходит.
-            allowed_updates: JSON.stringify(['message', 'callback_query', 'chat_member', 'chat_join_request']) as any,
+            // включаем chat_member/join_request — нужны для трекинга входа по инвайт-ссылкам
+            allowed_updates: ['message', 'callback_query', 'chat_member', 'chat_join_request'] as any,
           },
         },
       });
@@ -131,23 +130,12 @@ export class TelegramMainService implements OnModuleInit {
     }
   }
 
-  /** Снять бан (перед повторной выдачей доступа). */
+  /** На всякий случай снять бан (перед повторной выдачей доступа). */
   async unban(chatId: string, telegramUserId: string | number): Promise<void> {
     if (!this.bot || !chatId || !telegramUserId) return;
     try {
       await this.bot.unbanChatMember(chatId, Number(telegramUserId), { only_if_banned: true } as any);
     } catch { /* игнорируем */ }
-  }
-
-  /** Статус пользователя в чате: 'member'/'administrator'/'creator'/'restricted'/'left'/'kicked' или null. */
-  async getChatMemberStatus(chatId: string, telegramUserId: string | number): Promise<string | null> {
-    if (!this.bot || !chatId || !telegramUserId) return null;
-    try {
-      const m: any = await this.bot.getChatMember(chatId, Number(telegramUserId));
-      return m?.status || null;
-    } catch {
-      return null;
-    }
   }
 
   /**
