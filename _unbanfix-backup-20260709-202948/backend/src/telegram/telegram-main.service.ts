@@ -123,9 +123,7 @@ export class TelegramMainService implements OnModuleInit {
     if (!this.bot || !chatId || !telegramUserId) return false;
     try {
       await this.bot.banChatMember(chatId, Number(telegramUserId));
-      // Безусловный unban: пользователь уже удалён баном, поэтому снятие бана его не
-      // вернёт в чат, но уберёт из чёрного списка (иначе повторный вход невозможен).
-      await this.bot.unbanChatMember(chatId, Number(telegramUserId));
+      await this.bot.unbanChatMember(chatId, Number(telegramUserId), { only_if_banned: true } as any);
       return true;
     } catch (e: any) {
       this.logger.warn(`[Telegram] kick failed (${chatId}/${telegramUserId}): ${e.message}`);
@@ -133,14 +131,12 @@ export class TelegramMainService implements OnModuleInit {
     }
   }
 
-  /** Снять бан (перед повторной выдачей / при восстановлении доступа). Безусловно. */
+  /** Снять бан (перед повторной выдачей доступа). */
   async unban(chatId: string, telegramUserId: string | number): Promise<void> {
     if (!this.bot || !chatId || !telegramUserId) return;
     try {
-      await this.bot.unbanChatMember(chatId, Number(telegramUserId));
-    } catch (e: any) {
-      this.logger.warn(`[Telegram] unban failed (${chatId}/${telegramUserId}): ${e.message}`);
-    }
+      await this.bot.unbanChatMember(chatId, Number(telegramUserId), { only_if_banned: true } as any);
+    } catch { /* игнорируем */ }
   }
 
   /** Статус пользователя в чате: 'member'/'administrator'/'creator'/'restricted'/'left'/'kicked' или null. */
