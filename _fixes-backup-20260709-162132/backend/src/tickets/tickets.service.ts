@@ -109,11 +109,8 @@ export class TicketsService {
     return msg;
   }
 
-  async closeTicket(ticketId: string, userId: string, role: UserRole) {
-    const ticket = await this.ticketRepo.findOne({ where: { id: ticketId } });
-    if (!ticket) throw new NotFoundException();
-    const isAdmin = [UserRole.ADMIN, UserRole.OWNER].includes(role);
-    if (!isAdmin && ticket.userId !== userId) throw new ForbiddenException();
+  async closeTicket(ticketId: string, role: UserRole) {
+    if (![UserRole.ADMIN, UserRole.OWNER].includes(role)) throw new ForbiddenException();
     await this.ticketRepo.update(ticketId, { status: TicketStatus.CLOSED });
     return { status: TicketStatus.CLOSED };
   }

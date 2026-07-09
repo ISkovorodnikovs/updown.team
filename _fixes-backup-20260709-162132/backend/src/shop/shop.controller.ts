@@ -66,14 +66,6 @@ export class ShopController {
     return this.shopService.sendContactRequest(user, body.message, body.language);
   }
 
-  // Админ выдаёт товар (индикатор/канал) пользователю
-  @Post('admin/grant-product')
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.OWNER)
-  grantProduct(@CurrentUser() admin: any, @Body() body: { userId: string; shopProductId: string; durationDays: number }) {
-    return this.shopService.grantProduct(admin.id, body.userId, body.shopProductId, body.durationDays);
-  }
-
   // ─── Админ ─────────────────────────────────────────────────────────────────
 
   // Полный каталог (включая деактивированные) — для админ-витрины

@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="page-header" style="display:flex;align-items:center;gap:16px">
-      <router-link to="/dashboard/support" class="btn btn--outline btn--sm">← {{ t.back }}</router-link>
+      <router-link to="/dashboard/tickets" class="btn btn--outline btn--sm">← {{ t.back }}</router-link>
       <div>
         <h1>{{ ticket?.subject }}</h1>
         <span v-if="ticket" :class="['badge', ticket.status === 'open' ? 'badge--green' : 'badge--gray']">
@@ -26,7 +26,7 @@
         <div style="display:flex;gap:10px;margin-top:10px;align-items:center">
           <button class="btn btn--primary btn--sm" @click="sendReply" :disabled="replyLoading || !reply">{{ t.send }}</button>
           <small style="color:var(--text-muted)">Ctrl+Enter</small>
-          <button v-if="(auth.isAdmin || ticket?.userId === auth.user?.id) && ticket?.status !== 'closed'" class="btn btn--outline btn--sm" @click="closeTicket" style="margin-left:auto">
+          <button v-if="auth.isAdmin" class="btn btn--outline btn--sm" @click="closeTicket" style="margin-left:auto">
             {{ t.closeTicket }}
           </button>
         </div>
@@ -134,9 +134,8 @@ function formatDate(d) { return fmtDateTime(d, { dateStyle: 'short', timeStyle: 
   }
 
   &--theirs &__bubble {
-    background: var(--surface, #26262b);
-    color: var(--text-1, #ececf0);
-    border: 1px solid var(--border-2, #33333a);
+    background: var(--secondary);
+    color: var(--text);
     border-bottom-left-radius: 4px;
   }
 

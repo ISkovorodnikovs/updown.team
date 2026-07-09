@@ -68,6 +68,6 @@ export class TicketsController {
   @Put(':id/close')
   @Roles(UserRole.ADMIN, UserRole.OWNER)
   close(@Param('id') id: string, @CurrentUser() user: any) {
-    return this.ticketsService.closeTicket(id, user.id, user.role);
+    return this.ticketsService.closeTicket(id, user.role);
   }
 }

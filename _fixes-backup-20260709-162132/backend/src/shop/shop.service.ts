@@ -6,8 +6,6 @@ import { UserProduct, UserProductStatus } from '../database/entities/user-produc
 import { User } from '../database/entities/user.entity';
 import { Subscription, SubscriptionStatus } from '../database/entities/subscription.entity';
 import { Plan } from '../database/entities/plan.entity';
-import { NotificationsService } from '../notifications/notifications.service';
-import { NotificationType } from '../database/entities/notification.entity';
 import { CreateShopProductDto, UpdateShopProductDto } from './dto/shop-product.dto';
 import { TelegramMainService } from '../telegram/telegram-main.service';
 import { TranslationService } from '../translation/translation.service';
@@ -134,7 +132,6 @@ export class ShopService implements OnModuleInit {
     @InjectRepository(Plan) private planRepo: Repository<Plan>,
     private telegram: TelegramMainService,
     private translation: TranslationService,
-    private notifications: NotificationsService,
   ) {}
 
   // Заявка на обучение («Записаться») — уведомление админу в техчат
@@ -282,45 +279,6 @@ export class ShopService implements OnModuleInit {
 
   private escapeMd(s: string): string {
     return String(s ?? '').replace(/[<>&]/g, ' ').slice(0, 500);
-  }
-
-  /** Админ выдаёт товар (индикатор/канал) пользователю → создаём доступ + уведомляем. */
-  async grantProduct(adminId: string, userId: string, shopProductId: string, durationDays: number) {
-    const product = await this.productRepo.findOne({ where: { id: shopProductId } });
-    if (!product) throw new NotFoundException('Product not found');
-
-    const days = Math.max(1, Number(durationDays) || 30);
-    const startsAt = new Date();
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + days);
-
-    const existing = await this.userProductRepo.findOne({
-      where: { userId, shopProductId, status: UserProductStatus.ACTIVE },
-    });
-    if (existing) {
-      existing.expiresAt = expiresAt;
-      await this.userProductRepo.save(existing);
-    } else {
-      await this.userProductRepo.save(
-        this.userProductRepo.create({
-          userId,
-          shopProductId,
-          status: UserProductStatus.ACTIVE,
-          startsAt,
-          expiresAt,
-          grantedBy: adminId,
-          notes: 'Выдано администратором',
-        }),
-      );
-    }
-
-    await this.notifications.create(userId, {
-      type: NotificationType.ACCESS,
-      title: 'Вам выдан доступ',
-      body: product.name,
-      meta: { link: '/dashboard/access', productId: shopProductId },
-    });
-    return { ok: true, productId: shopProductId, expiresAt };
   }
 
   /** Эффективный доступ пользователя: покупки (user_products) + товары активного плана. */

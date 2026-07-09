@@ -260,13 +260,8 @@ async function executeGrant() {
           durationDays: item.durationDays,
           notes: item.notes,
         })
-      } else if (item.type === 'product') {
-        await shopApi.grantProduct({
-          userId: grantTarget.value.id,
-          shopProductId: item.productId,
-          durationDays: item.durationDays,
-        })
       }
+      // TODO: product grant endpoint when UserProduct entity is ready
     }
     grantSuccess.value = true
     grantCart.value = []

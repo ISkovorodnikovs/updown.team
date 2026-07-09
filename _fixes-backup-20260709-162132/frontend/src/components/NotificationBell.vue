@@ -99,13 +99,6 @@ onBeforeUnmount(() => {
 
 <style scoped lang="scss">
 .nbell { position: relative; display: inline-flex; }
-/* Кнопка должна выглядеть как остальные topbar-btn (scoped-стили не переходят из Layout) */
-.nbell .topbar-btn {
-  width: 36px; height: 36px; border-radius: 8px;
-  border: 1px solid var(--border-2); background: var(--surface); color: var(--text-2);
-  cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .2s;
-  &:hover { color: var(--accent); border-color: var(--accent); }
-}
 .nbell__badge {
   position: absolute; top: -4px; right: -4px; min-width: 16px; height: 16px; padding: 0 4px;
   background: #E5484D; color: #fff; font-size: 10px; font-weight: 700; line-height: 16px;
