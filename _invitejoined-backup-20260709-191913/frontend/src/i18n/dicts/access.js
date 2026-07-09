@@ -43,10 +43,7 @@ export default {
     "scalpInfo": "We set up ANY instrument on ANY timeframe for you individually. Enter what you want and reach us in Telegram — we will help and add you to your personal channel.",
     "scalpPh": "Instrument (e.g. BTCUSDT, XAUUSD)",
     "scalpSend": "Send request",
-    "scalpSent": "Sent — support will contact you",
-    "tgJoined": "You are in the channel",
-    "tgJoinedHint": "Access is active. Open the group in your Telegram chat list.",
-    "tgHelp": "Could not join, or it says the link is invalid? Message us — we will help and fix it. Please include your Telegram username (e.g. @username) so we can find your access quickly."
+    "scalpSent": "Sent — support will contact you"
   },
   "ru": {
     "title": "Мои доступы",
@@ -92,10 +89,7 @@ export default {
     "scalpInfo": "Мы индивидуально настроим ЛЮБОЙ инструмент на ЛЮБОМ таймфрейме. Укажите, что хотите, и напишите нам в Telegram — поможем и добавим вас в персональный канал.",
     "scalpPh": "Инструмент (напр. BTCUSDT, XAUUSD)",
     "scalpSend": "Отправить запрос",
-    "scalpSent": "Отправлено — поддержка свяжется с вами",
-    "tgJoined": "Вы в канале",
-    "tgJoinedHint": "Доступ активен. Откройте группу в списке чатов Telegram.",
-    "tgHelp": "Не получилось войти или пишет, что ссылка недействительна? Напишите нам — поможем и всё настроим. Обязательно укажите ваш ник в Telegram (например, @username), чтобы мы быстро нашли и починили доступ."
+    "scalpSent": "Отправлено — поддержка свяжется с вами"
   },
   "uk": {
     "title": "Мої доступи",
@@ -141,10 +135,7 @@ export default {
     "scalpInfo": "Ми індивідуально налаштуємо БУДЬ-ЯКИЙ інструмент на БУДЬ-ЯКОМУ таймфреймі. Вкажіть, що хочете, і напишіть нам у Telegram — допоможемо та додамо вас у персональний канал.",
     "scalpPh": "Інструмент (напр. BTCUSDT, XAUUSD)",
     "scalpSend": "Надіслати запит",
-    "scalpSent": "Надіслано — підтримка зв’яжеться з вами",
-    "tgJoined": "Ви в каналі",
-    "tgJoinedHint": "Доступ активний. Відкрийте групу у списку чатів Telegram.",
-    "tgHelp": "Не вдалося увійти або пише, що посилання недійсне? Напишіть нам — допоможемо й усе налаштуємо. Обов’язково вкажіть ваш нік у Telegram (наприклад, @username), щоб ми швидко знайшли й полагодили доступ."
+    "scalpSent": "Надіслано — підтримка зв’яжеться з вами"
   },
   "de": {
     "title": "Mein Zugang",
@@ -190,10 +181,7 @@ export default {
     "scalpInfo": "Wir richten JEDES Instrument auf JEDEM Zeitrahmen individuell ein. Sag uns, was du willst, und schreib uns auf Telegram — wir helfen und fügen dich zu deinem persönlichen Kanal hinzu.",
     "scalpPh": "Instrument (z.B. BTCUSDT, XAUUSD)",
     "scalpSend": "Anfrage senden",
-    "scalpSent": "Gesendet — der Support meldet sich",
-    "tgJoined": "Du bist im Kanal",
-    "tgJoinedHint": "Zugang aktiv. Öffne die Gruppe in deiner Telegram-Chatliste.",
-    "tgHelp": "Beitritt nicht möglich oder der Link ist ungültig? Schreib uns — wir helfen und beheben es. Bitte gib deinen Telegram-Benutzernamen an (z. B. @username), damit wir deinen Zugang schnell finden."
+    "scalpSent": "Gesendet — der Support meldet sich"
   },
   "es": {
     "title": "Mi acceso",
@@ -239,10 +227,7 @@ export default {
     "scalpInfo": "Configuramos CUALQUIER instrumento en CUALQUIER temporalidad de forma individual. Dinos qué quieres y escríbenos por Telegram — te ayudamos y te añadimos a tu canal personal.",
     "scalpPh": "Instrumento (p. ej. BTCUSDT, XAUUSD)",
     "scalpSend": "Enviar solicitud",
-    "scalpSent": "Enviado — soporte te contactará",
-    "tgJoined": "Estás en el canal",
-    "tgJoinedHint": "Acceso activo. Abre el grupo en tu lista de chats de Telegram.",
-    "tgHelp": "¿No pudiste entrar o dice que el enlace no es válido? Escríbenos — te ayudamos y lo arreglamos. Incluye tu usuario de Telegram (p. ej. @username) para encontrar tu acceso rápido."
+    "scalpSent": "Enviado — soporte te contactará"
   },
   "it": {
     "title": "Il mio accesso",
@@ -288,10 +273,7 @@ export default {
     "scalpInfo": "Configuriamo QUALSIASI strumento su QUALSIASI timeframe in modo personalizzato. Dicci cosa vuoi e scrivici su Telegram — ti aiutiamo e ti aggiungiamo al tuo canale personale.",
     "scalpPh": "Strumento (es. BTCUSDT, XAUUSD)",
     "scalpSend": "Invia richiesta",
-    "scalpSent": "Inviato — il supporto ti contatterà",
-    "tgJoined": "Sei nel canale",
-    "tgJoinedHint": "Accesso attivo. Apri il gruppo nella tua lista chat di Telegram.",
-    "tgHelp": "Non riesci a entrare o dice che il link non è valido? Scrivici — ti aiutiamo e sistemiamo tutto. Indica il tuo username Telegram (es. @username) così troviamo subito il tuo accesso."
+    "scalpSent": "Inviato — il supporto ti contatterà"
   },
   "pt": {
     "title": "Meu acesso",
@@ -337,10 +319,7 @@ export default {
     "scalpInfo": "Configuramos QUALQUER instrumento em QUALQUER timeframe individualmente. Diga o que quer e fale conosco no Telegram — ajudamos e adicionamos você ao seu canal pessoal.",
     "scalpPh": "Instrumento (ex. BTCUSDT, XAUUSD)",
     "scalpSend": "Enviar solicitação",
-    "scalpSent": "Enviado — o suporte entrará em contato",
-    "tgJoined": "Você está no canal",
-    "tgJoinedHint": "Acesso ativo. Abra o grupo na sua lista de chats do Telegram.",
-    "tgHelp": "Não conseguiu entrar ou diz que o link é inválido? Fale conosco — ajudamos e resolvemos. Inclua seu usuário do Telegram (ex. @username) para localizarmos seu acesso rápido."
+    "scalpSent": "Enviado — o suporte entrará em contato"
   },
   "zh": {
     "title": "我的权限",
@@ -386,10 +365,7 @@ export default {
     "scalpInfo": "我们会为你单独设置任意品种、任意周期。告诉我们你的需求并在 Telegram 联系我们——我们会协助并把你加入你的专属频道。",
     "scalpPh": "品种（如 BTCUSDT、XAUUSD）",
     "scalpSend": "发送请求",
-    "scalpSent": "已发送——客服会联系你",
-    "tgJoined": "你已在频道中",
-    "tgJoinedHint": "访问有效。在你的 Telegram 聊天列表中打开该群组。",
-    "tgHelp": "无法加入或提示链接无效？给我们发消息——我们会帮你解决。请附上你的 Telegram 用户名（如 @username），方便我们快速找到你的访问权限。"
+    "scalpSent": "已发送——客服会联系你"
   },
   "ar": {
     "title": "وصولي",
@@ -435,9 +411,6 @@ export default {
     "scalpInfo": "نضبط لك أي أداة على أي إطار زمني بشكل فردي. أخبرنا بما تريد وتواصل معنا على تيليجرام — سنساعدك ونضيفك إلى قناتك الشخصية.",
     "scalpPh": "الأداة (مثل BTCUSDT، XAUUSD)",
     "scalpSend": "إرسال الطلب",
-    "scalpSent": "تم الإرسال — سيتواصل معك الدعم",
-    "tgJoined": "أنت في القناة",
-    "tgJoinedHint": "الوصول مفعّل. افتح المجموعة من قائمة محادثات تيليجرام.",
-    "tgHelp": "لم تتمكن من الانضمام أو تظهر رسالة أن الرابط غير صالح؟ راسلنا — سنساعدك ونصلح الأمر. يرجى ذكر اسم مستخدمك في تيليجرام (مثل @username) لنجد وصولك بسرعة."
+    "scalpSent": "تم الإرسال — سيتواصل معك الدعم"
   }
 }

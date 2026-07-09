@@ -380,7 +380,6 @@ export class ShopService implements OnModuleInit {
         customInstrument: !!p.customInstrument,
         hasChat: !!p.telegramChatId,
         inviteLink: null,
-        joined: false,
         expiresAt: x.expiresAt,
       };
       // Для сигнальных каналов с привязанным чатом — постоянная инвайт-ссылка
@@ -388,7 +387,6 @@ export class ShopService implements OnModuleInit {
         try {
           const acc = await this.channelAccess.getOrCreateLink(jwtUser.id, p, x.expiresAt, user?.email);
           item.inviteLink = acc?.inviteLink ?? null;
-          item.joined = !!(acc && acc.status === 'active' && acc.joinedTelegramUserId);
         } catch { /* ссылку добудем при следующем заходе */ }
       }
       products.push(item);

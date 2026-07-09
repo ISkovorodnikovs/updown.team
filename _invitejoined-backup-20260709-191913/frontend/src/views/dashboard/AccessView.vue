@@ -167,22 +167,11 @@ async function sendContact() {
           <a class="acc-btn acc-btn--tg" style="margin-top:12px" :href="SUPPORT_URL" target="_blank" rel="noopener">{{ t.supportBtn }}</a>
         </div>
 
-        <!-- Обычный канал: вступил → статус; ещё нет → одноразовая ссылка -->
-        <div v-else-if="it.inviteLink || it.joined" class="acc-block">
+        <!-- Обычный канал с готовой инвайт-ссылкой -->
+        <div v-else-if="it.inviteLink" class="acc-block">
           <div class="acc-block__title">{{ t.tgTitle }}</div>
-          <template v-if="it.joined">
-            <div class="acc-ok">✓ {{ t.tgJoined }}</div>
-            <p class="acc-block__hint" style="margin-top:8px">{{ t.tgJoinedHint }}</p>
-          </template>
-          <template v-else>
-            <p class="acc-block__hint">{{ t.tgLinkHint }}</p>
-            <a class="acc-btn acc-btn--tg" :href="it.inviteLink" target="_blank" rel="noopener">✈ {{ t.tgJoin }}</a>
-          </template>
-          <!-- Подсказка на случай проблем со ссылкой -->
-          <div class="acc-help-note">
-            <p>{{ t.tgHelp }}</p>
-            <a class="acc-btn acc-btn--ghost acc-btn--sm" :href="SUPPORT_URL" target="_blank" rel="noopener">{{ t.supportBtn }}</a>
-          </div>
+          <p class="acc-block__hint">{{ t.tgLinkHint }}</p>
+          <a class="acc-btn acc-btn--tg" :href="it.inviteLink" target="_blank" rel="noopener">✈ {{ t.tgJoin }}</a>
         </div>
 
         <!-- Фолбэк: чат ещё не привязан — запрос доступа -->
@@ -260,9 +249,6 @@ async function sendContact() {
 .acc-ok { color: #1E9E5A; font-size: 13px; margin-top: 10px; font-weight: 600; }
 .acc-err { color: #E5484D; font-size: 13px; margin-top: 8px; }
 .acc-link { display: inline-block; margin-top: 12px; color: var(--accent); font-size: 13px; text-decoration: none; }
-.acc-help-note { margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--border-2, #33333a);
-  p { font-size: 12px; color: var(--text-2); margin: 0 0 8px; line-height: 1.5; } }
-.acc-btn--sm { padding: 7px 14px !important; font-size: 12px !important; }
 .acc-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: none; cursor: pointer;
   border-radius: 10px; padding: 11px 18px; font-weight: 700; font-size: 14px; text-decoration: none; transition: opacity .15s;
   &:hover { opacity: .9; } &:disabled { opacity: .6; cursor: default; }
