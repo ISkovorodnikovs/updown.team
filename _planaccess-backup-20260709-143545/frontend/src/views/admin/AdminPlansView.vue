@@ -1,11 +1,10 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
-import { plansApi, shopApi } from '@/api'
+import { plansApi } from '@/api'
 import { useT } from '@/i18n'
 import dict from '@/i18n/dicts/adminPlans'
 
 const plans = ref([])
-const allProducts = ref([])
 const showForm = ref(false)
 const editing = ref(null)
 const saving = ref(false)
@@ -30,31 +29,18 @@ const FEATURE_FLAGS = [
 const defaultForm = () => {
   const f = {
     type: 'CUSTOM', name: '', description: '', price: 0,
-    currency: 'USDT', features: '', isActive: true, sortOrder: 0, translateAll: true, includedProductIds: [],
+    currency: 'USDT', features: '', isActive: true, sortOrder: 0, translateAll: true,
   }
   FEATURE_FLAGS.forEach(([k]) => (f[k] = false))
   return f
 }
 const form = reactive(defaultForm())
 
-function toggleProduct(id) {
-  const arr = form.includedProductIds
-  const i = arr.indexOf(id)
-  if (i >= 0) arr.splice(i, 1); else arr.push(id)
-}
-
 onMounted(load)
 
 async function load() {
   loading.value = true
   plans.value = await plansApi.getAllAdmin().then(r => r.data).catch(() => [])
-  try {
-    const [inds, chans] = await Promise.all([
-      shopApi.getIndicators().then(r => r.data).catch(() => []),
-      shopApi.getChannels().then(r => r.data).catch(() => []),
-    ])
-    allProducts.value = [...inds, ...chans].map(p => ({ id: p.id, name: p.name, type: p.type }))
-  } catch (e) { allProducts.value = [] }
   loading.value = false
 }
 
@@ -75,7 +61,6 @@ function openForm(plan) {
       translateAll: false,
     })
     FEATURE_FLAGS.forEach(([k]) => (base[k] = !!plan[k]))
-    base.includedProductIds = [...(plan.includedProductIds || [])]
   }
   Object.assign(form, base)
   showForm.value = true
@@ -104,7 +89,6 @@ async function save() {
       translateAll: form.translateAll,
     }
     FEATURE_FLAGS.forEach(([k]) => (payload[k] = form[k]))
-    payload.includedProductIds = form.includedProductIds
     if (editing.value) await plansApi.update(editing.value.id, payload)
     else await plansApi.create(payload)
     await load()
@@ -196,13 +180,6 @@ const t = useT(dict)
               <input type="checkbox" v-model="form[k]" /> {{ lbl }}
             </label>
           </div>
-          <div class="pa-flags" v-if="allProducts.length">
-            <span class="pa-flags__h">{{ t.includedProducts }}</span>
-            <label v-for="p in allProducts" :key="p.id" class="pa-chk pa-chk--wide">
-              <input type="checkbox" :checked="form.includedProductIds.includes(p.id)" @change="toggleProduct(p.id)" />
-              {{ p.name }} <span class="pa-ptype">{{ p.type === 'indicator' ? 'IND' : 'CH' }}</span>
-            </label>
-          </div>
           <label class="pa-chk pa-chk--wide">
             <input type="checkbox" v-model="form.isActive" /> {{ t.active }}
           </label>
@@ -257,7 +234,6 @@ const t = useT(dict)
 .pa-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .pa-flags { border: 1px solid var(--border, #2a2a30); border-radius: 10px; padding: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
   &__h { grid-column: 1 / -1; font-size: 11px; font-weight: 700; color: var(--accent); letter-spacing: .05em; } }
-.pa-ptype { font-size: 10px; opacity: .5; margin-left: 4px; }
 .pa-chk { flex-direction: row !important; align-items: center; gap: 7px; font-size: 12px; color: var(--text-1) !important; cursor: pointer;
   input { width: auto; }
   &--wide { padding: 4px 0; } }

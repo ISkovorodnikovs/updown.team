@@ -45,7 +45,6 @@ export class CreatePlanDto {
   @IsOptional() @IsBoolean() hasEducation?: boolean;
   @IsOptional() @IsBoolean() hasCommunity?: boolean;
   @IsOptional() @IsBoolean() hasSupport?: boolean;
-  @IsOptional() @IsArray() @IsString({ each: true }) includedProductIds?: string[];
 
   @IsOptional() @IsBoolean() isActive?: boolean;
 
@@ -65,7 +64,6 @@ export class UpdatePlanDto {
   @IsOptional() @IsNumber({ maxDecimalPlaces: 2 }) @Min(0) @Max(1000000) price?: number;
   @IsOptional() @IsString() @MaxLength(8) currency?: string;
   @IsOptional() @IsArray() @IsString({ each: true }) @ArrayMaxSize(40) features?: string[];
-  @IsOptional() @IsArray() @IsString({ each: true }) includedProductIds?: string[];
 
   @IsOptional() @IsBoolean() hasSignalsCrypto?: boolean;
   @IsOptional() @IsBoolean() hasSignalsForex?: boolean;

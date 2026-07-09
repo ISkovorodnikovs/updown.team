@@ -163,7 +163,6 @@ export const shopApi = {
   getEducation: () => api.get('/shop/education'),
   enrollEducation: (id, note) => api.post(`/shop/education/${id}/enroll`, { note }),
   getMy: () => api.get('/shop/my'),
-  getMyAccess: () => api.get('/shop/my-access'),
   setTvUsername: (data) => api.post('/shop/access/tv-username', data),
   contactRequest: (data) => api.post('/shop/access/contact', data),
   // Admin

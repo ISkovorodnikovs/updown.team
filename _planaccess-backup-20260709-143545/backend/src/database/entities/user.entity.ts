@@ -51,10 +51,6 @@ export class User {
   @Column({ default: true })
   isActive: boolean;
 
-  // TradingView username пользователя (одно на все индикаторы)
-  @Column({ nullable: true })
-  tvUsername: string;
-
   // --- REFERRAL ---
   // Уникальный реферальный код пользователя
   @Column({ unique: true, nullable: true })

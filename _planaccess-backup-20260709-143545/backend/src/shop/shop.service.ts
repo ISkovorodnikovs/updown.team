@@ -1,11 +1,8 @@
 import { Injectable, OnModuleInit, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, MoreThan, In } from 'typeorm';
+import { Repository, MoreThan } from 'typeorm';
 import { ShopProduct, ProductType } from '../database/entities/shop-product.entity';
 import { UserProduct, UserProductStatus } from '../database/entities/user-product.entity';
-import { User } from '../database/entities/user.entity';
-import { Subscription, SubscriptionStatus } from '../database/entities/subscription.entity';
-import { Plan } from '../database/entities/plan.entity';
 import { CreateShopProductDto, UpdateShopProductDto } from './dto/shop-product.dto';
 import { TelegramMainService } from '../telegram/telegram-main.service';
 import { TranslationService } from '../translation/translation.service';
@@ -127,9 +124,6 @@ export class ShopService implements OnModuleInit {
   constructor(
     @InjectRepository(ShopProduct) private productRepo: Repository<ShopProduct>,
     @InjectRepository(UserProduct) private userProductRepo: Repository<UserProduct>,
-    @InjectRepository(User) private userRepo: Repository<User>,
-    @InjectRepository(Subscription) private subRepo: Repository<Subscription>,
-    @InjectRepository(Plan) private planRepo: Repository<Plan>,
     private telegram: TelegramMainService,
     private translation: TranslationService,
   ) {}
@@ -281,69 +275,29 @@ export class ShopService implements OnModuleInit {
     return String(s ?? '').replace(/[<>&]/g, ' ').slice(0, 500);
   }
 
-  /** Эффективный доступ пользователя: покупки (user_products) + товары активного плана. */
-  async getMyAccess(jwtUser: any) {
-    const now = new Date();
-    const user = await this.userRepo.findOne({ where: { id: jwtUser.id } });
-
-    // Индивидуальные покупки
-    const rows = await this.userProductRepo.find({
-      where: { userId: jwtUser.id, status: UserProductStatus.ACTIVE, expiresAt: MoreThan(now) },
-      relations: ['product'],
-    });
-    const map = new Map<string, { product: ShopProduct; expiresAt: Date }>();
-    for (const r of rows) if (r.product) map.set(r.shopProductId, { product: r.product, expiresAt: r.expiresAt });
-
-    // Активные подписки → флаги + включённые товары
-    const subs = await this.subRepo.find({
-      where: { userId: jwtUser.id, status: SubscriptionStatus.ACTIVE, expiresAt: MoreThan(now) },
-      relations: ['plan'],
-    });
-    let hasSupport = false;
-    let planExpires: Date | null = null;
-    const planProductIds = new Set<string>();
-    for (const s of subs) {
-      if (s.plan?.hasSupport) hasSupport = true;
-      if (Array.isArray(s.plan?.includedProductIds)) s.plan.includedProductIds.forEach((id) => planProductIds.add(id));
-      if (s.expiresAt && (!planExpires || s.expiresAt > planExpires)) planExpires = s.expiresAt;
-    }
-    const missing = [...planProductIds].filter((id) => !map.has(id));
-    if (missing.length) {
-      const prods = await this.productRepo.findBy({ id: In(missing) });
-      for (const p of prods) map.set(p.id, { product: p, expiresAt: planExpires as Date });
-    }
-
-    const products = [...map.values()]
-      .filter((x) => x.product.isActive !== false)
-      .map((x) => ({
-        productId: x.product.id,
-        name: x.product.name,
-        nameTranslations: x.product.nameTranslations ?? null,
-        type: x.product.type,
-        tradingViewUrl: x.product.tradingViewUrl ?? null,
-        expiresAt: x.expiresAt,
-      }));
-
-    return { products, hasSupport, tvUsername: user?.tvUsername ?? null };
-  }
-
-  /** Пользователь ввёл TradingView username (одно на все индикаторы) → сохраняем на юзере + уведомляем админов. */
-  async setTvUsername(jwtUser: any, tvUsername: string, language?: string) {
+  /** Пользователь ввёл TradingView username → сохраняем и шлём полное уведомление в админ-чат. */
+  async setTvUsername(user: any, shopProductId: string, tvUsername: string, language?: string) {
     const clean = String(tvUsername ?? '').trim().slice(0, 64);
     if (!clean) throw new NotFoundException('TradingView username is required');
 
-    const user = await this.userRepo.findOne({ where: { id: jwtUser.id } });
-    if (!user) throw new NotFoundException('User not found');
-    user.tvUsername = clean;
-    await this.userRepo.save(user);
+    const now = new Date();
+    const up = await this.userProductRepo.findOne({
+      where: { userId: user.id, shopProductId, status: UserProductStatus.ACTIVE, expiresAt: MoreThan(now) },
+      relations: ['product'],
+      order: { expiresAt: 'DESC' },
+    });
+    if (!up) throw new NotFoundException('No active access to this product');
 
-    const access = await this.getMyAccess(jwtUser);
-    const indicators = access.products.filter((p) => p.type === ProductType.INDICATOR).map((p) => p.name);
+    up.tvUsername = clean;
+    await this.userProductRepo.save(up);
+
     const name = [user.firstName, user.lastName].filter(Boolean).join(' ') || '—';
+    const expires = new Date(up.expiresAt).toISOString().slice(0, 10);
     await this.telegram.sendMessage(
       `🖥 Запрос доступа TradingView\n` +
       `👤 ${this.escapeMd(name)} (${this.escapeMd(user.email)})\n` +
-      `📦 Индикаторы: ${this.escapeMd(indicators.join(', ') || '—')}\n` +
+      `📦 ${this.escapeMd(up.product?.name || shopProductId)}\n` +
+      `📅 Доступ до: ${expires}\n` +
       `🔗 TradingView username: ${this.escapeMd(clean)}\n` +
       `🌐 Язык клиента: ${this.escapeMd(language || 'en')}`,
     );

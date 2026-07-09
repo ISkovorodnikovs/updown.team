@@ -7,50 +7,47 @@ import dict from '@/i18n/dicts/access'
 const t = useT(dict)
 const SUPPORT_URL = 'https://t.me/Agent_x_support'
 
-const products = ref([])
-const hasSupport = ref(false)
+const items = ref([])
 const loading = ref(true)
-
-const tvName = ref('')
-const tvBusy = ref(false)
-const tvSaved = ref(false)
-const tvError = ref('')
+const tvInput = ref({})       // productId -> string
+const tvBusy = ref({})        // productId -> bool
+const tvError = ref({})       // productId -> string
 
 const showContact = ref(false)
 const contactMsg = ref('')
 const contactBusy = ref(false)
 const contactSent = ref(false)
-const chanRequested = ref({})
-
-const indicators = computed(() => products.value.filter(p => p.type === 'indicator'))
-const channels = computed(() => products.value.filter(p => p.type === 'signal_channel'))
-const educations = computed(() => products.value.filter(p => p.type === 'education'))
 
 onMounted(async () => {
-  try {
-    const d = await shopApi.getMyAccess().then(r => r.data)
-    products.value = d.products || []
-    hasSupport.value = !!d.hasSupport
-    tvName.value = d.tvUsername || ''
-    tvSaved.value = !!d.tvUsername
-  } catch { /* ignore */ }
+  items.value = await shopApi.getMy().then(r => r.data).catch(() => [])
+  for (const it of items.value) if (it.tvUsername) tvInput.value[it.productId] = it.tvUsername
   loading.value = false
 })
 
-async function submitTv() {
-  const val = (tvName.value || '').trim()
+const isIndicator = (it) => it.type === 'indicator'
+const isChannel = (it) => it.type === 'signal_channel'
+const isEducation = (it) => it.type === 'education'
+
+async function submitTv(it) {
+  const val = (tvInput.value[it.productId] || '').trim()
   if (!val) return
-  tvBusy.value = true; tvError.value = ''
+  tvBusy.value[it.productId] = true
+  tvError.value[it.productId] = ''
   try {
-    await shopApi.setTvUsername({ tvUsername: val, language: lang.value })
-    tvSaved.value = true
-  } catch { tvError.value = t.value.errTv } finally { tvBusy.value = false }
+    await shopApi.setTvUsername({ shopProductId: it.productId, tvUsername: val, language: lang.value })
+    it.tvUsername = val
+  } catch (e) {
+    tvError.value[it.productId] = t.value.errTv
+  } finally {
+    tvBusy.value[it.productId] = false
+  }
 }
 
 async function requestChannel(it) {
+  // канал: запрос доступа = сообщение в админ-чат (пока выдаём вручную)
   try {
     await shopApi.contactRequest({ message: `Запрос доступа к каналу: ${it.name}`, language: lang.value })
-    chanRequested.value[it.productId] = true
+    it._requested = true
   } catch { /* ignore */ }
 }
 
@@ -58,9 +55,12 @@ async function sendContact() {
   contactBusy.value = true
   try {
     await shopApi.contactRequest({ message: contactMsg.value, language: lang.value })
-    contactSent.value = true; contactMsg.value = ''
+    contactSent.value = true
+    contactMsg.value = ''
     setTimeout(() => { showContact.value = false; contactSent.value = false }, 1800)
-  } catch { /* ignore */ } finally { contactBusy.value = false }
+  } catch { /* ignore */ } finally {
+    contactBusy.value = false
+  }
 }
 </script>
 
@@ -75,59 +75,55 @@ async function sendContact() {
     <div class="acc-actions">
       <div class="acc-help">{{ t.needHelp }}</div>
       <button class="acc-btn acc-btn--ghost" @click="showContact = true">{{ t.contactBtn }}</button>
-      <a v-if="hasSupport" class="acc-btn acc-btn--tg" :href="SUPPORT_URL" target="_blank" rel="noopener">{{ t.supportBtn }}</a>
+      <a class="acc-btn acc-btn--tg" :href="SUPPORT_URL" target="_blank" rel="noopener">{{ t.supportBtn }}</a>
     </div>
 
     <div v-if="loading" class="acc-empty">{{ t.loading }}</div>
-    <div v-else-if="!products.length" class="acc-empty">
+    <div v-else-if="!items.length" class="acc-empty">
       {{ t.empty }}
       <router-link class="acc-btn acc-btn--primary" to="/dashboard/shop">{{ t.goShop }}</router-link>
     </div>
 
-    <template v-else>
-      <!-- TradingView: одно имя на все индикаторы -->
-      <div v-if="indicators.length" class="acc-card">
-        <div class="acc-card__name">{{ t.tvTitle }}</div>
-        <p class="acc-block__hint">{{ t.tvHint }}</p>
-        <p class="acc-block__where">{{ t.tvWhere }}</p>
-        <ul class="acc-inds">
-          <li v-for="it in indicators" :key="it.productId">
-            <span>✦ {{ tDb(it, 'name') }}</span>
-            <a v-if="it.tradingViewUrl" class="acc-link" :href="it.tradingViewUrl" target="_blank" rel="noopener">{{ t.openTv }} →</a>
-          </li>
-        </ul>
-        <div class="acc-tv">
-          <input v-model="tvName" :placeholder="t.tvPh" class="acc-input" />
-          <button class="acc-btn acc-btn--primary" :disabled="tvBusy" @click="submitTv">
-            {{ tvBusy ? '…' : (tvSaved ? t.tvChange : t.tvSubmit) }}
-          </button>
-        </div>
-        <div v-if="tvSaved" class="acc-ok">✓ {{ t.tvPending }}</div>
-        <div v-if="tvError" class="acc-err">{{ tvError }}</div>
-      </div>
-
-      <!-- Каналы: доступ в Telegram (по каждому) -->
-      <div v-for="it in channels" :key="it.productId" class="acc-card">
+    <div v-else class="acc-list">
+      <div v-for="it in items" :key="it.id" class="acc-card">
         <div class="acc-card__top">
           <div class="acc-card__name">{{ tDb(it, 'name') }}</div>
           <div class="acc-card__until">{{ t.until }}: {{ fmtDate(it.expiresAt) }}</div>
         </div>
-        <div class="acc-block">
+
+        <!-- Индикатор: ввод TradingView username -->
+        <div v-if="isIndicator(it)" class="acc-block">
+          <div class="acc-block__title">{{ t.tvTitle }}</div>
+          <p class="acc-block__hint">{{ t.tvHint }}</p>
+          <p class="acc-block__where">{{ t.tvWhere }}</p>
+          <div class="acc-tv">
+            <input v-model="tvInput[it.productId]" :placeholder="t.tvPh" class="acc-input" />
+            <button class="acc-btn acc-btn--primary" :disabled="tvBusy[it.productId]" @click="submitTv(it)">
+              {{ tvBusy[it.productId] ? '…' : (it.tvUsername ? t.tvChange : t.tvSubmit) }}
+            </button>
+          </div>
+          <div v-if="it.tvUsername" class="acc-ok">✓ {{ t.tvPending }}</div>
+          <div v-if="tvError[it.productId]" class="acc-err">{{ tvError[it.productId] }}</div>
+          <a v-if="it.tradingViewUrl" class="acc-link" :href="it.tradingViewUrl" target="_blank" rel="noopener">{{ t.openTv }} →</a>
+        </div>
+
+        <!-- Канал: доступ в Telegram -->
+        <div v-else-if="isChannel(it)" class="acc-block">
           <div class="acc-block__title">{{ t.tgTitle }}</div>
           <p class="acc-block__hint">{{ t.tgHint }}</p>
-          <button class="acc-btn acc-btn--tg" :disabled="chanRequested[it.productId]" @click="requestChannel(it)">
-            {{ chanRequested[it.productId] ? '✓' : t.tgRequest }}
+          <button class="acc-btn acc-btn--tg" :disabled="it._requested" @click="requestChannel(it)">
+            {{ it._requested ? '✓' : t.tgRequest }}
           </button>
         </div>
-      </div>
 
-      <!-- Обучение -->
-      <div v-if="educations.length" class="acc-card">
-        <div class="acc-card__name">{{ t.eduTitle }}</div>
-        <p class="acc-block__hint">{{ t.eduHint }}</p>
-        <router-link class="acc-btn acc-btn--ghost" to="/dashboard/education">{{ t.eduOpen }}</router-link>
+        <!-- Обучение -->
+        <div v-else-if="isEducation(it)" class="acc-block">
+          <div class="acc-block__title">{{ t.eduTitle }}</div>
+          <p class="acc-block__hint">{{ t.eduHint }}</p>
+          <router-link class="acc-btn acc-btn--ghost" to="/dashboard/education">{{ t.eduOpen }}</router-link>
+        </div>
       </div>
-    </template>
+    </div>
 
     <!-- Модалка «связаться» -->
     <div v-if="showContact" class="acc-overlay" @click.self="showContact = false">
@@ -146,6 +142,7 @@ async function sendContact() {
     </div>
   </div>
 </template>
+
 <style scoped lang="scss">
 .acc { padding: 4px; max-width: 900px; }
 .acc-head { margin-bottom: 18px;
@@ -160,9 +157,6 @@ async function sendContact() {
 .acc-card__top { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
 .acc-card__name { font-family: 'Montserrat',sans-serif; font-size: 18px; font-weight: 800; }
 .acc-card__until { font-size: 13px; color: var(--text-2); }
-.acc-inds { list-style: none; padding: 0; margin: 10px 0 14px; display: flex; flex-direction: column; gap: 8px;
-  li { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 14px; flex-wrap: wrap; }
-  .acc-link { margin: 0; } }
 .acc-block { border-top: 1px solid var(--border, #2a2a30); padding-top: 14px; }
 .acc-block__title { font-weight: 700; font-size: 14px; margin-bottom: 6px; }
 .acc-block__hint { color: var(--text-2); font-size: 13px; margin: 0 0 8px; line-height: 1.5; }

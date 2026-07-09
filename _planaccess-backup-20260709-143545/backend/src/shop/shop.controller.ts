@@ -45,18 +45,11 @@ export class ShopController {
     return this.shopService.getMyProducts(user.id);
   }
 
-  // Эффективный доступ (покупки + товары активного плана) + флаг support + tvUsername
-  @Get('my-access')
-  @UseGuards(AuthGuard('jwt'))
-  getMyAccess(@CurrentUser() user: any) {
-    return this.shopService.getMyAccess(user);
-  }
-
-  // Пользователь ввёл TradingView username (одно на все индикаторы) → уведомление админам
+  // Пользователь ввёл TradingView username → уведомление админам
   @Post('access/tv-username')
   @UseGuards(AuthGuard('jwt'))
-  setTvUsername(@CurrentUser() user: any, @Body() body: { tvUsername: string; language?: string }) {
-    return this.shopService.setTvUsername(user, body.tvUsername, body.language);
+  setTvUsername(@CurrentUser() user: any, @Body() body: { shopProductId: string; tvUsername: string; language?: string }) {
+    return this.shopService.setTvUsername(user, body.shopProductId, body.tvUsername, body.language);
   }
 
   // Форма «Связаться со мной» → уведомление админам

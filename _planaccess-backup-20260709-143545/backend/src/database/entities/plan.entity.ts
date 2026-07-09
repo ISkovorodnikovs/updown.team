@@ -55,11 +55,6 @@ export class Plan {
   @Column({ default: false }) hasCommunity: boolean;
   @Column({ default: false }) hasSupport: boolean;
 
-  // Конкретные товары магазина (индикаторы/каналы), которые включает тариф.
-  // Задаётся в управлении тарифами (мультивыбор).
-  @Column({ type: 'jsonb', default: '[]' })
-  includedProductIds: string[];
-
   @Column({ default: true })
   isActive: boolean;
 
