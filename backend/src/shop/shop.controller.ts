@@ -45,6 +45,20 @@ export class ShopController {
     return this.shopService.getMyProducts(user.id);
   }
 
+  // Пользователь ввёл TradingView username → уведомление админам
+  @Post('access/tv-username')
+  @UseGuards(AuthGuard('jwt'))
+  setTvUsername(@CurrentUser() user: any, @Body() body: { shopProductId: string; tvUsername: string; language?: string }) {
+    return this.shopService.setTvUsername(user, body.shopProductId, body.tvUsername, body.language);
+  }
+
+  // Форма «Связаться со мной» → уведомление админам
+  @Post('access/contact')
+  @UseGuards(AuthGuard('jwt'))
+  contactRequest(@CurrentUser() user: any, @Body() body: { message: string; language?: string }) {
+    return this.shopService.sendContactRequest(user, body.message, body.language);
+  }
+
   // ─── Админ ─────────────────────────────────────────────────────────────────
 
   // Полный каталог (включая деактивированные) — для админ-витрины

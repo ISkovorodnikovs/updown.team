@@ -43,5 +43,9 @@ export class UserProduct {
   @Column({ nullable: true })
   notes: string;
 
+  // TradingView username, введённый пользователем в ЛК (для выдачи доступа к индикатору)
+  @Column({ nullable: true })
+  tvUsername: string;
+
   @CreateDateColumn() createdAt: Date;
 }

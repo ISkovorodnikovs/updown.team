@@ -260,11 +260,61 @@ export class ShopService implements OnModuleInit {
       id: r.id,
       productId: r.shopProductId,
       name: r.product?.name,
+      nameTranslations: r.product?.nameTranslations ?? null,
       type: r.product?.type,
       tradingViewUrl: r.product?.tradingViewUrl ?? null,
+      tvUsername: r.tvUsername ?? null,
       startsAt: r.startsAt,
       expiresAt: r.expiresAt,
     }));
+  }
+
+  // ─── «Мои доступы»: TradingView username + запрос на связь ──────────────────
+
+  private escapeMd(s: string): string {
+    return String(s ?? '').replace(/[<>&]/g, ' ').slice(0, 500);
+  }
+
+  /** Пользователь ввёл TradingView username → сохраняем и шлём полное уведомление в админ-чат. */
+  async setTvUsername(user: any, shopProductId: string, tvUsername: string, language?: string) {
+    const clean = String(tvUsername ?? '').trim().slice(0, 64);
+    if (!clean) throw new NotFoundException('TradingView username is required');
+
+    const now = new Date();
+    const up = await this.userProductRepo.findOne({
+      where: { userId: user.id, shopProductId, status: UserProductStatus.ACTIVE, expiresAt: MoreThan(now) },
+      relations: ['product'],
+      order: { expiresAt: 'DESC' },
+    });
+    if (!up) throw new NotFoundException('No active access to this product');
+
+    up.tvUsername = clean;
+    await this.userProductRepo.save(up);
+
+    const name = [user.firstName, user.lastName].filter(Boolean).join(' ') || '—';
+    const expires = new Date(up.expiresAt).toISOString().slice(0, 10);
+    await this.telegram.sendMessage(
+      `🖥 Запрос доступа TradingView\n` +
+      `👤 ${this.escapeMd(name)} (${this.escapeMd(user.email)})\n` +
+      `📦 ${this.escapeMd(up.product?.name || shopProductId)}\n` +
+      `📅 Доступ до: ${expires}\n` +
+      `🔗 TradingView username: ${this.escapeMd(clean)}\n` +
+      `🌐 Язык клиента: ${this.escapeMd(language || 'en')}`,
+    );
+    return { ok: true, tvUsername: clean };
+  }
+
+  /** Форма «Связаться со мной» → уведомление в админ-чат. */
+  async sendContactRequest(user: any, message: string, language?: string) {
+    const msg = String(message ?? '').trim().slice(0, 1000);
+    const name = [user.firstName, user.lastName].filter(Boolean).join(' ') || '—';
+    await this.telegram.sendMessage(
+      `📞 Запрос на связь из ЛК\n` +
+      `👤 ${this.escapeMd(name)} (${this.escapeMd(user.email)})\n` +
+      `🌐 Язык клиента: ${this.escapeMd(language || 'en')}\n` +
+      `💬 ${this.escapeMd(msg) || '(без сообщения)'}`,
+    );
+    return { ok: true };
   }
 
   async hasProductAccess(userId: string, productId: string): Promise<boolean> {
