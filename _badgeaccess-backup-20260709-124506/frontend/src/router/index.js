@@ -25,7 +25,6 @@ export const routes = [
     children: [
       { path: '', component: () => import('@/views/dashboard/DashboardHome.vue') },
       { path: 'subscriptions', component: () => import('@/views/dashboard/SubscriptionsView.vue') },
-      { path: 'access', component: () => import('@/views/dashboard/AccessView.vue') },
       { path: 'shop', component: () => import('@/views/dashboard/ShopView.vue') },
       { path: 'signals', component: () => import('@/views/dashboard/SignalsView.vue') },
       { path: 'indicators', component: () => import('@/views/dashboard/IndicatorsView.vue') },

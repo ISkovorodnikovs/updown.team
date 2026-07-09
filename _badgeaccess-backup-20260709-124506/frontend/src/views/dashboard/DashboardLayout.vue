@@ -20,7 +20,6 @@
         <div class="nav-group">
           <NavItem to="/dashboard" :icon="icons.home" :label="t.nav.home" :collapsed="collapsed" exact />
           <NavItem to="/dashboard/subscriptions" :icon="icons.subscriptions" :label="t.nav.subscriptions" :collapsed="collapsed" />
-          <NavItem to="/dashboard/access" :icon="icons.subscriptions" :label="t.nav.access" :collapsed="collapsed" />
           <NavItem to="/dashboard/shop" :icon="icons.shop" :label="t.nav.shop" :collapsed="collapsed" />
         </div>
 
@@ -86,7 +85,8 @@
           <div class="user-avatar">{{ initials }}</div>
           <div class="user-info">
             <div class="user-name">{{ auth.user?.firstName || auth.user?.email?.split('@')[0] }}</div>
-            <div class="user-plan" :class="'user-plan--' + statusKey">{{ statusLabel }}</div>
+            <div class="user-plan" v-if="activePlan">{{ activePlan.plan?.name }}</div>
+            <div class="user-plan user-plan--free" v-else>Free</div>
           </div>
         </div>
         <div class="user-avatar user-avatar--sm" v-show="collapsed">{{ initials }}</div>
@@ -159,17 +159,6 @@ function toggleTheme() { theme.value = theme.value === 'dark' ? 'light' : 'dark'
 
 const collapsed = ref(false)
 const activePlan = ref(null)
-
-// Статус пользователя для бейджа: Owner / Admin / Partner / Client / Free
-const statusKey = computed(() => {
-  if (auth.isOwner) return 'owner'
-  if (auth.isAdmin) return 'admin'
-  if (auth.isPartner) return 'partner'
-  if (activePlan.value) return 'client'
-  return 'free'
-})
-const STATUS_LABELS = { owner: 'Owner', admin: 'Admin', partner: 'Partner', client: 'Client', free: 'Free' }
-const statusLabel = computed(() => STATUS_LABELS[statusKey.value])
 
 onMounted(async () => {
   try { activePlan.value = await subscriptionsApi.getActivePlan().then(r => r.data) } catch {}
@@ -441,13 +430,9 @@ export default { components: { NavItem } }
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .user-plan {
-  font-size: 11px; font-weight: 700; letter-spacing: .02em;
+  font-size: 11px; font-weight: 600;
   color: var(--accent);
-  &--free    { color: var(--text-3); }
-  &--client  { color: #1E9E5A; }
-  &--partner { color: #3B82F6; }
-  &--admin   { color: #E5484D; }
-  &--owner   { color: var(--accent); }
+  &--free { color: var(--text-3); }
 }
 
 .charts-link {

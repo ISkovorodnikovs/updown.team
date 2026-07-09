@@ -163,8 +163,6 @@ export const shopApi = {
   getEducation: () => api.get('/shop/education'),
   enrollEducation: (id, note) => api.post(`/shop/education/${id}/enroll`, { note }),
   getMy: () => api.get('/shop/my'),
-  setTvUsername: (data) => api.post('/shop/access/tv-username', data),
-  contactRequest: (data) => api.post('/shop/access/contact', data),
   // Admin
   getAll: () => api.get('/shop/admin/all'),
   create: (data) => api.post('/shop/products', data, { timeout: 120000 }),
