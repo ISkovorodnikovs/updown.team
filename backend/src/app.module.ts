@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { ScheduleModule } from '@nestjs/schedule';
+import { TranslationModule } from './translation/translation.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { PartnersModule } from './partners/partners.module';
@@ -37,6 +38,10 @@ import databaseConfig from './config/database.config';
         database: config.get('DB_DATABASE', 'updown_db'),
         entities: [__dirname + '/database/entities/*.entity{.ts,.js}'],
         migrations: [__dirname + '/database/migrations/*{.ts,.js}'],
+        // Прогоняем невыполненные миграции на старте (идемпотентно). Так новые
+        // колонки (напр. переводы товаров) создаются автоматически при деплое,
+        // без отдельного шага и без опасного synchronize.
+        migrationsRun: true,
         // ПРОД: synchronize должен быть false (иначе TypeORM может молча удалить
         // колонку/данные при изменении сущности). Управляется через env:
         // в dev можно выставить DB_SYNCHRONIZE=true, в проде — не задавать (=false).
@@ -67,6 +72,7 @@ import databaseConfig from './config/database.config';
       inject: [ConfigService],
     }),
     ScheduleModule.forRoot(),
+    TranslationModule,
     AuthModule,
     UsersModule,
     PartnersModule,

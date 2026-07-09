@@ -3,10 +3,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Plan, PlanType } from '../database/entities/plan.entity';
 import { CreatePlanDto, UpdatePlanDto } from './dto/plan.dto';
+import { TranslationService } from '../translation/translation.service';
 
 @Injectable()
 export class PlansService implements OnModuleInit {
-  constructor(@InjectRepository(Plan) private planRepo: Repository<Plan>) {}
+  constructor(
+    @InjectRepository(Plan) private planRepo: Repository<Plan>,
+    private translation: TranslationService,
+  ) {}
 
   // Сидируем дефолтные тарифы при старте
   async onModuleInit() {
@@ -53,15 +57,30 @@ export class PlansService implements OnModuleInit {
   }
 
   async create(dto: CreatePlanDto) {
-    const plan = this.planRepo.create(dto);
+    const { translateAll, ...data } = dto as any;
+    const plan = this.planRepo.create(data) as unknown as Plan;
+    if (translateAll) await this.applyTranslations(plan);
     return this.planRepo.save(plan);
   }
 
   async update(id: string, dto: UpdatePlanDto) {
+    const { translateAll, ...data } = dto as any;
     const plan = await this.planRepo.findOne({ where: { id } });
     if (!plan) throw new NotFoundException('Plan not found');
-    Object.assign(plan, dto);
+    Object.assign(plan, data);
+    if (translateAll) await this.applyTranslations(plan);
     return this.planRepo.save(plan);
+  }
+
+  private async applyTranslations(plan: Plan) {
+    const tr = await this.translation.translateFields({
+      name: plan.name,
+      description: plan.description,
+      features: plan.features,
+    });
+    plan.nameTranslations = (tr.name as any) ?? null;
+    plan.descriptionTranslations = (tr.description as any) ?? null;
+    plan.featuresTranslations = (tr.features as any) ?? null;
   }
 
   // Мягкое удаление: деактивируем, чтобы не рвать существующие подписки.

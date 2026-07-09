@@ -18,6 +18,13 @@ export class Banner {
   @Column({ type: 'text' })
   message: string;
 
+  // Переводы title/message по языкам (флаг translateAll при create/update)
+  @Column({ type: 'jsonb', nullable: true })
+  titleTranslations: Record<string, string> | null;
+
+  @Column({ type: 'jsonb', nullable: true })
+  messageTranslations: Record<string, string> | null;
+
   // URL изображения (загружается через upload)
   @Column({ nullable: true })
   imageUrl: string;

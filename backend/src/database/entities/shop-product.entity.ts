@@ -22,6 +22,14 @@ export class ShopProduct {
   @Column({ type: 'text', nullable: true })
   description: string;
 
+  // Переводы name/description по языкам: { en, de, es, it, pt, ru, zh, ar }.
+  // Заполняются автоматически при создании/редактировании с флагом translateAll.
+  @Column({ type: 'jsonb', nullable: true })
+  nameTranslations: Record<string, string> | null;
+
+  @Column({ type: 'jsonb', nullable: true })
+  descriptionTranslations: Record<string, string> | null;
+
   @Column({ nullable: true })
   tradingViewUrl: string;
 
@@ -38,6 +46,9 @@ export class ShopProduct {
   // Дополнительные фичи (jsonb список)
   @Column({ type: 'jsonb', default: '[]' })
   features: string[];
+
+  @Column({ type: 'jsonb', nullable: true })
+  featuresTranslations: Record<string, string[]> | null;
 
   // Для каналов — информация о точности и т.п.
   @Column({ nullable: true })

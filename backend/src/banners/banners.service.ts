@@ -2,11 +2,13 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, MoreThan, IsNull } from 'typeorm';
 import { Banner } from '../database/entities/banner.entity';
+import { TranslationService } from '../translation/translation.service';
 
 @Injectable()
 export class BannersService {
   constructor(
     @InjectRepository(Banner) private bannerRepo: Repository<Banner>,
+    private translation: TranslationService,
   ) {}
 
   async getActiveBanner() {
@@ -29,14 +31,33 @@ export class BannersService {
     return this.bannerRepo.find({ order: { createdAt: 'DESC' } });
   }
 
-  async create(dto: Partial<Banner>, adminId: string) {
-    const banner = this.bannerRepo.create({ ...dto, createdByAdminId: adminId });
+  async create(dto: any, adminId: string) {
+    const { translateAll, ...data } = dto || {};
+    const banner = this.bannerRepo.create({ ...data, createdByAdminId: adminId }) as unknown as Banner;
+    if (translateAll) await this.applyTranslations(banner);
     return this.bannerRepo.save(banner);
   }
 
-  async update(id: string, dto: Partial<Banner>) {
-    await this.bannerRepo.update(id, dto);
+  async update(id: string, dto: any) {
+    const { translateAll, ...data } = dto || {};
+    if (translateAll) {
+      const banner = await this.bannerRepo.findOne({ where: { id } });
+      if (!banner) throw new NotFoundException('Banner not found');
+      Object.assign(banner, data);
+      await this.applyTranslations(banner);
+      return this.bannerRepo.save(banner);
+    }
+    await this.bannerRepo.update(id, data);
     return this.bannerRepo.findOne({ where: { id } });
+  }
+
+  private async applyTranslations(banner: Banner) {
+    const tr = await this.translation.translateFields({
+      title: banner.title,
+      message: banner.message,
+    });
+    banner.titleTranslations = (tr.title as any) ?? null;
+    banner.messageTranslations = (tr.message as any) ?? null;
   }
 
   async remove(id: string) {

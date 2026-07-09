@@ -53,6 +53,9 @@ export class CreateShopProductDto {
   @IsOptional() @IsNumber() @Min(0) sortOrder?: number;
 
   @IsOptional() meta?: Record<string, any>;
+
+  // Флаг (не хранится): перевести name/description на все языки через Claude API
+  @IsOptional() @IsBoolean() translateAll?: boolean;
 }
 
 export class UpdateShopProductDto {
@@ -68,4 +71,5 @@ export class UpdateShopProductDto {
   @IsOptional() @IsBoolean() isActive?: boolean;
   @IsOptional() @IsNumber() @Min(0) sortOrder?: number;
   @IsOptional() meta?: Record<string, any>;
+  @IsOptional() @IsBoolean() translateAll?: boolean;
 }

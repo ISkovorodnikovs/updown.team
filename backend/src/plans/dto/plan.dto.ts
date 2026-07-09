@@ -52,6 +52,8 @@ export class CreatePlanDto {
   @IsNumber()
   @Min(0)
   sortOrder?: number;
+
+  @IsOptional() @IsBoolean() translateAll?: boolean;
 }
 
 // Все поля опциональны при обновлении
@@ -78,4 +80,5 @@ export class UpdatePlanDto {
 
   @IsOptional() @IsBoolean() isActive?: boolean;
   @IsOptional() @IsNumber() @Min(0) sortOrder?: number;
+  @IsOptional() @IsBoolean() translateAll?: boolean;
 }

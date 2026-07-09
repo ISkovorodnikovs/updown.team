@@ -21,6 +21,16 @@ export class Plan {
   @Column({ nullable: true })
   description: string;
 
+  // Переводы по языкам (заполняются при create/update с флагом translateAll)
+  @Column({ type: 'jsonb', nullable: true })
+  nameTranslations: Record<string, string> | null;
+
+  @Column({ type: 'jsonb', nullable: true })
+  descriptionTranslations: Record<string, string> | null;
+
+  @Column({ type: 'jsonb', nullable: true })
+  featuresTranslations: Record<string, string[]> | null;
+
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   price: number;
 

@@ -5,6 +5,7 @@ import { ShopProduct, ProductType } from '../database/entities/shop-product.enti
 import { UserProduct, UserProductStatus } from '../database/entities/user-product.entity';
 import { CreateShopProductDto, UpdateShopProductDto } from './dto/shop-product.dto';
 import { TelegramMainService } from '../telegram/telegram-main.service';
+import { TranslationService } from '../translation/translation.service';
 
 const INDICATORS_SEED = [
   {
@@ -124,6 +125,7 @@ export class ShopService implements OnModuleInit {
     @InjectRepository(ShopProduct) private productRepo: Repository<ShopProduct>,
     @InjectRepository(UserProduct) private userProductRepo: Repository<UserProduct>,
     private telegram: TelegramMainService,
+    private translation: TranslationService,
   ) {}
 
   // Заявка на обучение («Записаться») — уведомление админу в техчат
@@ -191,14 +193,37 @@ export class ShopService implements OnModuleInit {
   // ─── Админ CRUD ────────────────────────────────────────────────────────────
 
   async createProduct(dto: CreateShopProductDto) {
-    const product = this.productRepo.create(dto);
+    const { translateAll, ...data } = dto as any;
+    const product = this.productRepo.create(data) as unknown as ShopProduct;
+    if (translateAll) {
+      const tr = await this.translation.translateFields({
+        name: product.name,
+        description: product.description,
+        features: product.features,
+      });
+      product.nameTranslations = (tr.name as any) ?? null;
+      product.descriptionTranslations = (tr.description as any) ?? null;
+      product.featuresTranslations = (tr.features as any) ?? null;
+    }
     return this.productRepo.save(product);
   }
 
   async updateProduct(id: string, dto: UpdateShopProductDto) {
+    const { translateAll, ...data } = dto as any;
     const product = await this.productRepo.findOne({ where: { id } });
     if (!product) throw new NotFoundException('Product not found');
-    Object.assign(product, dto);
+    Object.assign(product, data);
+    if (translateAll) {
+      // Перегенерируем переводы под текущий текст
+      const tr = await this.translation.translateFields({
+        name: product.name,
+        description: product.description,
+        features: product.features,
+      });
+      product.nameTranslations = (tr.name as any) ?? null;
+      product.descriptionTranslations = (tr.description as any) ?? null;
+      product.featuresTranslations = (tr.features as any) ?? null;
+    }
     return this.productRepo.save(product);
   }
 
