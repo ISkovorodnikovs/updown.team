@@ -19,6 +19,7 @@
       <nav class="sidebar__nav">
         <div class="nav-group">
           <NavItem to="/dashboard" :icon="icons.home" :label="t.nav.home" :collapsed="collapsed" exact />
+          <NavItem to="/dashboard/subscriptions" :icon="icons.subscriptions" :label="t.nav.subscriptions" :collapsed="collapsed" />
           <NavItem to="/dashboard/access" :icon="icons.subscriptions" :label="t.nav.access" :collapsed="collapsed" />
           <NavItem to="/dashboard/shop" :icon="icons.shop" :label="t.nav.shop" :collapsed="collapsed" />
         </div>

@@ -26,37 +26,26 @@
       </div>
     </div>
 
-    <!-- Products grid: 4 categories -->
+    <!-- Products grid -->
     <h3 class="section-title">{{ t.products }}</h3>
-    <div class="cat-grid">
-      <div class="cat-tile" v-for="c in categories" :key="c.key"
-        :class="{ 'cat-tile--active': c.active, 'cat-tile--has-pop': c.items && c.items.length }"
-        @click="$router.push(tileRoute(c))">
-        <div class="cat-tile__icon">{{ c.icon }}</div>
-        <div class="cat-tile__name">{{ c.name }}</div>
-        <div class="cat-tile__status" :class="c.active ? 'is-active' : 'is-locked'">
-          <template v-if="c.active">{{ t.active }}</template>
-          <template v-else>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-            {{ t.upgrade }}
-          </template>
+    <div class="products-grid">
+      <div class="product-tile" v-for="p in products" :key="p.key"
+        :class="{ 'product-tile--locked': !p.available }"
+        @click="p.available ? $router.push(p.route) : $router.push('/dashboard/shop')">
+        <div class="product-tile__icon">{{ p.icon }}</div>
+        <div class="product-tile__name">{{ tDb(p, 'name') }}</div>
+        <div class="product-tile__status" v-if="!p.available">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          {{ t.upgrade }}
         </div>
-        <!-- Всплывающий список каналов/индикаторов (активные и неактивные) -->
-        <div v-if="c.items && c.items.length" class="cat-pop" @click.stop>
-          <div class="cat-pop__item" v-for="it in c.items" :key="it.id"
-            @click="$router.push(it.active ? '/dashboard/access' : '/dashboard/shop')">
-            <span class="cat-pop__dot" :class="it.active ? 'on' : 'off'"></span>
-            <span class="cat-pop__name">{{ it.name }}</span>
-            <span class="cat-pop__tag" v-if="it.active">{{ t.active }}</span>
-          </div>
-        </div>
+        <div class="product-tile__status product-tile__status--active" v-else>{{ t.active }}</div>
       </div>
     </div>
 
     <!-- Quick actions -->
     <h3 class="section-title">{{ t.quickActions }}</h3>
     <div class="actions-row">
-      <router-link to="/dashboard/access" class="action-card">
+      <router-link to="/dashboard/subscriptions" class="action-card">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
         <span>{{ t.mySubscriptions }}</span>
       </router-link>
@@ -79,31 +68,18 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
-import { subscriptionsApi, shopApi } from '@/api'
+import { subscriptionsApi } from '@/api'
 import { useT, tDb } from '@/i18n'
 import dict from '@/i18n/dicts/dashboardHome'
 
 const auth = useAuthStore()
 const activePlan = ref(null)
 const subscriptions = ref([])
-const channels = ref([])
-const indicators = ref([])
-const ownedIds = ref(new Set())
 
 onMounted(async () => {
   try {
     activePlan.value = await subscriptionsApi.getActivePlan().then(r => r.data)
     subscriptions.value = await subscriptionsApi.getMy().then(r => r.data)
-  } catch {}
-  try {
-    const [chans, inds, access] = await Promise.all([
-      shopApi.getChannels().then(r => r.data).catch(() => []),
-      shopApi.getIndicators().then(r => r.data).catch(() => []),
-      shopApi.getMyAccess().then(r => r.data).catch(() => ({ products: [] })),
-    ])
-    channels.value = chans
-    indicators.value = inds
-    ownedIds.value = new Set((access.products || []).map(p => p.productId))
   } catch {}
 })
 
@@ -122,24 +98,16 @@ const stats = computed(() => [
   { icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/></svg>', value: hasFeature('hasCopytrading') ? '✓' : '—', label: t.value.copytrading },
 ])
 
-// Товары каталога с пометкой активности (владеет ли пользователь)
-const channelItems = computed(() => channels.value.map(c => ({ id: c.id, name: tDb(c, 'name'), active: ownedIds.value.has(c.id) })))
-const indicatorItems = computed(() => indicators.value.map(i => ({ id: i.id, name: tDb(i, 'name'), active: ownedIds.value.has(i.id) })))
-
-// 4 категории
-const categories = computed(() => [
-  { key: 'signals',    icon: '📡', name: t.value.signals,     kind: 'signals',    items: channelItems.value,   active: channelItems.value.some(i => i.active) },
-  { key: 'indicators', icon: '📊', name: t.value.indicators,  kind: 'indicators', items: indicatorItems.value,  active: indicatorItems.value.some(i => i.active) },
-  { key: 'education',  icon: '🎓', name: t.value.education,    kind: 'education',  items: null,                  active: hasFeature('hasEducation') },
-  { key: 'copy',       icon: '⚡', name: t.value.copytrading,  kind: 'copy',       items: null,                  active: hasFeature('hasCopytrading') },
+const products = computed(() => [
+  { key: 'signals', icon: '📡', name: t.value.signals, available: hasFeature('hasSignalsCrypto'), route: '/dashboard/signals' },
+  { key: 'predictor', icon: '📊', name: 'Table Predictor', available: hasFeature('hasTablePredictor'), route: '/dashboard/indicators' },
+  { key: 'levels', icon: '📈', name: 'Strong Levels', available: hasFeature('hasStrongLevels'), route: '/dashboard/indicators' },
+  { key: 'liquidity', icon: '💧', name: 'Liquidity Zones', available: hasFeature('hasLiquidityZones'), route: '/dashboard/indicators' },
+  { key: 'pump', icon: '🚀', name: 'Pump & MM', available: hasFeature('hasPumpMM'), route: '/dashboard/indicators' },
+  { key: 'copy', icon: '⚡', name: t.value.copytrading, available: hasFeature('hasCopytrading'), route: '/dashboard/copytrading' },
+  { key: 'education', icon: '🎓', name: t.value.education, available: hasFeature('hasEducation'), route: '/dashboard/education' },
+  { key: 'ai', icon: '🤖', name: 'AI Analytics', available: hasFeature('hasAiAnalytics'), route: '/dashboard/analytics' },
 ])
-
-function tileRoute(cat) {
-  if (cat.kind === 'copy')      return cat.active ? '/dashboard/copytrading' : '/dashboard/shop'
-  if (cat.kind === 'education') return cat.active ? '/dashboard/access' : '/dashboard/education'
-  // signals, indicators
-  return cat.active ? '/dashboard/access' : '/dashboard/shop'
-}
 </script>
 
 <style lang="scss" scoped>
@@ -215,46 +183,6 @@ function tileRoute(cat) {
   margin-top: 28px;
 }
 
-.cat-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-  margin-bottom: 32px;
-}
-.cat-tile {
-  position: relative;
-  background: var(--surface);
-  border: 1px solid var(--border-2);
-  border-radius: 14px;
-  padding: 20px 16px;
-  cursor: pointer;
-  transition: border-color .15s, transform .15s;
-  text-align: center;
-  &:hover { border-color: rgba(var(--accent-rgb),0.5); transform: translateY(-2px); }
-  &--active { border-color: rgba(30,158,90,0.35); }
-  &__icon { font-size: 28px; margin-bottom: 8px; }
-  &__name { font-family: 'Montserrat',sans-serif; font-weight: 700; font-size: 15px; margin-bottom: 8px; }
-  &__status { font-size: 12px; display: inline-flex; align-items: center; gap: 5px;
-    &.is-active { color: #1E9E5A; font-weight: 600; }
-    &.is-locked { color: var(--text-3); } }
-}
-/* Всплывающий список */
-.cat-pop {
-  position: absolute; top: calc(100% - 4px); left: 50%; transform: translateX(-50%) translateY(6px);
-  width: max-content; min-width: 220px; max-width: 300px; max-height: 280px; overflow-y: auto;
-  background: var(--bg-1, #16161a); border: 1px solid var(--border-2); border-radius: 12px;
-  box-shadow: 0 12px 32px rgba(0,0,0,.4); padding: 6px; z-index: 40;
-  opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .15s, transform .15s;
-}
-.cat-tile--has-pop:hover .cat-pop { opacity: 1; visibility: visible; pointer-events: auto; transform: translateX(-50%) translateY(0); }
-.cat-pop__item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 8px; cursor: pointer; text-align: left;
-  &:hover { background: var(--surface); } }
-.cat-pop__dot { width: 7px; height: 7px; border-radius: 50%; flex: 0 0 auto;
-  &.on { background: #1E9E5A; box-shadow: 0 0 0 3px rgba(30,158,90,.15); }
-  &.off { background: var(--text-3); opacity: .5; } }
-.cat-pop__name { font-size: 13px; flex: 1; }
-.cat-pop__tag { font-size: 10px; color: #1E9E5A; font-weight: 600; }
-
 .products-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -309,9 +237,9 @@ function tileRoute(cat) {
 }
 
 @media (max-width: 900px) {
-  .stats-row, .products-grid, .cat-grid, .actions-row { grid-template-columns: repeat(2, 1fr); }
+  .stats-row, .products-grid, .actions-row { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 600px) {
-  .stats-row, .products-grid, .cat-grid, .actions-row { grid-template-columns: 1fr; }
+  .stats-row, .products-grid, .actions-row { grid-template-columns: 1fr; }
 }
 </style>

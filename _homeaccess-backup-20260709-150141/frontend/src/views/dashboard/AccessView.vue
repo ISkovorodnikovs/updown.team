@@ -1,13 +1,12 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-import { shopApi, subscriptionsApi } from '@/api'
+import { shopApi } from '@/api'
 import { useT, tDb, lang, fmtDate } from '@/i18n'
 import dict from '@/i18n/dicts/access'
 
 const t = useT(dict)
 const SUPPORT_URL = 'https://t.me/Agent_x_support'
 
-const activePlan = ref(null)
 const products = ref([])
 const hasSupport = ref(false)
 const loading = ref(true)
@@ -35,13 +34,8 @@ onMounted(async () => {
     tvName.value = d.tvUsername || ''
     tvSaved.value = !!d.tvUsername
   } catch { /* ignore */ }
-  try { activePlan.value = await subscriptionsApi.getActivePlan().then(r => r.data) } catch { /* ignore */ }
   loading.value = false
 })
-
-function daysLeft(date) {
-  return Math.max(0, Math.ceil((new Date(date) - new Date()) / 86400000))
-}
 
 async function submitTv() {
   const val = (tvName.value || '').trim()
@@ -75,22 +69,6 @@ async function sendContact() {
     <div class="acc-head">
       <h1>{{ t.title }}</h1>
       <p>{{ t.sub }}</p>
-    </div>
-
-    <!-- Активный тариф (объединено с подписками) -->
-    <div v-if="activePlan" class="acc-plan" :class="'acc-plan--' + (activePlan.plan?.type || '').toLowerCase()">
-      <div class="acc-plan__main">
-        <span class="acc-plan__name">{{ tDb(activePlan.plan, 'name') }}</span>
-        <span class="acc-plan__badge">● {{ t.subActive }}</span>
-      </div>
-      <div class="acc-plan__meta">
-        <span>{{ t.subExpires }}: {{ fmtDate(activePlan.expiresAt) }} · {{ daysLeft(activePlan.expiresAt) }} {{ t.days }}</span>
-        <router-link class="acc-plan__hist" to="/dashboard/subscriptions">{{ t.subHistory }} →</router-link>
-      </div>
-    </div>
-    <div v-else-if="!loading" class="acc-plan acc-plan--none">
-      <span>{{ t.noSub }}</span>
-      <router-link class="acc-btn acc-btn--primary" to="/dashboard/shop">{{ t.goShop }}</router-link>
     </div>
 
     <!-- Общие действия -->
@@ -175,15 +153,6 @@ async function sendContact() {
   p { color: var(--text-2); font-size: 14px; margin: 6px 0 0; } }
 .acc-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 22px;
   padding: 14px 16px; background: var(--bg-2); border: 1px solid var(--border, #26262b); border-radius: 14px; }
-.acc-plan { display: flex; flex-direction: column; gap: 8px; padding: 16px 18px; border-radius: 14px; border: 1px solid var(--border, #26262b); background: var(--bg-2); margin-bottom: 18px;
-  &--pro { border-color: rgba(99,102,241,0.4); background: rgba(99,102,241,0.06); }
-  &--elite { border-color: rgba(201,168,76,0.4); background: rgba(201,168,76,0.07); }
-  &--none { flex-direction: row; align-items: center; justify-content: space-between; }
-  &__main { display: flex; align-items: center; gap: 12px; }
-  &__name { font-family: 'Montserrat',sans-serif; font-size: 18px; font-weight: 800; }
-  &__badge { font-size: 12px; color: #1E9E5A; font-weight: 600; }
-  &__meta { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; font-size: 13px; color: var(--text-2); }
-  &__hist { color: var(--accent); text-decoration: none; margin-left: auto; } }
 .acc-help { font-weight: 700; font-size: 14px; margin-right: auto; }
 .acc-empty { color: var(--text-2); text-align: center; padding: 40px; display: flex; flex-direction: column; align-items: center; gap: 14px; }
 .acc-list { display: flex; flex-direction: column; gap: 16px; }
