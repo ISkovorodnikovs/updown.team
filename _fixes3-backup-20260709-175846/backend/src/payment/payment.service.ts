@@ -20,7 +20,6 @@ import { Banner, BannerTargetType } from '../database/entities/banner.entity';
 import { TelegramMainService } from '../telegram/telegram-main.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { NotificationType } from '../database/entities/notification.entity';
-import { MailService } from '../mail/mail.service';
 
 const REFERRAL_PERCENT = 20;
 
@@ -54,7 +53,6 @@ export class PaymentService {
     private dataSource: DataSource,
     private telegramService: TelegramMainService,
     private notifications: NotificationsService,
-    private mail: MailService,
   ) {}
 
   // ─── Расчёт цены одной позиции ─────────────────────────────────────────────
@@ -536,8 +534,6 @@ export class PaymentService {
         body: 'Доступ активирован. Откройте «Мои доступы», чтобы получить его.',
         meta: { link: '/dashboard/access', txId: tx.id },
       });
-      const payer = await this.userRepo.findOne({ where: { id: tx.userId } });
-      if (payer?.email) await this.mail.sendPaymentSuccess(payer.email);
     } catch (e) {
       this.logger?.warn?.(`payment notify failed: ${(e as any).message}`);
     }

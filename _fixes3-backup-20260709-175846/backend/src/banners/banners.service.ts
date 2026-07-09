@@ -3,15 +3,12 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, MoreThan, IsNull } from 'typeorm';
 import { Banner } from '../database/entities/banner.entity';
 import { TranslationService } from '../translation/translation.service';
-import { NotificationsService } from '../notifications/notifications.service';
-import { NotificationType } from '../database/entities/notification.entity';
 
 @Injectable()
 export class BannersService {
   constructor(
     @InjectRepository(Banner) private bannerRepo: Repository<Banner>,
     private translation: TranslationService,
-    private notifications: NotificationsService,
   ) {}
 
   async getActiveBanner() {
@@ -38,19 +35,7 @@ export class BannersService {
     const { translateAll, ...data } = dto || {};
     const banner = this.bannerRepo.create({ ...data, createdByAdminId: adminId }) as unknown as Banner;
     if (translateAll) await this.applyTranslations(banner);
-    const saved = await this.bannerRepo.save(banner);
-    // Уведомить всех пользователей о новой акции (если баннер активен)
-    if (saved.isActive) {
-      try {
-        await this.notifications.createForAll({
-          type: NotificationType.PROMO,
-          title: saved.title,
-          body: saved.message,
-          meta: { link: '/dashboard/shop' },
-        });
-      } catch { /* не роняем создание баннера из-за уведомлений */ }
-    }
-    return saved;
+    return this.bannerRepo.save(banner);
   }
 
   async update(id: string, dto: any) {

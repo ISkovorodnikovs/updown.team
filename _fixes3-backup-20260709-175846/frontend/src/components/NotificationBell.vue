@@ -192,25 +192,16 @@ onBeforeUnmount(() => {
   color: var(--accent); font-size: 13px; font-weight: 600; cursor: pointer;
   &:hover { background: rgba(255,255,255,.04); } }
 
-/* Модалка (teleport в body — вне зоны темы, поэтому цвета заданы явно) */
-.nall-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.72); display: flex; align-items: flex-start; justify-content: center; padding: 60px 16px; z-index: 500; }
+/* Модалка */
+.nall-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.6); display: flex; align-items: flex-start; justify-content: center; padding: 60px 16px; z-index: 500; }
 .nall { width: 100%; max-width: 520px; max-height: 80vh; display: flex; flex-direction: column;
-  background: #17171c; border: 1px solid rgba(255,255,255,.1); border-radius: 16px; overflow: hidden;
-  box-shadow: 0 24px 60px rgba(0,0,0,.6); }
+  background: var(--surface, #1c1c22); border: 1px solid var(--border-2, #33333a); border-radius: 16px; overflow: hidden; }
 .nall__head { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px;
-  border-bottom: 1px solid rgba(255,255,255,.1); font-weight: 800; font-size: 16px; color: #f4f4f6; }
-.nall__actions { display: flex; align-items: center; gap: 14px; }
-.nall__actions .nbell__mark { color: #c9a84c; }
-.nall__close { background: none; border: none; color: #a6a6b0; font-size: 16px; cursor: pointer; line-height: 1; }
-.nall__body { overflow-y: auto; padding: 4px 0 8px; }
-.nall__group { padding: 4px 0; }
-.nall__label { padding: 10px 18px 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: #8a8a95; }
-/* Явные цвета элементов внутри модалки */
-.nall .nbell__item { padding: 12px 18px; border-bottom: 1px solid rgba(255,255,255,.06); }
-.nall .nbell__item:hover { background: rgba(255,255,255,.045); }
-.nall .nbell__item.is-unread { background: rgba(201,168,76,.08); }
-.nall .nbell__t { color: #f4f4f6; }
-.nall .nbell__b { color: #bdbdc7; }
-.nall .nbell__time { color: #86868f; }
-.nall .nbell__dot.on { background: #c9a84c; }
+  border-bottom: 1px solid var(--border-2, #33333a); font-weight: 800; font-size: 16px; color: var(--text, #ececf0); }
+.nall__actions { display: flex; align-items: center; gap: 12px; }
+.nall__close { background: none; border: none; color: var(--text-2, #9a9aa2); font-size: 16px; cursor: pointer; }
+.nall__body { overflow-y: auto; padding: 6px 0; }
+.nall__group { padding: 6px 0; }
+.nall__label { padding: 8px 18px 4px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--text-3, #7a7a82); }
+.nall .nbell__item { padding: 12px 18px; }
 </style>

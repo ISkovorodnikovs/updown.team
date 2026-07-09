@@ -104,18 +104,4 @@ export class MailService {
        ${isApproved ? '<p>You can now log in and set up your Telegram bot.</p>' : ''}`,
     );
   }
-
-  async sendPaymentSuccess(email: string) {
-    const link = 'https://updown.team/dashboard/access';
-    await this.send(
-      email,
-      'Оплата получена — доступ активирован',
-      `<h2>Спасибо за покупку!</h2>
-       <p>Ваш доступ активирован. Откройте раздел «Мои доступы», чтобы получить всё, что вы оплатили (доступ к индикаторам TradingView, каналам и т.д.):</p>
-       <p style="margin:20px 0">
-         <a href="${link}" style="display:inline-block;padding:12px 22px;background:#c9a84c;color:#0a0a0b;text-decoration:none;border-radius:8px;font-weight:700">Открыть «Мои доступы»</a>
-       </p>
-       <p style="color:#666;font-size:13px">Или перейдите по ссылке: <a href="${link}">${link}</a></p>`,
-    );
-  }
 }

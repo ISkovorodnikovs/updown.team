@@ -1,6 +1,6 @@
 import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, LessThan, In, IsNull, Not } from 'typeorm';
+import { Repository, LessThan } from 'typeorm';
 import { randomBytes } from 'crypto';
 import { Notification } from '../database/entities/notification.entity';
 import { User, UserRole } from '../database/entities/user.entity';
@@ -16,7 +16,6 @@ interface NotifyPayload {
 @Injectable()
 export class NotificationsService implements OnModuleInit {
   private readonly logger = new Logger('Notifications');
-  private readonly CHUNK = 500;
   // Короткоживущие токены привязки Telegram: token -> { userId, exp }
   private linkTokens = new Map<string, { userId: string; exp: number }>();
 
@@ -56,89 +55,24 @@ export class NotificationsService implements OnModuleInit {
     return n;
   }
 
-  /**
-   * Нескольким пользователям — батчами (bulk-insert по чанкам + Telegram пачками в фоне).
-   * Масштабируется на десятки тысяч получателей без N+1.
-   */
+  /** Нескольким пользователям. */
   async createForUsers(userIds: string[], p: NotifyPayload) {
-    if (!userIds?.length) return;
-    // 1) In-app: multi-row INSERT по чанкам
-    for (let i = 0; i < userIds.length; i += this.CHUNK) {
-      const slice = userIds.slice(i, i + this.CHUNK);
-      await this.repo.insert(
-        slice.map((userId) => ({
-          userId,
-          type: p.type,
-          title: p.title,
-          body: p.body ?? null,
-          meta: p.meta ?? null,
-        })),
-      );
-    }
-    // 2) Telegram — только подписанным, пачками, в фоне (не блокируем вызвавшего)
-    void this.pushTelegramToUserIds(userIds, p);
+    for (const id of userIds) await this.create(id, p);
   }
 
-  /** Всем пользователям (объявления/акции): одно INSERT..SELECT независимо от числа юзеров. */
+  /** Всем пользователям (для объявлений/акций). */
   async createForAll(p: NotifyPayload) {
-    await this.repo.query(
-      `INSERT INTO "notifications" ("userId", "type", "title", "body", "meta")
-       SELECT "id", $1, $2, $3, $4::jsonb FROM "users"`,
-      [p.type, p.title, p.body ?? null, p.meta ? JSON.stringify(p.meta) : null],
-    );
-    // Telegram — только тем, кто привязал и включил
-    void this.pushTelegramToAll(p);
+    const users = await this.userRepo.find({ select: ['id'] as any });
+    await this.createForUsers(users.map((u) => u.id), p);
   }
 
-  /** Всем администраторам/владельцам (небольшой набор). */
+  /** Всем администраторам/владельцам (напр. новый тикет). */
   async createForAdmins(p: NotifyPayload) {
     const admins = await this.userRepo.find({
       where: [{ role: UserRole.ADMIN }, { role: UserRole.OWNER }],
       select: ['id'] as any,
     });
     await this.createForUsers(admins.map((a) => a.id), p);
-  }
-
-  // ─── Фоновая доставка в Telegram с учётом лимитов (~20 msg/сек) ───
-  private tgText(p: NotifyPayload) {
-    return `🔔 ${p.title}${p.body ? `\n${p.body}` : ''}`;
-  }
-
-  private async pushTelegramToUserIds(userIds: string[], p: NotifyPayload) {
-    const text = this.tgText(p);
-    try {
-      for (let i = 0; i < userIds.length; i += this.CHUNK) {
-        const slice = userIds.slice(i, i + this.CHUNK);
-        const recips = await this.userRepo.find({
-          where: { id: In(slice), notifyTelegram: true, telegramUserId: Not(IsNull()) },
-          select: ['telegramUserId'] as any,
-        });
-        await this.sendPaced(recips.map((r) => r.telegramUserId), text);
-      }
-    } catch (e: any) {
-      this.logger.warn(`tg batch (users) failed: ${e.message}`);
-    }
-  }
-
-  private async pushTelegramToAll(p: NotifyPayload) {
-    const text = this.tgText(p);
-    try {
-      const recips = await this.userRepo.find({
-        where: { notifyTelegram: true, telegramUserId: Not(IsNull()) },
-        select: ['telegramUserId'] as any,
-      });
-      await this.sendPaced(recips.map((r) => r.telegramUserId), text);
-    } catch (e: any) {
-      this.logger.warn(`tg batch (all) failed: ${e.message}`);
-    }
-  }
-
-  private async sendPaced(ids: (string | null)[], text: string) {
-    for (const id of ids) {
-      if (!id) continue;
-      await this.telegram.sendToUser(id, text);
-      await new Promise((r) => setTimeout(r, 50)); // ~20 сообщений/сек — безопасно для Telegram
-    }
   }
 
   async list(userId: string, limit = 30, before?: string) {

@@ -14,13 +14,11 @@ import { PartnerChannel } from '../database/entities/partner-channel.entity';
 import { Partner } from '../database/entities/partner.entity';
 import { Banner } from '../database/entities/banner.entity';
 import { TelegramModule } from '../telegram/telegram.module';
-import { MailModule } from '../mail/mail.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Transaction, TransactionItem, User, Plan, ShopProduct, ReferralEarning, Subscription, UserProduct, PartnerChannel, Partner, Banner]),
     TelegramModule,
-    MailModule,
   ],
   controllers: [PaymentController],
   providers: [PaymentService],
