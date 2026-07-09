@@ -29,7 +29,7 @@ const FEATURE_FLAGS = [
 const defaultForm = () => {
   const f = {
     type: 'CUSTOM', name: '', description: '', price: 0,
-    currency: 'USDT', features: '', isActive: true, sortOrder: 0, translateAll: true,
+    currency: 'USDT', features: '', isActive: true, sortOrder: 0,
   }
   FEATURE_FLAGS.forEach(([k]) => (f[k] = false))
   return f
@@ -58,7 +58,6 @@ function openForm(plan) {
       features: (plan.features ?? []).join('\n'),
       isActive: plan.isActive ?? true,
       sortOrder: plan.sortOrder ?? 0,
-      translateAll: false,
     })
     FEATURE_FLAGS.forEach(([k]) => (base[k] = !!plan[k]))
   }
@@ -86,7 +85,6 @@ async function save() {
       features: form.features.split('\n').map(s => s.trim()).filter(Boolean),
       isActive: form.isActive,
       sortOrder: Number(form.sortOrder) || 0,
-      translateAll: form.translateAll,
     }
     FEATURE_FLAGS.forEach(([k]) => (payload[k] = form[k]))
     if (editing.value) await plansApi.update(editing.value.id, payload)
@@ -182,9 +180,6 @@ const t = useT(dict)
           </div>
           <label class="pa-chk pa-chk--wide">
             <input type="checkbox" v-model="form.isActive" /> {{ t.active }}
-          </label>
-          <label class="pa-chk pa-chk--wide">
-            <input type="checkbox" v-model="form.translateAll" /> {{ t.translateAll }}
           </label>
           <div v-if="formError" class="pa-err">{{ formError }}</div>
           <div class="pa-modal__actions">

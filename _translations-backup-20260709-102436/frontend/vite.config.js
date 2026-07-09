@@ -1,10 +1,10 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { fileURLToPath, URL } from 'url'
-import { SEO, OG_LOCALE, langPath, LANDING_LANGS } from './src/seo-meta.js'
+import { SEO, OG_LOCALE, langPath } from './src/seo-meta.js'
 
 const SITE = 'https://updown.team'
-const PRERENDER = LANDING_LANGS.map(langPath)
+const PRERENDER = ['/', '/de', '/es', '/it', '/pt', '/ru', '/zh', '/ar']
 
 // Экранирование для HTML-текста и значений атрибутов
 const escText = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')

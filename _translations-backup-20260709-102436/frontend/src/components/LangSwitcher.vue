@@ -1,7 +1,6 @@
 <template>
   <div class="lang-switcher" ref="rootEl">
     <button type="button" class="lang-switcher__btn" @click.stop="open = !open" :title="current.label">
-      <img class="lang-flag" :src="flagUrl(current.flag)" :alt="current.code" width="20" height="15" loading="lazy" />
       <span class="lang-switcher__code">{{ current.code.toUpperCase() }}</span>
       <svg class="lang-switcher__chev" :class="{ 'is-open': open }" width="10" height="10" viewBox="0 0 24 24"
            fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
@@ -14,7 +13,6 @@
         <li v-for="l in LANGS" :key="l.code">
           <button type="button" class="lang-switcher__item" :class="{ 'is-active': l.code === lang }"
                   @click="pick(l.code)">
-            <img class="lang-flag" :src="flagUrl(l.flag)" :alt="l.code" width="20" height="15" loading="lazy" />
             <span class="lang-switcher__item-code">{{ l.code.toUpperCase() }}</span>
             <span class="lang-switcher__item-label">{{ l.label }}</span>
             <span v-if="l.code === lang" class="lang-switcher__check">✓</span>
@@ -34,10 +32,6 @@ const open = ref(false)
 const rootEl = ref(null)
 
 const current = computed(() => LANGS.find(l => l.code === lang.value) || LANGS[0])
-
-// Флаги-картинки (flagcdn CDN) — на Windows emoji-флаги не рендерятся,
-// поэтому используем SVG-картинки. Подпись/код всегда видны как фолбэк.
-const flagUrl = (cc) => `https://flagcdn.com/${cc}.svg`
 
 function pick(code) {
   setLang(code)
@@ -61,11 +55,6 @@ onUnmounted(() => {
 
 <style scoped>
 .lang-switcher { position: relative; display: inline-flex; }
-
-.lang-flag {
-  width: 20px; height: 15px; border-radius: 2px; object-fit: cover;
-  flex: 0 0 auto; box-shadow: 0 0 0 1px rgba(0,0,0,0.08);
-}
 
 .lang-switcher__btn {
   display: inline-flex; align-items: center; gap: 6px;

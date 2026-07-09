@@ -74,10 +74,10 @@
           <div class="channel-card__badge" v-if="ch.badge">{{ ch.badge }}</div>
           <div class="channel-card__icon">📡</div>
           <div class="channel-card__body">
-            <h3>{{ tDb(ch, 'name') }}</h3>
-            <p>{{ tDb(ch, 'description') }}</p>
+            <h3>{{ ch.name }}</h3>
+            <p>{{ ch.description }}</p>
             <ul class="ch-features">
-              <li v-for="f in tDb(ch, 'features')" :key="f"><span>✦</span>{{ f }}</li>
+              <li v-for="f in ch.features" :key="f"><span>✦</span>{{ f }}</li>
             </ul>
           </div>
           <div class="channel-card__footer">
@@ -108,7 +108,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { shopApi, signalsApi } from '@/api'
 import { useCartStore } from '@/stores/cart'
-import { useT, tDb } from '@/i18n'
+import { useT } from '@/i18n'
 import dict from '@/i18n/dicts/signals'
 
 const channels = ref([])
@@ -152,7 +152,7 @@ function positionLabel(sig) {
 function dirIcon(dir) { return dir === 'long' ? '🟢' : dir === 'short' ? '🔴' : '⚪' }
 
 function addToCart(ch) {
-  cartStore.add({ id: ch.id, name: tDb(ch, 'name'), price: ch.price, type: 'channel', shopProductId: ch.id })
+  cartStore.add({ id: ch.id, name: ch.name, price: ch.price, type: 'channel', shopProductId: ch.id })
 }
 function isInCart(id) { return !!cartStore.items.find(i => i.id === id) }
 

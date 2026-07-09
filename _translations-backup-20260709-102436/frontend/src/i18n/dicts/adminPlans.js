@@ -2,7 +2,7 @@ export default {
   en: {
     title: 'Manage Plans', sub: 'Create, edit and deactivate plans in real time',
     add: '+ New Plan', name: 'Name', type: 'Type', price: 'Price (USDT/mo)', desc: 'Description',
-    features: 'Features (one per line)', sort: 'Sort order', active: 'Active', includes: 'Included', translateAll: 'Translate to all languages (AI)',
+    features: 'Features (one per line)', sort: 'Sort order', active: 'Active', includes: 'Included',
     edit: 'Edit', deactivate: 'Deactivate', save: 'Save', cancel: 'Cancel',
     inactive: 'INACTIVE', empty: 'No plans yet', loading: 'Loading…',
     errNamePrice: 'Name and price are required', errNegPrice: 'Price cannot be negative',
@@ -11,7 +11,7 @@ export default {
   ru: {
     title: 'Управление тарифами', sub: 'Создание, редактирование и деактивация тарифов в реальном времени',
     add: '+ Новый тариф', name: 'Название', type: 'Тип', price: 'Цена (USDT/мес)', desc: 'Описание',
-    features: 'Фичи (по одной на строку)', sort: 'Порядок', active: 'Активен', includes: 'Что включено', translateAll: 'Перевести на все языки (ИИ)',
+    features: 'Фичи (по одной на строку)', sort: 'Порядок', active: 'Активен', includes: 'Что включено',
     edit: 'Изменить', deactivate: 'Деактивировать', save: 'Сохранить', cancel: 'Отмена',
     inactive: 'НЕАКТИВЕН', empty: 'Тарифов пока нет', loading: 'Загрузка…',
     errNamePrice: 'Заполните название и цену', errNegPrice: 'Цена не может быть отрицательной',

@@ -12,8 +12,8 @@
 
           <div class="bm-body">
             <div class="bm-badge">🔥 {{ t.promo }}</div>
-            <h2>{{ tDb(banner, 'title') }}</h2>
-            <p>{{ tDb(banner, 'message') }}</p>
+            <h2>{{ banner.title }}</h2>
+            <p>{{ banner.message }}</p>
 
             <div class="bm-discounts" v-if="hasDiscounts">
               <div class="bm-disc-row" v-for="(pct, months) in banner.periodDiscounts" :key="months">
@@ -56,7 +56,6 @@ import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { bannersApi } from '@/api'
 import { useT } from '@/i18n'
 import dict from '@/i18n/dicts/bannerModal'
-import { tDb } from '@/i18n'
 
 const props = defineProps({ context: { type: String, default: 'landing' } })
 const banner = ref(null)

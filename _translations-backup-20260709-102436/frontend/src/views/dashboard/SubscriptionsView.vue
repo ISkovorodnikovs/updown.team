@@ -3,11 +3,11 @@
     <div class="subs-grid" v-if="activeSubs.length">
       <div class="sub-card" v-for="sub in activeSubs" :key="sub.id" :class="`sub-card--${sub.plan?.type?.toLowerCase()}`">
         <div class="sub-card__header">
-          <div class="sub-plan">{{ tDb(sub.plan, 'name') }}</div>
+          <div class="sub-plan">{{ sub.plan?.name }}</div>
           <div class="sub-badge">{{ t.active }}</div>
         </div>
         <div class="sub-features">
-          <div class="sub-feature" v-for="f in tDb(sub.plan, 'features')" :key="f">
+          <div class="sub-feature" v-for="f in sub.plan?.features" :key="f">
             <span class="check">✦</span> {{ f }}
           </div>
         </div>
@@ -45,7 +45,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { subscriptionsApi } from '@/api'
-import { useT, fmtDate, tDb } from '@/i18n'
+import { useT, fmtDate } from '@/i18n'
 import dict from '@/i18n/dicts/subscriptions'
 
 const activeSubs = ref([])

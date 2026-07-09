@@ -4,8 +4,8 @@
     <div v-if="banner" class="promo-banner" :style="banner.imageUrl ? `--bb: url(${banner.imageUrl})` : ''">
       <div class="promo-banner__body">
         <div class="promo-badge">🔥 {{ t.promo }}</div>
-        <h2>{{ tDb(banner, 'title') }}</h2>
-        <p>{{ tDb(banner, 'message') }}</p>
+        <h2>{{ banner.title }}</h2>
+        <p>{{ banner.message }}</p>
         <div class="promo-timer" v-if="banner.endsAt">⏱ {{ t.endsIn }}: <strong>{{ countdown }}</strong></div>
       </div>
     </div>
@@ -40,9 +40,9 @@
             <span class="plan-currency">USDT</span>
           </div>
           <div class="plan-orig" v-if="getDiscount(cart.selectedPeriod) > 0">{{ +(plan.price * cart.selectedPeriod).toFixed(0) }} USDT</div>
-          <p class="plan-desc">{{ tDb(plan, 'description') }}</p>
+          <p class="plan-desc">{{ plan.description }}</p>
           <ul class="plan-features">
-            <li v-for="f in tDb(plan, 'features')" :key="f"><span class="feat-dot">✦</span>{{ f }}</li>
+            <li v-for="f in plan.features" :key="f"><span class="feat-dot">✦</span>{{ f }}</li>
           </ul>
           <button class="btn-add" @click="addPlan(plan)">
             {{ isInCart(plan.id) ? '✓ ' + t.inCart : '+ ' + t.addToCart }}
@@ -58,7 +58,7 @@
       <div class="channels-compact-grid">
         <div class="channel-compact" v-for="ch in channels" :key="ch.id">
           <div class="channel-compact__badge" v-if="ch.badge">{{ ch.badge }}</div>
-          <div class="channel-compact__name">📡 {{ tDb(ch, 'name') }}</div>
+          <div class="channel-compact__name">📡 {{ ch.name }}</div>
           <div class="channel-compact__price-row">
             <span class="ch-price">{{ calcPrice(ch.price) }} USDT</span>
             <span class="ch-orig" v-if="getDiscount(cart.selectedPeriod) > 0">{{ +(ch.price * cart.selectedPeriod).toFixed(0) }}</span>
@@ -76,7 +76,7 @@
       <p class="section-sub">{{ t.indicatorsSub }} <router-link to="/dashboard/indicators">{{ t.detailsInIndicators }}</router-link></p>
       <div class="indicators-compact-grid">
         <div class="indicator-compact" v-for="ind in indicators" :key="ind.id">
-          <div class="indicator-compact__name">{{ tDb(ind, 'name') }}</div>
+          <div class="indicator-compact__name">{{ ind.name }}</div>
           <div class="indicator-compact__price">{{ calcPrice(ind.price) }} USDT</div>
           <button class="btn-add btn-add--sm" @click="addProduct(ind, 'indicator')">
             {{ isInCart(ind.id) ? '✓ ' + t.inCart : '+ ' + t.addToCart }}
@@ -146,7 +146,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { plansApi, paymentApi, shopApi, bannersApi } from '@/api'
 import { useCartStore } from '@/stores/cart'
-import { useT, tDb } from '@/i18n'
+import { useT } from '@/i18n'
 import dict from '@/i18n/dicts/shop'
 
 const cart = useCartStore()
@@ -188,10 +188,10 @@ const cartSaving = computed(() => {
 function isInCart(id) { return !!cart.items.find(i => i.id === id) }
 
 function addPlan(plan) {
-  cart.add({ id: plan.id, name: tDb(plan, 'name'), price: plan.price, type: 'subscription', planId: plan.id })
+  cart.add({ id: plan.id, name: plan.name, price: plan.price, type: 'subscription', planId: plan.id })
 }
 function addProduct(product, type) {
-  cart.add({ id: product.id, name: tDb(product, 'name'), price: product.price, type, shopProductId: product.id })
+  cart.add({ id: product.id, name: product.name, price: product.price, type, shopProductId: product.id })
 }
 
 onMounted(async () => {

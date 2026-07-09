@@ -10,7 +10,6 @@ export default {
     tIndicator: 'Indicator', tChannel: 'Channel', tEducation: 'Education',
     errNamePrice: 'Name and price are required', errNegPrice: 'Price cannot be negative',
     confirmDeactivate: 'Deactivate "{name}"? Existing accesses keep working.',
-    translateAll: 'Translate to all languages (AI)',
   },
   ru: {
     title: 'Управление магазином', sub: 'Индикаторы и сигнальные каналы — цены и доступность',
@@ -23,7 +22,6 @@ export default {
     tIndicator: 'Индикатор', tChannel: 'Канал', tEducation: 'Обучение',
     errNamePrice: 'Заполните название и цену', errNegPrice: 'Цена не может быть отрицательной',
     confirmDeactivate: 'Деактивировать "{name}"? Действующие доступы продолжат работать.',
-    translateAll: 'Перевести на все языки (ИИ)',
   },
   de: {
     title: 'Shop verwalten', sub: 'Indikatoren und Signalkanäle — Preise und Verfügbarkeit',

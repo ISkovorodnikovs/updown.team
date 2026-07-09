@@ -15,7 +15,7 @@ const filter = ref('all')
 const defaultForm = () => ({
   type: 'indicator', name: '', description: '', tradingViewUrl: '',
   price: 0, currency: 'USDT', imageUrl: '', features: '', badge: '',
-  isActive: true, sortOrder: 0, seatsTotal: 10, seatsTaken: 0, translateAll: true,
+  isActive: true, sortOrder: 0, seatsTotal: 10, seatsTaken: 0,
 })
 const form = reactive(defaultForm())
 
@@ -39,7 +39,6 @@ function openForm(p) {
   if (p && p.id) {
     Object.assign(base, {
       type: p.type ?? 'indicator',
-      translateAll: false,
       name: p.name ?? '',
       description: p.description ?? '',
       tradingViewUrl: p.tradingViewUrl ?? '',
@@ -81,7 +80,6 @@ async function save() {
       badge: form.badge || undefined,
       isActive: form.isActive,
       sortOrder: Number(form.sortOrder) || 0,
-      translateAll: form.translateAll,
       meta: form.type === 'education'
         ? { seatsTotal: Number(form.seatsTotal) || 0, seatsTaken: Number(form.seatsTaken) || 0 }
         : undefined,
@@ -178,9 +176,6 @@ const t = useT(dict)
           <label>{{ t.features }}<textarea v-model="form.features" rows="4"></textarea></label>
           <label class="sa-chk">
             <input type="checkbox" v-model="form.isActive" /> {{ t.active }}
-          </label>
-          <label class="sa-chk">
-            <input type="checkbox" v-model="form.translateAll" /> {{ t.translateAll }}
           </label>
           <div v-if="formError" class="sa-err">{{ formError }}</div>
           <div class="sa-modal__actions">

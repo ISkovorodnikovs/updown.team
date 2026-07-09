@@ -9,15 +9,14 @@ import { ref, computed } from 'vue'
 // ─────────────────────────────────────────────────────────────
 
 export const LANGS = [
-  { code: 'en', label: 'English', flag: 'gb' },
-  { code: 'de', label: 'Deutsch', flag: 'de' },
-  { code: 'es', label: 'Español', flag: 'es' },
-  { code: 'it', label: 'Italiano', flag: 'it' },
-  { code: 'pt', label: 'Português', flag: 'pt' },
-  { code: 'ru', label: 'Русский', flag: 'ru' },
-  { code: 'uk', label: 'Українська', flag: 'ua' },
-  { code: 'zh', label: '中文', flag: 'cn' },
-  { code: 'ar', label: 'العربية', flag: 'sa' },
+  { code: 'en', label: 'English' },
+  { code: 'de', label: 'Deutsch' },
+  { code: 'es', label: 'Español' },
+  { code: 'it', label: 'Italiano' },
+  { code: 'pt', label: 'Português' },
+  { code: 'ru', label: 'Русский' },
+  { code: 'zh', label: '中文' },
+  { code: 'ar', label: 'العربية' },
 ]
 
 const CODES = LANGS.map(l => l.code)
@@ -25,7 +24,7 @@ const CODES = LANGS.map(l => l.code)
 function detectInitial() {
   try {
     // 0) языковой префикс пути (/de, /es, ...) — совпадение с пререндеренной версией
-    const p = (window.location.pathname || '').match(/^\/(de|es|it|pt|ru|uk|zh|ar)(?=\/|$)/)
+    const p = (window.location.pathname || '').match(/^\/(de|es|it|pt|ru|zh|ar)(?=\/|$)/)
     if (p) return p[1]
     // 1) ?lang=xx из URL
     const q = (new URLSearchParams(window.location.search).get('lang') || '')
@@ -93,21 +92,6 @@ export function setLang(code) {
  * Отсутствующие ключи автоматически подхватываются из английского,
  * поэтому пропуск перевода никогда не даст «дырку» в интерфейсе.
  */
-/**
- * Локализация контента из БД (товары, планы и т.п.).
- * Берёт obj.<field>Translations[lang] с фолбэком en -> оригинал obj[field].
- * Пример: tDb(product, 'name') или tDb(product, 'description').
- * Реактивно: при смене языка шаблон перерисуется (читаем lang.value).
- */
-export function tDb(obj, field, code = lang.value) {
-  if (!obj) return ''
-  const tr = obj[field + 'Translations']
-  if (tr && typeof tr === 'object') {
-    return tr[code] || tr.en || obj[field] || ''
-  }
-  return obj[field] || ''
-}
-
 export function useT(dict) {
   return computed(() => ({ ...(dict.en || {}), ...(dict[lang.value] || {}) }))
 }

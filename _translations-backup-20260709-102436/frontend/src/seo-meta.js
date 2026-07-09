@@ -2,11 +2,11 @@
 // импортировать и клиент (src/i18n), и конфиг сборки (vite.config.js) для
 // инъекции локализованных мета-тегов в пререндеренные страницы.
 
-export const LANDING_LANGS = ['en', 'de', 'es', 'it', 'pt', 'ru', 'uk', 'zh', 'ar']
+export const LANDING_LANGS = ['en', 'de', 'es', 'it', 'pt', 'ru', 'zh', 'ar']
 
 export const OG_LOCALE = {
   en: 'en_US', de: 'de_DE', es: 'es_ES', it: 'it_IT',
-  pt: 'pt_PT', ru: 'ru_RU', uk: 'uk_UA', zh: 'zh_CN', ar: 'ar_AR',
+  pt: 'pt_PT', ru: 'ru_RU', zh: 'zh_CN', ar: 'ar_AR',
 }
 
 // Путь языковой версии лендинга: en → '/', остальные → '/de' и т.п.
@@ -38,10 +38,6 @@ export const SEO = {
   ru: {
     title: 'UpDown — торговые сигналы на ИИ, аналитика и White-Label',
     desc: 'Торговые сигналы по крипте и форекс на базе ИИ, аналитика, индикаторы, копитрейдинг и white-label решения для трейдеров и партнёров по всему миру.',
-  },
-  uk: {
-    title: 'UpDown — торгові сигнали на ШІ, аналітика та White-Label',
-    desc: 'Торгові сигнали по крипті та форекс на базі ШІ, аналітика, індикатори, копітрейдинг і white-label рішення для трейдерів і партнерів по всьому світу.',
   },
   zh: {
     title: 'UpDown — AI 交易信号、分析与白标平台',

@@ -7,10 +7,10 @@
     <div class="indicators-grid">
       <div class="ind-card" v-for="ind in indicators" :key="ind.id">
         <div class="ind-card__num">#{{ ind.sortOrder }}</div>
-        <h3 class="ind-card__name">{{ tDb(ind, 'name') }}</h3>
-        <p class="ind-card__desc">{{ tDb(ind, 'description') }}</p>
+        <h3 class="ind-card__name">{{ ind.name }}</h3>
+        <p class="ind-card__desc">{{ ind.description }}</p>
         <ul class="ind-card__features">
-          <li v-for="f in tDb(ind, 'features')" :key="f"><span>✦</span>{{ f }}</li>
+          <li v-for="f in ind.features" :key="f"><span>✦</span>{{ f }}</li>
         </ul>
         <div class="ind-card__footer">
           <a v-if="ind.owned && ind.tradingViewUrl" :href="ind.tradingViewUrl" target="_blank" class="btn-tv">
@@ -34,12 +34,12 @@
 import { ref, computed, onMounted } from 'vue'
 import { shopApi } from '@/api'
 import { useCartStore } from '@/stores/cart'
-import { useT, tDb } from '@/i18n'
+import { useT } from '@/i18n'
 import dict from '@/i18n/dicts/indicators'
 
 const indicators = ref([])
 const cartStore = useCartStore()
-function addToCart(ind) { cartStore.add({ id: ind.id, name: tDb(ind, 'name'), price: ind.price, type: 'indicator', shopProductId: ind.id }) }
+function addToCart(ind) { cartStore.add({ id: ind.id, name: ind.name, price: ind.price, type: 'indicator', shopProductId: ind.id }) }
 function isInCart(id) { return !!cartStore.items.find(i => i.id === id) }
 
 onMounted(async () => {

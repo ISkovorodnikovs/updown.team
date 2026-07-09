@@ -103,10 +103,6 @@
             <input type="checkbox" v-model="form.isActive" />
             {{ t.fActive }}
           </label>
-          <label class="check-label">
-            <input type="checkbox" v-model="form.translateAll" />
-            {{ t.translateAll }}
-          </label>
         </div>
 
         <div v-if="formError" class="form-error">{{ formError }}</div>
@@ -172,7 +168,6 @@ function openForm(banner) {
       showOnLanding:   banner.showOnLanding   ?? true,
       showInDashboard: banner.showInDashboard ?? true,
       isActive:        banner.isActive        ?? true,
-      translateAll:    false,
     })
   } else {
     Object.assign(form, defaultForm())
@@ -198,7 +193,6 @@ async function save() {
       showOnLanding:   form.showOnLanding,
       showInDashboard: form.showInDashboard,
       isActive:        form.isActive,
-      translateAll:    form.translateAll,
     }
     if (editing.value) {
       await bannersApi.update(editing.value.id, payload)
