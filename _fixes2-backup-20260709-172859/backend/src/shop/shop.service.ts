@@ -320,16 +320,6 @@ export class ShopService implements OnModuleInit {
       body: product.name,
       meta: { link: '/dashboard/access', productId: shopProductId },
     });
-
-    // Уведомление в админ-группу
-    const u = await this.userRepo.findOne({ where: { id: userId } });
-    const uname = [u?.firstName, u?.lastName].filter(Boolean).join(' ') || '—';
-    const kind = product.type === ProductType.INDICATOR ? 'индикатор' : (product.type === ProductType.SIGNAL_CHANNEL ? 'канал' : 'товар');
-    await this.telegram.sendMessage(
-      `🎁 Ручная выдача (${kind})\n` +
-      `👤 ${this.escapeMd(uname)} (${this.escapeMd(u?.email || userId)})\n` +
-      `📦 ${this.escapeMd(product.name)} · ${days} дн.`,
-    );
     return { ok: true, productId: shopProductId, expiresAt };
   }
 

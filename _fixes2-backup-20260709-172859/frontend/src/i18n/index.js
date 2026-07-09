@@ -124,16 +124,16 @@ export function currentLocale() {
   return LOCALE_MAP[lang.value] || 'en-US'
 }
 
-/** Короткая дата в UTC: 21.05.2026 … */
+/** Короткая дата: 21.05.2026 / 5/21/2026 / ٢١‏/٥‏/٢٠٢٦ … */
 export function fmtDate(d, opts) {
   if (!d) return '—'
-  try { return new Date(d).toLocaleDateString(currentLocale(), { ...opts, timeZone: 'UTC' }) } catch { return '—' }
+  try { return new Date(d).toLocaleDateString(currentLocale(), opts) } catch { return '—' }
 }
 
-/** Дата + время в UTC (с явной меткой UTC). */
+/** Дата + время в текущей локали. */
 export function fmtDateTime(d, opts = { dateStyle: 'short', timeStyle: 'short' }) {
   if (!d) return '—'
-  try { return new Date(d).toLocaleString(currentLocale(), { ...opts, timeZone: 'UTC' }) + ' UTC' } catch { return '—' }
+  try { return new Date(d).toLocaleString(currentLocale(), opts) } catch { return '—' }
 }
 
 /** Число в текущей локали (разделители тысяч/дробной части). */

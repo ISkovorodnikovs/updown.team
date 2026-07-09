@@ -3,9 +3,6 @@ import { ValidationPipe, Logger, LoggerService } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
-// Все серверные даты — в UTC (иначе createDate/now() уходят в локальную зону контейнера)
-process.env.TZ = 'UTC';
-
 // Кастомный logger — пропускаем шум от NestJS internals
 class CleanLogger implements LoggerService {
   private readonly skip = [
