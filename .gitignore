@@ -6,3 +6,7 @@ dist/
 _i18n-backup-src-*/
 _sprint-backup-*/
 _sprint1-backup-*/
+_*-backup-*/
+*.save
+*.save.*
+*копия*
