@@ -57,6 +57,9 @@ import databaseConfig from './config/database.config';
         retryDelay: 3000,
         keepConnectionAlive: true,
         extra: {
+          // Сессия БД в UTC: иначе DEFAULT now() пишет московское время в колонки
+          // без часового пояса, а Node читает их как UTC (сдвиг +3 ч).
+          options: '-c timezone=UTC',
           max: parseInt(config.get('DB_POOL_MAX', '10')),
           connectionTimeoutMillis: 10000,
           idleTimeoutMillis: 30000,
