@@ -75,6 +75,7 @@
               <div class="td-actions">
                 <button class="btn btn--accent btn--sm" @click="openGrant(u)" :title="t.grant">{{ t.grant }}</button>
                 <button class="btn btn--outline btn--sm" :disabled="freeBusy" @click="grantFree(u)" :title="t.freeBtnTitle">{{ t.freeBtn }}</button>
+                <button class="btn btn--outline btn--sm" :disabled="freeBusy" @click="resetTour(u)" :title="t.tourBtnTitle">🎓</button>
                 <button v-if="u.role !== 'ADMIN' && u.role !== 'OWNER'" class="btn btn--outline btn--sm" @click="assign(u)">→ Admin</button>
                 <button v-if="u.role !== 'PARTNER' && u.role !== 'OWNER'" class="btn btn--outline btn--sm" @click="makePartner(u)">→ Partner</button>
                 <button v-if="u.role === 'ADMIN'" class="btn btn--outline btn--sm" @click="revoke(u)">← User</button>
@@ -193,6 +194,14 @@ async function grantFree(u) {
   try {
     const { data } = await adminApi.grantFree(u.id)
     freeMsg.value = data.trialUntil ? fillT(t.value.freeDone, { email: u.email, date: fmtDate(data.trialUntil) }) : t.value.freeNoPlan
+  } catch (e) { freeMsg.value = e.response?.data?.message || t.value.error } finally { freeBusy.value = false }
+}
+async function resetTour(u) {
+  if (!confirm(fillT(t.value.tourConfirm, { email: u.email }))) return
+  freeBusy.value = true; freeMsg.value = ''
+  try {
+    await adminApi.resetOnboarding(u.id)
+    freeMsg.value = fillT(t.value.tourDone, { email: u.email })
   } catch (e) { freeMsg.value = e.response?.data?.message || t.value.error } finally { freeBusy.value = false }
 }
 async function grantFreeAll() {

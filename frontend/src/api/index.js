@@ -105,12 +105,18 @@ export const adminApi = {
   getLogs: (params) => api.get('/admin/logs', { params }),
   // Бесплатный доступ и проверка бота
   grantFree: (id) => api.post(`/admin/free/users/${id}`),
+  resetOnboarding: (id) => api.post(`/admin/onboarding/users/${id}/reset`),
   grantFreeAll: () => api.post('/admin/free/all', {}, { timeout: 120000 }),
   freeConfig: () => api.get('/admin/free/config'),
   botCheck: () => api.get('/admin/bot-check', { timeout: 60000 }),
 }
 
 // Заявки на доступ к индикаторам TradingView
+export const onboardingApi = {
+  get: () => api.get('/onboarding'),
+  patch: (data) => api.patch('/onboarding', data),
+}
+
 export const tvApi = {
   my: () => api.get('/tv-access/my'),
   request: (data) => api.post('/tv-access/request', data, { timeout: 30000 }),

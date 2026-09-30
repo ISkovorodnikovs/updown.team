@@ -5,8 +5,8 @@
       <p>{{ t.sub }}</p>
     </div>
     <div class="indicators-grid">
-      <div class="ind-card" v-for="ind in indicators" :key="ind.id">
-        <div class="ind-card__num">#{{ ind.sortOrder }}</div>
+      <div class="ind-card" v-for="(ind, i) in indicators" :key="ind.id">
+        <div class="ind-card__num">#{{ i + 1 }}</div>
         <h3 class="ind-card__name">{{ tDb(ind, 'name') }}</h3>
         <p class="ind-card__desc">{{ tDb(ind, 'description') }}</p>
         <ul class="ind-card__features">

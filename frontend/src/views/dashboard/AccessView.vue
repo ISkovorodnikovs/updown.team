@@ -43,6 +43,7 @@ function stateLabel(st) {
 const needRequest = computed(() => indicators.value.some((it) => ['none', 'not_found'].includes(itemState(it).status)))
 const pendingReq = computed(() => requests.value.find((r) => r.status === 'pending') || null)
 const notFoundReq = computed(() => (requests.value[0]?.status === 'not_found' ? requests.value[0] : null))
+const anyGranted = computed(() => indicators.value.some((it) => itemState(it).status === 'granted'))
 const allGranted = computed(() => indicators.value.length > 0 && indicators.value.every((it) => itemState(it).status === 'granted'))
 const grantedNick = computed(() => requests.value.find((r) => r.status === 'granted')?.tvUsername || '')
 
@@ -197,6 +198,8 @@ async function sendContact() {
           {{ fill(t.tvGrantedFull, { nick: grantedNick }) }}
           <div class="acc-note__sub">{{ t.tvHowFind }}</div>
         </div>
+
+        <div v-if="anyGranted && !allGranted" class="acc-note acc-note--ok">{{ t.tvHowFind }}</div>
 
         <template v-if="needRequest">
           <p class="acc-block__hint">{{ t.tvHint }}</p>

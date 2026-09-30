@@ -26,6 +26,7 @@ import { ExpiryModule } from './expiry/expiry.module';
 import { SignalsModule } from './signals/signals.module';
 import { FreeAccessModule } from './free-access/free-access.module';
 import { TvAccessModule } from './tv-access/tv-access.module';
+import { OnboardingModule } from './onboarding/onboarding.module';
 import databaseConfig from './config/database.config';
 
 @Module({
@@ -102,6 +103,7 @@ import databaseConfig from './config/database.config';
     SignalsModule,
     FreeAccessModule,
     TvAccessModule,
+    OnboardingModule,
   ],
 })
 export class AppModule {}

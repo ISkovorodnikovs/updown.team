@@ -4,7 +4,7 @@ import { landingRest } from './landingB'
 
 const base = {
   en: {
-    nav: { products: 'Products', how: 'How it works', team: 'Team', partners: 'Partnership', login: 'Sign In', partner: 'Become a Partner', free: 'Start free', business: 'For business', charts: 'Chart Platform' },
+    nav: { products: 'Products', how: 'How to start', team: 'Team', partners: 'Partnership', login: 'Sign In', partner: 'Become a Partner', free: 'Start free', business: 'For business', charts: 'Chart Platform' },
     hero: {
       badge: 'Infrastructure Trading Platform',
       title1: 'Trade smarter.', title2: 'Scale faster.', title3: 'Earn more.',
@@ -59,11 +59,11 @@ const base = {
     cta: { title: 'Ready to start?', sub: 'Join the UpDown / AiView ecosystem and scale your trading business.', btn1: 'Start free', btn2: 'For business' },
     freeBlock: { label: 'Free', title: 'Start free: 7 days of UpDown tools', sub: 'Create an account and get access right away. No card or payment required.', items: [{ name: 'Magnet Pro', term: '7 days', desc: 'TradingView indicator that maps the areas of market interest above and below the price.' }, { name: 'UpDown PRO', term: '7 days', desc: 'Signal service: entry zone, targets and protective level for every trade idea.' }, { name: 'UpDown Digest', term: 'No expiration', desc: 'A regular market brief in Telegram.' }], cta: 'Get Magnet Pro free', note: 'Magnet Pro is enabled in TradingView by our team manually, usually within one hour.' },
     chart: {
-      label: 'Indicator', title: 'UpDown [FIB] — in action',
+      label: 'Indicator', title: 'UpDown Fib Pro — in action',
       sub: 'A demonstration of the indicator\'s logic on live Binance data: logarithmic Fibonacci grid, Key Level, entry zones and trade plan. The full version runs in TradingView.',
       asset: 'Instrument', timeframe: 'Timeframe', loading: 'Loading data from Binance...', retry: 'Retry', loadError: 'Loading error',
       promo: {
-        badge: 'Pine Script™ v6', title: 'UpDown [FIB] by SK TRADE v3',
+        badge: 'Pine Script™ v6', title: 'UpDown Fib Pro',
         desc: 'Multi-stage indicator: structure analysis → Key Level → logarithmic Fibonacci grid → Confluence → Pump detector → Trigger → automated trade plan.',
         features: [
           'Stage 1: UP/DOWN structural legs via pivot confirmation',
@@ -82,7 +82,7 @@ const base = {
   },
 
   ru: {
-    nav: { products: 'Продукты', how: 'Как работает', team: 'Команда', partners: 'Партнёрство', login: 'Войти', partner: 'Стать партнёром', free: 'Начать бесплатно', business: 'Для бизнеса', charts: 'Chart Platform' },
+    nav: { products: 'Продукты', how: 'Как начать', team: 'Команда', partners: 'Партнёрство', login: 'Войти', partner: 'Стать партнёром', free: 'Начать бесплатно', business: 'Для бизнеса', charts: 'Chart Platform' },
     hero: {
       badge: 'Инфраструктурная торговая платформа',
       title1: 'Торгуй умнее.', title2: 'Масштабируй быстрее.', title3: 'Зарабатывай больше.',
@@ -137,11 +137,11 @@ const base = {
     cta: { title: 'Готов начать?', sub: 'Присоединяйся к экосистеме UpDown / AiView и масштабируй свой торговый бизнес.', btn1: 'Начать бесплатно', btn2: 'Для бизнеса' },
     freeBlock: { label: 'Бесплатно', title: 'Начните бесплатно: 7 дней с инструментами UpDown', sub: 'Создайте аккаунт и получите доступ сразу. Карта и оплата не нужны.', items: [{ name: 'Magnet Pro', term: '7 дней', desc: 'Индикатор для TradingView: области рыночного интереса выше и ниже цены.' }, { name: 'UpDown PRO', term: '7 дней', desc: 'Сигнальный сервис: зона входа, цели и защитный уровень по каждой идее.' }, { name: 'UpDown Digest', term: 'Бессрочно', desc: 'Регулярный обзор рынка в Telegram.' }], cta: 'Получить Magnet Pro бесплатно', note: 'Доступ к Magnet Pro в TradingView наша команда открывает вручную, обычно в течение часа.' },
     chart: {
-      label: 'Индикатор', title: 'UpDown [FIB] — в действии',
+      label: 'Индикатор', title: 'UpDown Fib Pro — в действии',
       sub: 'Демонстрация логики индикатора на реальных данных Binance: логарифмическая сетка Фибоначчи, Key Level, зоны входа и план сделки. Полная версия — в TradingView.',
       asset: 'Инструмент', timeframe: 'Таймфрейм', loading: 'Загрузка данных с Binance...', retry: 'Повторить', loadError: 'Ошибка загрузки',
       promo: {
-        badge: 'Pine Script™ v6', title: 'UpDown [FIB] by SK TRADE v3',
+        badge: 'Pine Script™ v6', title: 'UpDown Fib Pro',
         desc: 'Многоэтапный индикатор: структурный анализ → Key Level → логарифмическая Fibonacci сетка → Confluence → Pump detector → Trigger → автоматический план входа.',
         features: [
           'Stage 1: структурные ноги UP/DOWN через pivot confirmation',
@@ -160,4 +160,9 @@ const base = {
   },
 }
 
-export default { ...base, ...landingRest }
+import landingTeam from './landingTeam'
+
+// Спринт 2: «Как начать» и команда поверх базовых текстов
+const all = { ...base, ...landingRest }
+for (const code of Object.keys(all)) all[code] = { ...all[code], ...(landingTeam[code] || {}) }
+export default all

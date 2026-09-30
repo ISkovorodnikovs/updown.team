@@ -2,7 +2,7 @@
 // Структура идентична en/ru из landing.js.
 export const landingRest = {
   uk: {
-    nav: { products: 'Продукти', how: 'Як це працює', team: 'Команда', partners: 'Партнерство', login: 'Увійти', partner: 'Стати партнером', free: 'Почати безкоштовно', business: 'Для бізнесу', charts: 'Chart Platform' },
+    nav: { products: 'Продукти', how: 'Як почати', team: 'Команда', partners: 'Партнерство', login: 'Увійти', partner: 'Стати партнером', free: 'Почати безкоштовно', business: 'Для бізнесу', charts: 'Chart Platform' },
     hero: {
       badge: 'Інфраструктурна торгова платформа',
       title1: 'Торгуй розумніше.', title2: 'Масштабуйся швидше.', title3: 'Заробляй більше.',
@@ -57,11 +57,11 @@ export const landingRest = {
     cta: { title: 'Готові почати?', sub: 'Приєднуйтесь до екосистеми UpDown / AiView і масштабуйте свій торговий бізнес.', btn1: 'Почати безкоштовно', btn2: 'Для бізнесу' },
     freeBlock: { label: 'Безкоштовно', title: 'Почніть безкоштовно: 7 днів з інструментами UpDown', sub: 'Створіть акаунт і отримайте доступ одразу. Картка й оплата не потрібні.', items: [{ name: 'Magnet Pro', term: '7 днів', desc: 'Індикатор для TradingView: зони ринкового інтересу вище й нижче ціни.' }, { name: 'UpDown PRO', term: '7 днів', desc: 'Сигнальний сервіс: зона входу, цілі та захисний рівень для кожної ідеї.' }, { name: 'UpDown Digest', term: 'Безстроково', desc: 'Регулярний огляд ринку в Telegram.' }], cta: 'Отримати Magnet Pro безкоштовно', note: 'Доступ до Magnet Pro у TradingView наша команда відкриває вручну, зазвичай протягом години.' },
     chart: {
-      label: 'Індикатор', title: 'UpDown [FIB] — у дії',
+      label: 'Індикатор', title: 'UpDown Fib Pro — у дії',
       sub: 'Демонстрація логіки індикатора на реальних даних Binance: логарифмічна сітка Фібоначчі, Key Level, зони входу та план угоди. Повна версія — у TradingView.',
       asset: 'Інструмент', timeframe: 'Таймфрейм', loading: 'Завантаження даних з Binance...', retry: 'Повторити', loadError: 'Помилка завантаження',
       promo: {
-        badge: 'Pine Script™ v6', title: 'UpDown [FIB] by SK TRADE v3',
+        badge: 'Pine Script™ v6', title: 'UpDown Fib Pro',
         desc: 'Багатоетапний індикатор: аналіз структури → Key Level → логарифмічна сітка Фібоначчі → Confluence → детектор пампу → тригер → автоматизований план угоди.',
         features: [
           'Етап 1: UP/DOWN структурні ноги через підтвердження півотів',
@@ -80,7 +80,7 @@ export const landingRest = {
   },
 
   de: {
-    nav: { products: 'Produkte', how: 'So funktioniert es', team: 'Team', partners: 'Partnerschaft', login: 'Anmelden', partner: 'Partner werden', free: 'Kostenlos starten', business: 'Für Unternehmen', charts: 'Chart Platform' },
+    nav: { products: 'Produkte', how: 'So starten Sie', team: 'Team', partners: 'Partnerschaft', login: 'Anmelden', partner: 'Partner werden', free: 'Kostenlos starten', business: 'Für Unternehmen', charts: 'Chart Platform' },
     hero: {
       badge: 'Infrastruktur-Trading-Plattform',
       title1: 'Klüger handeln.', title2: 'Schneller skalieren.', title3: 'Mehr verdienen.',
@@ -135,11 +135,11 @@ export const landingRest = {
     cta: { title: 'Bereit zu starten?', sub: 'Treten Sie dem UpDown / AiView Ökosystem bei und skalieren Sie Ihr Trading-Geschäft.', btn1: 'Kostenlos starten', btn2: 'Für Unternehmen' },
     freeBlock: { label: 'Kostenlos', title: 'Kostenlos starten: 7 Tage mit UpDown-Tools', sub: 'Erstellen Sie ein Konto und erhalten Sie sofort Zugang. Keine Karte und keine Zahlung erforderlich.', items: [{ name: 'Magnet Pro', term: '7 Tage', desc: 'TradingView-Indikator, der Zonen des Marktinteresses über und unter dem Kurs zeigt.' }, { name: 'UpDown PRO', term: '7 Tage', desc: 'Signaldienst: Einstiegszone, Ziele und Schutzniveau für jede Handelsidee.' }, { name: 'UpDown Digest', term: 'Unbefristet', desc: 'Regelmäßiger Marktüberblick in Telegram.' }], cta: 'Magnet Pro kostenlos erhalten', note: 'Magnet Pro wird in TradingView von unserem Team manuell freigeschaltet, in der Regel innerhalb einer Stunde.' },
     chart: {
-      label: 'Indikator', title: 'UpDown [FIB] — in Aktion',
+      label: 'Indikator', title: 'UpDown Fib Pro — in Aktion',
       sub: 'Demonstration der Indikatorlogik mit Live-Daten von Binance: logarithmisches Fibonacci-Gitter, Key Level, Einstiegszonen und Handelsplan. Die Vollversion läuft in TradingView.',
       asset: 'Instrument', timeframe: 'Zeitrahmen', loading: 'Lade Daten von Binance...', retry: 'Erneut versuchen', loadError: 'Ladefehler',
       promo: {
-        badge: 'Pine Script™ v6', title: 'UpDown [FIB] by SK TRADE v3',
+        badge: 'Pine Script™ v6', title: 'UpDown Fib Pro',
         desc: 'Mehrstufiger Indikator: Strukturanalyse → Key Level → logarithmisches Fibonacci-Gitter → Confluence → Pump-Detector → Trigger → automatisierter Handelsplan.',
         features: [
           'Stufe 1: UP/DOWN-Strukturbeine via Pivot-Bestätigung',
@@ -158,7 +158,7 @@ export const landingRest = {
   },
 
   es: {
-    nav: { products: 'Productos', how: 'Cómo funciona', team: 'Equipo', partners: 'Alianzas', login: 'Iniciar sesión', partner: 'Hazte socio', free: 'Empieza gratis', business: 'Para empresas', charts: 'Chart Platform' },
+    nav: { products: 'Productos', how: 'Cómo empezar', team: 'Equipo', partners: 'Alianzas', login: 'Iniciar sesión', partner: 'Hazte socio', free: 'Empieza gratis', business: 'Para empresas', charts: 'Chart Platform' },
     hero: {
       badge: 'Plataforma de trading de infraestructura',
       title1: 'Opera con inteligencia.', title2: 'Escala más rápido.', title3: 'Gana más.',
@@ -213,11 +213,11 @@ export const landingRest = {
     cta: { title: '¿Listo para empezar?', sub: 'Únete al ecosistema UpDown / AiView y escala tu negocio de trading.', btn1: 'Empieza gratis', btn2: 'Para empresas' },
     freeBlock: { label: 'Gratis', title: 'Empieza gratis: 7 días con las herramientas de UpDown', sub: 'Crea una cuenta y obtén acceso al instante. No se requiere tarjeta ni pago.', items: [{ name: 'Magnet Pro', term: '7 días', desc: 'Indicador de TradingView que marca las zonas de interés del mercado por encima y por debajo del precio.' }, { name: 'UpDown PRO', term: '7 días', desc: 'Servicio de señales: zona de entrada, objetivos y nivel de protección para cada idea.' }, { name: 'UpDown Digest', term: 'Sin vencimiento', desc: 'Un resumen regular del mercado en Telegram.' }], cta: 'Obtén Magnet Pro gratis', note: 'Nuestro equipo activa Magnet Pro en TradingView manualmente, normalmente en menos de una hora.' },
     chart: {
-      label: 'Indicador', title: 'UpDown [FIB] — en acción',
+      label: 'Indicador', title: 'UpDown Fib Pro — en acción',
       sub: 'Demostración de la lógica del indicador con datos en vivo de Binance: cuadrícula logarítmica de Fibonacci, Key Level, zonas de entrada y plan de operación. La versión completa funciona en TradingView.',
       asset: 'Instrumento', timeframe: 'Marco temporal', loading: 'Cargando datos de Binance...', retry: 'Reintentar', loadError: 'Error de carga',
       promo: {
-        badge: 'Pine Script™ v6', title: 'UpDown [FIB] by SK TRADE v3',
+        badge: 'Pine Script™ v6', title: 'UpDown Fib Pro',
         desc: 'Indicador multietapa: análisis de estructura → Key Level → cuadrícula logarítmica de Fibonacci → Confluence → detector de Pump → Trigger → plan de operación automatizado.',
         features: [
           'Etapa 1: tramos estructurales UP/DOWN por confirmación de pivote',
@@ -236,7 +236,7 @@ export const landingRest = {
   },
 
   it: {
-    nav: { products: 'Prodotti', how: 'Come funziona', team: 'Team', partners: 'Partnership', login: 'Accedi', partner: 'Diventa partner', free: 'Inizia gratis', business: 'Per le aziende', charts: 'Chart Platform' },
+    nav: { products: 'Prodotti', how: 'Come iniziare', team: 'Team', partners: 'Partnership', login: 'Accedi', partner: 'Diventa partner', free: 'Inizia gratis', business: 'Per le aziende', charts: 'Chart Platform' },
     hero: {
       badge: 'Piattaforma di trading infrastrutturale',
       title1: 'Fai trading in modo più intelligente.', title2: 'Scala più velocemente.', title3: 'Guadagna di più.',
@@ -291,11 +291,11 @@ export const landingRest = {
     cta: { title: 'Pronto a iniziare?', sub: 'Unisciti all\'ecosistema UpDown / AiView e scala il tuo business di trading.', btn1: 'Inizia gratis', btn2: 'Per le aziende' },
     freeBlock: { label: 'Gratis', title: 'Inizia gratis: 7 giorni con gli strumenti UpDown', sub: 'Crea un account e ottieni subito l\'accesso. Nessuna carta né pagamento richiesti.', items: [{ name: 'Magnet Pro', term: '7 giorni', desc: 'Indicatore per TradingView che mostra le aree di interesse del mercato sopra e sotto il prezzo.' }, { name: 'UpDown PRO', term: '7 giorni', desc: 'Servizio di segnali: zona di ingresso, target e livello di protezione per ogni idea.' }, { name: 'UpDown Digest', term: 'Senza scadenza', desc: 'Una panoramica regolare del mercato su Telegram.' }], cta: 'Ottieni Magnet Pro gratis', note: 'Il nostro team attiva Magnet Pro su TradingView manualmente, di solito entro un\'ora.' },
     chart: {
-      label: 'Indicatore', title: 'UpDown [FIB] — in azione',
+      label: 'Indicatore', title: 'UpDown Fib Pro — in azione',
       sub: 'Dimostrazione della logica dell\'indicatore su dati reali di Binance: griglia logaritmica di Fibonacci, Key Level, zone di ingresso e piano operativo. La versione completa funziona su TradingView.',
       asset: 'Strumento', timeframe: 'Timeframe', loading: 'Caricamento dati da Binance...', retry: 'Riprova', loadError: 'Errore di caricamento',
       promo: {
-        badge: 'Pine Script™ v6', title: 'UpDown [FIB] by SK TRADE v3',
+        badge: 'Pine Script™ v6', title: 'UpDown Fib Pro',
         desc: 'Indicatore multi-fase: analisi della struttura → Key Level → griglia logaritmica di Fibonacci → Confluence → Pump detector → Trigger → piano operativo automatizzato.',
         features: [
           'Fase 1: gambe strutturali UP/DOWN tramite conferma del pivot',
@@ -314,7 +314,7 @@ export const landingRest = {
   },
 
   pt: {
-    nav: { products: 'Produtos', how: 'Como funciona', team: 'Equipe', partners: 'Parcerias', login: 'Entrar', partner: 'Seja parceiro', free: 'Comece grátis', business: 'Para empresas', charts: 'Chart Platform' },
+    nav: { products: 'Produtos', how: 'Como começar', team: 'Equipe', partners: 'Parcerias', login: 'Entrar', partner: 'Seja parceiro', free: 'Comece grátis', business: 'Para empresas', charts: 'Chart Platform' },
     hero: {
       badge: 'Plataforma de trading de infraestrutura',
       title1: 'Opere com mais inteligência.', title2: 'Escale mais rápido.', title3: 'Ganhe mais.',
@@ -369,11 +369,11 @@ export const landingRest = {
     cta: { title: 'Pronto para começar?', sub: 'Junte-se ao ecossistema UpDown / AiView e escale seu negócio de trading.', btn1: 'Comece grátis', btn2: 'Para empresas' },
     freeBlock: { label: 'Grátis', title: 'Comece grátis: 7 dias com as ferramentas UpDown', sub: 'Crie uma conta e tenha acesso imediato. Não é necessário cartão nem pagamento.', items: [{ name: 'Magnet Pro', term: '7 dias', desc: 'Indicador para TradingView que mostra as áreas de interesse do mercado acima e abaixo do preço.' }, { name: 'UpDown PRO', term: '7 dias', desc: 'Serviço de sinais: zona de entrada, alvos e nível de proteção para cada ideia.' }, { name: 'UpDown Digest', term: 'Sem prazo', desc: 'Um resumo regular do mercado no Telegram.' }], cta: 'Obtenha o Magnet Pro grátis', note: 'Nossa equipe libera o Magnet Pro no TradingView manualmente, geralmente em até uma hora.' },
     chart: {
-      label: 'Indicador', title: 'UpDown [FIB] — em ação',
+      label: 'Indicador', title: 'UpDown Fib Pro — em ação',
       sub: 'Demonstração da lógica do indicador com dados reais da Binance: grade logarítmica de Fibonacci, Key Level, zonas de entrada e plano de operação. A versão completa funciona no TradingView.',
       asset: 'Instrumento', timeframe: 'Timeframe', loading: 'Carregando dados da Binance...', retry: 'Tentar novamente', loadError: 'Erro de carregamento',
       promo: {
-        badge: 'Pine Script™ v6', title: 'UpDown [FIB] by SK TRADE v3',
+        badge: 'Pine Script™ v6', title: 'UpDown Fib Pro',
         desc: 'Indicador multiestágio: análise de estrutura → Key Level → grade logarítmica de Fibonacci → Confluence → detector de Pump → Trigger → plano de operação automatizado.',
         features: [
           'Estágio 1: pernas estruturais UP/DOWN por confirmação de pivô',
@@ -392,7 +392,7 @@ export const landingRest = {
   },
 
   zh: {
-    nav: { products: '产品', how: '运作方式', team: '团队', partners: '合作', login: '登录', partner: '成为合作伙伴', free: '免费开始', business: '企业合作', charts: 'Chart Platform' },
+    nav: { products: '产品', how: '如何开始', team: '团队', partners: '合作', login: '登录', partner: '成为合作伙伴', free: '免费开始', business: '企业合作', charts: 'Chart Platform' },
     hero: {
       badge: '基础设施级交易平台',
       title1: '更聪明地交易。', title2: '更快地扩展。', title3: '赚取更多。',
@@ -447,11 +447,11 @@ export const landingRest = {
     cta: { title: '准备好开始了吗？', sub: '加入 UpDown / AiView 生态系统，扩展您的交易业务。', btn1: '免费开始', btn2: '企业合作' },
     freeBlock: { label: '免费', title: '免费开始：7 天畅用 UpDown 工具', sub: '创建账户即可立即获得访问权限。无需绑卡，无需付款。', items: [{ name: 'Magnet Pro', term: '7 天', desc: 'TradingView 指标，标出价格上方和下方的市场关注区域。' }, { name: 'UpDown PRO', term: '7 天', desc: '信号服务：每个交易想法都包含进场区间、目标位和保护位。' }, { name: 'UpDown Digest', term: '永久有效', desc: 'Telegram 中的定期市场简报。' }], cta: '免费获取 Magnet Pro', note: 'Magnet Pro 由我们的团队在 TradingView 中手动开通，通常在一小时内完成。' },
     chart: {
-      label: '指标', title: 'UpDown [FIB] — 实战演示',
+      label: '指标', title: 'UpDown Fib Pro — 实战演示',
       sub: '基于 Binance 实时数据演示指标逻辑：对数斐波那契网格、Key Level、进场区间与交易计划。完整版本在 TradingView 中运行。',
       asset: '品种', timeframe: '周期', loading: '正在从 Binance 加载数据……', retry: '重试', loadError: '加载错误',
       promo: {
-        badge: 'Pine Script™ v6', title: 'UpDown [FIB] by SK TRADE v3',
+        badge: 'Pine Script™ v6', title: 'UpDown Fib Pro',
         desc: '多阶段指标：结构分析 → Key Level → 对数斐波那契网格 → Confluence → Pump 探测 → Trigger → 自动交易计划。',
         features: [
           '阶段 1：通过 pivot 确认的 UP/DOWN 结构腿',
@@ -470,7 +470,7 @@ export const landingRest = {
   },
 
   ar: {
-    nav: { products: 'المنتجات', how: 'كيف يعمل', team: 'الفريق', partners: 'الشراكة', login: 'تسجيل الدخول', partner: 'كن شريكاً', free: 'ابدأ مجاناً', business: 'للأعمال', charts: 'Chart Platform' },
+    nav: { products: 'المنتجات', how: 'كيف تبدأ', team: 'الفريق', partners: 'الشراكة', login: 'تسجيل الدخول', partner: 'كن شريكاً', free: 'ابدأ مجاناً', business: 'للأعمال', charts: 'Chart Platform' },
     hero: {
       badge: 'منصة تداول بنية تحتية',
       title1: 'تداول بذكاء أكبر.', title2: 'وسّع أسرع.', title3: 'اربح أكثر.',
@@ -525,11 +525,11 @@ export const landingRest = {
     cta: { title: 'مستعد للبدء؟', sub: 'انضم إلى منظومة UpDown / AiView ووسّع نشاطك في التداول.', btn1: 'ابدأ مجاناً', btn2: 'للأعمال' },
     freeBlock: { label: 'مجاناً', title: 'ابدأ مجاناً: 7 أيام مع أدوات UpDown', sub: 'أنشئ حساباً واحصل على الوصول فوراً. لا حاجة إلى بطاقة أو دفع.', items: [{ name: 'Magnet Pro', term: '7 أيام', desc: 'مؤشر على TradingView يحدد مناطق اهتمام السوق فوق السعر وتحته.' }, { name: 'UpDown PRO', term: '7 أيام', desc: 'خدمة إشارات: منطقة الدخول والأهداف ومستوى الحماية لكل فكرة تداول.' }, { name: 'UpDown Digest', term: 'دون تاريخ انتهاء', desc: 'ملخص منتظم للسوق على Telegram.' }], cta: 'احصل على Magnet Pro مجاناً', note: 'يفعّل فريقنا Magnet Pro على TradingView يدوياً، عادةً خلال ساعة.' },
     chart: {
-      label: 'المؤشر', title: 'UpDown [FIB] — قيد العمل',
+      label: 'المؤشر', title: 'UpDown Fib Pro — قيد العمل',
       sub: 'عرض توضيحي لمنطق المؤشر على بيانات Binance الحقيقية: شبكة فيبوناتشي لوغاريتمية وKey Level ومناطق الدخول وخطة الصفقة. النسخة الكاملة تعمل في TradingView.',
       asset: 'الأداة', timeframe: 'الإطار الزمني', loading: 'جارٍ تحميل البيانات من Binance...', retry: 'إعادة المحاولة', loadError: 'خطأ في التحميل',
       promo: {
-        badge: 'Pine Script™ v6', title: 'UpDown [FIB] by SK TRADE v3',
+        badge: 'Pine Script™ v6', title: 'UpDown Fib Pro',
         desc: 'مؤشر متعدد المراحل: تحليل البنية → Key Level → شبكة فيبوناتشي لوغاريتمية → Confluence → كاشف Pump → Trigger → خطة صفقة آلية.',
         features: [
           'المرحلة 1: أرجل بنيوية UP/DOWN عبر تأكيد الـ pivot',

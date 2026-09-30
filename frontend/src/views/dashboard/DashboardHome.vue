@@ -15,6 +15,9 @@
       </router-link>
     </div>
 
+    <!-- Первые шаги (обучение) -->
+    <FirstSteps />
+
     <!-- Stats row -->
     <div class="stats-row">
       <div class="stat-card" v-for="s in stats" :key="s.label">
@@ -38,13 +41,13 @@
           <template v-if="c.active">{{ t.active }}</template>
           <template v-else>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-            {{ t.upgrade }}
+            {{ o.menu.view }}
           </template>
         </div>
         <!-- Всплывающий список каналов/индикаторов (активные и неактивные) -->
         <div v-if="c.items && c.items.length" class="cat-pop" @click.stop>
           <div class="cat-pop__item" v-for="it in c.items" :key="it.id"
-            @click="$router.push(it.active ? '/dashboard/access' : '/dashboard/shop')">
+            @click="$router.push(it.active ? '/dashboard/access' : (c.kind === 'signals' ? '/dashboard/signals' : '/dashboard/indicators'))">
             <span class="cat-pop__dot" :class="it.active ? 'on' : 'off'"></span>
             <span class="cat-pop__name">{{ it.name }}</span>
             <span class="cat-pop__tag" v-if="it.active">{{ t.active }}</span>
@@ -82,6 +85,9 @@ import { useAuthStore } from '@/stores/auth'
 import { subscriptionsApi, shopApi } from '@/api'
 import { useT, tDb } from '@/i18n'
 import dict from '@/i18n/dicts/dashboardHome'
+import obDict from '@/i18n/dicts/onboarding'
+import FirstSteps from '@/components/onboarding/FirstSteps.vue'
+import { useOnboardingStore } from '@/stores/onboarding'
 
 const auth = useAuthStore()
 const activePlan = ref(null)
@@ -89,6 +95,7 @@ const subscriptions = ref([])
 const channels = ref([])
 const indicators = ref([])
 const ownedIds = ref(new Set())
+const accessProducts = ref([])
 
 onMounted(async () => {
   try {
@@ -103,7 +110,8 @@ onMounted(async () => {
     ])
     channels.value = chans
     indicators.value = inds
-    ownedIds.value = new Set((access.products || []).map(p => p.productId))
+    accessProducts.value = access.products || []
+    ownedIds.value = new Set(accessProducts.value.map(p => p.productId))
   } catch {}
 })
 
@@ -114,31 +122,38 @@ function daysLeft(date) {
 const hasFeature = (key) => subscriptions.value.some(s => s.plan?.[key])
 
 const t = useT(dict)
+const o = useT(obDict)
+const ob = useOnboardingStore()
+
+const ownedChannels = computed(() => accessProducts.value.filter(p => p.type === 'signal_channel').length)
+const ownedIndicators = computed(() => accessProducts.value.filter(p => p.type === 'indicator').length)
 
 const stats = computed(() => [
-  { icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>', value: subscriptions.value.length, label: t.value.activeSubscriptions },
-  { icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>', value: hasFeature('hasSignalsCrypto') ? '∞' : '—', label: 'Crypto Signals' },
-  { icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>', value: hasFeature('hasTablePredictor') ? '✓' : '—', label: 'Table Predictor' },
-  { icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/></svg>', value: hasFeature('hasCopytrading') ? '✓' : '—', label: t.value.copytrading },
+  { icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>', value: ownedIds.value.size, label: o.value.menu.statAccess },
+  { icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>', value: ownedIndicators.value, label: o.value.menu.statIndicators },
+  { icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>', value: ownedChannels.value, label: o.value.menu.statChannels },
 ])
 
 // Товары каталога с пометкой активности (владеет ли пользователь)
 const channelItems = computed(() => channels.value.map(c => ({ id: c.id, name: tDb(c, 'name'), active: ownedIds.value.has(c.id) })))
 const indicatorItems = computed(() => indicators.value.map(i => ({ id: i.id, name: tDb(i, 'name'), active: ownedIds.value.has(i.id) })))
 
-// 4 категории
-const categories = computed(() => [
-  { key: 'signals',    icon: '📡', name: t.value.signals,     kind: 'signals',    items: channelItems.value,   active: channelItems.value.some(i => i.active) },
-  { key: 'indicators', icon: '📊', name: t.value.indicators,  kind: 'indicators', items: indicatorItems.value,  active: indicatorItems.value.some(i => i.active) },
-  { key: 'education',  icon: '🎓', name: t.value.education,    kind: 'education',  items: null,                  active: hasFeature('hasEducation') },
-  { key: 'copy',       icon: '⚡', name: t.value.copytrading,  kind: 'copy',       items: null,                  active: hasFeature('hasCopytrading') },
-])
+// Категории; порядок — по цели, выбранной на экране приветствия
+const categories = computed(() => {
+  const list = [
+    { key: 'indicators', icon: '📊', name: t.value.indicators,  kind: 'indicators', items: indicatorItems.value,  active: indicatorItems.value.some(i => i.active) },
+    { key: 'signals',    icon: '📡', name: t.value.signals,     kind: 'signals',    items: channelItems.value,   active: channelItems.value.some(i => i.active) },
+    { key: 'education',  icon: '🎓', name: t.value.education,    kind: 'education',  items: null,                  active: hasFeature('hasEducation') },
+  ]
+  const first = { signals: 'signals', learn: 'education' }[ob.state?.goal]
+  return first ? [...list.filter(c => c.key === first), ...list.filter(c => c.key !== first)] : list
+})
 
 function tileRoute(cat) {
-  if (cat.kind === 'copy')      return cat.active ? '/dashboard/copytrading' : '/dashboard/shop'
   if (cat.kind === 'education') return cat.active ? '/dashboard/access' : '/dashboard/education'
-  // signals, indicators
-  return cat.active ? '/dashboard/access' : '/dashboard/shop'
+  // Не куплено — открываем витрину раздела (описания и цены), а не тупик
+  if (cat.active) return '/dashboard/access'
+  return cat.kind === 'signals' ? '/dashboard/signals' : '/dashboard/indicators'
 }
 </script>
 
@@ -186,7 +201,7 @@ function tileRoute(cat) {
 
 .stats-row {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 16px;
   margin-bottom: 32px;
 }
@@ -217,7 +232,7 @@ function tileRoute(cat) {
 
 .cat-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 12px;
   margin-bottom: 32px;
 }

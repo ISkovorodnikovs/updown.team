@@ -91,6 +91,11 @@ export class User {
   @Column({ type: 'timestamp', nullable: true })
   freeTrialAt: Date | null;
 
+  // Обучение в кабинете: цель, пройден ли тур, увиденные подсказки, флаги чек-листа.
+  // {legacy:true} — пользователь был до Спринта 2 (для режима ONBOARDING_MODE=new).
+  @Column({ type: 'jsonb', nullable: true })
+  onboarding: Record<string, any> | null;
+
   @CreateDateColumn()
   createdAt: Date;
 

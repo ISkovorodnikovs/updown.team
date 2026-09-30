@@ -141,7 +141,7 @@
         <div class="products__grid">
           <div
             class="product-card reveal"
-            v-for="(p, i) in t.products.items"
+            v-for="(p, i) in t.products.items.filter(x => x.id !== 'copy')"
             :key="p.id"
             :class="`reveal--delay-${i+1} product-card--${p.id}`"
             @mouseenter="hoveredProduct = p.id"
@@ -215,7 +215,7 @@
           <div class="chart-controls__indicator-tag">
             <span class="ind-tag">
               <span class="ind-tag__dot"></span>
-              UpDown [FIB] by SK TRADE v3
+              UpDown Fib Pro
             </span>
           </div>
         </div>
@@ -291,8 +291,8 @@
                     <span class="tv-pine-preview__dot tv-pine-preview__dot--green"></span>
                     <span class="tv-pine-preview__title">Pine Script™ v6</span>
                   </div>
-                  <pre class="tv-pine-preview__code"><span class="ps-comment">// UpDown [FIB] by SK TRADE v3</span>
-<span class="ps-kw">indicator</span>(<span class="ps-str">"UpDown [FIB]"</span>, overlay=<span class="ps-kw">true</span>)
+                  <pre class="tv-pine-preview__code"><span class="ps-comment">// UpDown Fib Pro</span>
+<span class="ps-kw">indicator</span>(<span class="ps-str">"UpDown Fib Pro"</span>, overlay=<span class="ps-kw">true</span>)
 <span class="ps-comment">// Stage 1: UP/DOWN structural legs</span>
 <span class="ps-comment">// Stage 2: KL — GREEN→RED pair activation</span>
 <span class="ps-comment">// Stage 3: log Fib -0.157 … 3.414</span>
@@ -356,7 +356,7 @@
 
         <div class="team__grid">
           <div class="team-card reveal" v-for="(m, i) in t.team.members" :key="m.name" :class="`reveal--delay-${i+1}`">
-            <div class="team-card__avatar">{{ m.initials }}</div>
+            <div class="team-card__avatar" :class="{ 'team-card__avatar--photo': m.photo }"><img v-if="m.photo" :src="m.photo" :alt="m.name" loading="lazy" width="96" height="96" /><template v-else>{{ m.initials }}</template></div>
             <div class="team-card__info">
               <h3>{{ m.name }}</h3>
               <span class="team-card__role">{{ m.role }}</span>
@@ -993,7 +993,8 @@ function setTimeframe(val) {
 watch(theme, () => { nextTick(() => buildLWChart()) })
 
 // ---- TICKER ----
-const tickerItems = ['AiView Crypto', '✦', 'AiView Forex', '✦', 'UpDown PRO', '✦', 'White Label', '✦', 'Copy Trading', '✦', 'AI Signals', '✦', 'Fibonacci Strategy', '✦', 'Table Predictor', '✦']
+// Бегущая строка — настоящие названия продуктов
+const tickerItems = ['Market Radar Pro', '✦', 'Magnet Pro', '✦', 'Fib Pro', '✦', 'MM Target Pro', '✦', 'Trap Hunter Pro', '✦', 'OI Radar Pro', '✦', 'Liquidity Zones', '✦', 'Table Predictor', '✦', 'UpDown PRO', '✦', 'AiView', '✦', 'UpDown Digest', '✦']
 
 // ---- TRANSLATIONS ----
 const t = useT(dict)
@@ -1746,7 +1747,7 @@ const t = useT(dict)
 
   &__grid {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 16px;
     margin-top: 60px;
     padding-bottom: 8px;
@@ -1770,6 +1771,11 @@ const t = useT(dict)
     font-size: 20px; font-weight: 800;
     color: #fff;
     margin-bottom: 16px;
+
+    &--photo {
+      width: 96px; height: 96px; border-radius: 50%; padding: 3px; overflow: hidden;
+      img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block; }
+    }
   }
 
   &__info {
