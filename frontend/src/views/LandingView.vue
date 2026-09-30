@@ -148,7 +148,7 @@
             <p class="section-sub reveal reveal--delay-2">{{ t.chart.sub }}</p>
           </div>
           <!-- TradingView attribution -->
-          <a class="tv-badge reveal reveal--delay-2" href="https://www.tradingview.com/" target="_blank" rel="noopener">
+          <a class="tv-badge reveal reveal--delay-2" href="https://www.tradingview.com/script/Z5q65byi-updown-fib-by-sk-trade-v3/" target="_blank" rel="noopener">
             <svg width="18" height="14" viewBox="0 0 36 28" fill="none"><path d="M14 28H0l7-12 7 12ZM36 16H22l7-12 7 12ZM25 28H11l7-12 7 12Z" fill="#2962FF"/></svg>
             TradingView
           </a>
@@ -189,7 +189,7 @@
           <div class="chart-controls__indicator-tag">
             <span class="ind-tag">
               <span class="ind-tag__dot"></span>
-              UpDown Short Liquidity Entries
+              UpDown [FIB] by SK TRADE v3
             </span>
           </div>
         </div>
@@ -920,9 +920,29 @@ async function buildLWChart() {
     const sym = activeSymbol.value === 'BTC' ? 'BINANCE:BTCUSDT' : 'BINANCE:PAXGUSDT'
     const fmt = v => v?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) ?? '—'
     lastSignalInfo.value = `${sym} | KL: $${fmt(kl.price)} | Entry: $${fmt(entry1)} | SL: $${fmt(sl)} | TP1: $${fmt(tp1)}`
-  }
 
-  lwChart.timeScale().fitContent()
+    // Подписи уровней на ценовой шкале (без линии через весь график)
+    const axisLabel = (price, color, title) => {
+      if (!price) return
+      candleSeries.createPriceLine({ price, color, title, lineVisible: false, axisLabelVisible: true })
+    }
+    axisLabel(kl.price, CLR.kl, 'KL')
+    axisLabel(entry1, CLR.entry, 'Entry')
+    axisLabel(sl, CLR.sl, 'SL')
+    axisLabel(tp1, CLR.tp, 'TP1')
+
+    // Метки на свечах: KL и вход в SHORT
+    const markers = [{ time: candles[kl.bar].time, position: 'belowBar', color: CLR.kl, shape: 'circle', text: 'KL' }]
+    if (triggerBar) markers.push({ time: candles[triggerBar].time, position: 'aboveBar', color: CLR.sl, shape: 'arrowDown', text: 'SHORT' })
+    markers.sort((a, b) => a.time - b.time)
+    candleSeries.setMarkers(markers)
+
+    // Приближаем к сетапу: от начала DOWN-ноги до правого края (минимум 60 свечей)
+    const from = Math.max(0, Math.min(downLeg.startI - 15, n - 60))
+    lwChart.timeScale().setVisibleLogicalRange({ from, to: n + 3 })
+  } else {
+    lwChart.timeScale().fitContent()
+  }
 
   roChart = new ResizeObserver(() => {
     if (lwChart && lwChartContainer.value)

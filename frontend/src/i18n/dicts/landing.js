@@ -59,7 +59,7 @@ const base = {
     cta: { title: 'Ready to start?', sub: 'Join the UpDown / AiView ecosystem and scale your trading business.', btn1: 'Create account', btn2: 'Learn about partnership' },
     chart: {
       label: 'Indicator', title: 'UpDown [FIB] — in action',
-      sub: 'Live data from Binance. Logarithmic Fibonacci grid, Key Level, entry zones and trade plan — exactly as seen in TradingView.',
+      sub: 'A demonstration of the indicator\'s logic on live Binance data: logarithmic Fibonacci grid, Key Level, entry zones and trade plan. The full version runs in TradingView.',
       asset: 'Instrument', timeframe: 'Timeframe', loading: 'Loading data from Binance...', retry: 'Retry', loadError: 'Loading error',
       promo: {
         badge: 'Pine Script™ v6', title: 'UpDown [FIB] by SK TRADE v3',
@@ -136,7 +136,7 @@ const base = {
     cta: { title: 'Готов начать?', sub: 'Присоединяйся к экосистеме UpDown / AiView и масштабируй свой торговый бизнес.', btn1: 'Создать аккаунт', btn2: 'Узнать о партнёрстве' },
     chart: {
       label: 'Индикатор', title: 'UpDown [FIB] — в действии',
-      sub: 'Реальные данные с Binance. Логарифмическая сетка Фибоначчи, Key Level, зоны входа и план сделки — всё как в TradingView.',
+      sub: 'Демонстрация логики индикатора на реальных данных Binance: логарифмическая сетка Фибоначчи, Key Level, зоны входа и план сделки. Полная версия — в TradingView.',
       asset: 'Инструмент', timeframe: 'Таймфрейм', loading: 'Загрузка данных с Binance...', retry: 'Повторить', loadError: 'Ошибка загрузки',
       promo: {
         badge: 'Pine Script™ v6', title: 'UpDown [FIB] by SK TRADE v3',

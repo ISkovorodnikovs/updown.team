@@ -57,7 +57,7 @@ export const landingRest = {
     cta: { title: 'Готові почати?', sub: 'Приєднуйтесь до екосистеми UpDown / AiView і масштабуйте свій торговий бізнес.', btn1: 'Створити акаунт', btn2: 'Дізнатися про партнерство' },
     chart: {
       label: 'Індикатор', title: 'UpDown [FIB] — у дії',
-      sub: 'Live-дані з Binance. Логарифмічна сітка Фібоначчі, Key Level, зони входу та план угоди — точно як у TradingView.',
+      sub: 'Демонстрація логіки індикатора на реальних даних Binance: логарифмічна сітка Фібоначчі, Key Level, зони входу та план угоди. Повна версія — у TradingView.',
       asset: 'Інструмент', timeframe: 'Таймфрейм', loading: 'Завантаження даних з Binance...', retry: 'Повторити', loadError: 'Помилка завантаження',
       promo: {
         badge: 'Pine Script™ v6', title: 'UpDown [FIB] by SK TRADE v3',
@@ -134,7 +134,7 @@ export const landingRest = {
     cta: { title: 'Bereit zu starten?', sub: 'Treten Sie dem UpDown / AiView Ökosystem bei und skalieren Sie Ihr Trading-Geschäft.', btn1: 'Konto erstellen', btn2: 'Mehr zur Partnerschaft' },
     chart: {
       label: 'Indikator', title: 'UpDown [FIB] — in Aktion',
-      sub: 'Live-Daten von Binance. Logarithmisches Fibonacci-Gitter, Key Level, Einstiegszonen und Handelsplan — genau wie in TradingView.',
+      sub: 'Demonstration der Indikatorlogik mit Live-Daten von Binance: logarithmisches Fibonacci-Gitter, Key Level, Einstiegszonen und Handelsplan. Die Vollversion läuft in TradingView.',
       asset: 'Instrument', timeframe: 'Zeitrahmen', loading: 'Lade Daten von Binance...', retry: 'Erneut versuchen', loadError: 'Ladefehler',
       promo: {
         badge: 'Pine Script™ v6', title: 'UpDown [FIB] by SK TRADE v3',
@@ -211,7 +211,7 @@ export const landingRest = {
     cta: { title: '¿Listo para empezar?', sub: 'Únete al ecosistema UpDown / AiView y escala tu negocio de trading.', btn1: 'Crear cuenta', btn2: 'Conoce las alianzas' },
     chart: {
       label: 'Indicador', title: 'UpDown [FIB] — en acción',
-      sub: 'Datos en vivo de Binance. Cuadrícula logarítmica de Fibonacci, Key Level, zonas de entrada y plan de operación — tal como se ve en TradingView.',
+      sub: 'Demostración de la lógica del indicador con datos en vivo de Binance: cuadrícula logarítmica de Fibonacci, Key Level, zonas de entrada y plan de operación. La versión completa funciona en TradingView.',
       asset: 'Instrumento', timeframe: 'Marco temporal', loading: 'Cargando datos de Binance...', retry: 'Reintentar', loadError: 'Error de carga',
       promo: {
         badge: 'Pine Script™ v6', title: 'UpDown [FIB] by SK TRADE v3',
@@ -288,7 +288,7 @@ export const landingRest = {
     cta: { title: 'Pronto a iniziare?', sub: 'Unisciti all\'ecosistema UpDown / AiView e scala il tuo business di trading.', btn1: 'Crea account', btn2: 'Scopri la partnership' },
     chart: {
       label: 'Indicatore', title: 'UpDown [FIB] — in azione',
-      sub: 'Dati in tempo reale da Binance. Griglia logaritmica di Fibonacci, Key Level, zone di ingresso e piano operativo — proprio come in TradingView.',
+      sub: 'Dimostrazione della logica dell\'indicatore su dati reali di Binance: griglia logaritmica di Fibonacci, Key Level, zone di ingresso e piano operativo. La versione completa funziona su TradingView.',
       asset: 'Strumento', timeframe: 'Timeframe', loading: 'Caricamento dati da Binance...', retry: 'Riprova', loadError: 'Errore di caricamento',
       promo: {
         badge: 'Pine Script™ v6', title: 'UpDown [FIB] by SK TRADE v3',
@@ -365,7 +365,7 @@ export const landingRest = {
     cta: { title: 'Pronto para começar?', sub: 'Junte-se ao ecossistema UpDown / AiView e escale seu negócio de trading.', btn1: 'Criar conta', btn2: 'Saiba sobre parcerias' },
     chart: {
       label: 'Indicador', title: 'UpDown [FIB] — em ação',
-      sub: 'Dados ao vivo da Binance. Grade logarítmica de Fibonacci, Key Level, zonas de entrada e plano de operação — exatamente como no TradingView.',
+      sub: 'Demonstração da lógica do indicador com dados reais da Binance: grade logarítmica de Fibonacci, Key Level, zonas de entrada e plano de operação. A versão completa funciona no TradingView.',
       asset: 'Instrumento', timeframe: 'Timeframe', loading: 'Carregando dados da Binance...', retry: 'Tentar novamente', loadError: 'Erro de carregamento',
       promo: {
         badge: 'Pine Script™ v6', title: 'UpDown [FIB] by SK TRADE v3',
@@ -442,7 +442,7 @@ export const landingRest = {
     cta: { title: '准备好开始了吗？', sub: '加入 UpDown / AiView 生态系统，扩展您的交易业务。', btn1: '创建账户', btn2: '了解合作' },
     chart: {
       label: '指标', title: 'UpDown [FIB] — 实战演示',
-      sub: '来自 Binance 的实时数据。对数斐波那契网格、Key Level、进场区间与交易计划——与 TradingView 中完全一致。',
+      sub: '基于 Binance 实时数据演示指标逻辑：对数斐波那契网格、Key Level、进场区间与交易计划。完整版本在 TradingView 中运行。',
       asset: '品种', timeframe: '周期', loading: '正在从 Binance 加载数据……', retry: '重试', loadError: '加载错误',
       promo: {
         badge: 'Pine Script™ v6', title: 'UpDown [FIB] by SK TRADE v3',
@@ -519,7 +519,7 @@ export const landingRest = {
     cta: { title: 'مستعد للبدء؟', sub: 'انضم إلى منظومة UpDown / AiView ووسّع نشاطك في التداول.', btn1: 'إنشاء حساب', btn2: 'تعرّف على الشراكة' },
     chart: {
       label: 'المؤشر', title: 'UpDown [FIB] — قيد العمل',
-      sub: 'بيانات مباشرة من Binance. شبكة فيبوناتشي لوغاريتمية وKey Level ومناطق الدخول وخطة الصفقة — تماماً كما في TradingView.',
+      sub: 'عرض توضيحي لمنطق المؤشر على بيانات Binance الحقيقية: شبكة فيبوناتشي لوغاريتمية وKey Level ومناطق الدخول وخطة الصفقة. النسخة الكاملة تعمل في TradingView.',
       asset: 'الأداة', timeframe: 'الإطار الزمني', loading: 'جارٍ تحميل البيانات من Binance...', retry: 'إعادة المحاولة', loadError: 'خطأ في التحميل',
       promo: {
         badge: 'Pine Script™ v6', title: 'UpDown [FIB] by SK TRADE v3',
