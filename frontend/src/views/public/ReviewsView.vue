@@ -36,7 +36,10 @@
         <p class="pub-lead">{{ t.reviewsPage.resultsSub }}</p>
         <div class="rw-shots">
           <figure v-for="(src, i) in REVIEW_SHOTS" :key="src" class="rw-shot pub-card">
-            <img :src="src" :alt="t.reviewsPage.shots[i]" loading="lazy" />
+            <button type="button" class="rw-shot__open" :aria-label="t.reviewsPage.shots[i]" @click="openShot(i)">
+              <img :src="src" :alt="t.reviewsPage.shots[i]" loading="lazy" />
+              <span class="rw-shot__zoom" aria-hidden="true">⤢</span>
+            </button>
             <figcaption>{{ t.reviewsPage.shots[i] }}</figcaption>
           </figure>
         </div>
@@ -54,6 +57,7 @@ import { useT } from '@/i18n'
 import dict from '@/content/siteText'
 import { REVIEWS, REVIEW_SHOTS, REVIEWS_TG } from '@/content/reviews'
 import { fill } from '@/utils/publicLang'
+import { useLightbox } from '@/composables/useLightbox'
 
 const t = useT(dict)
 const FILTERS = ['all', 'ind', 'sig', 'edu', 'com']
@@ -99,6 +103,8 @@ async function measureCards() {
   heights.value = h
 }
 let imgWait = null
+const { open: openLightbox } = useLightbox()
+function openShot(i) { openLightbox(REVIEW_SHOTS.map((src, k) => ({ src, alt: t.value.reviewsPage.shots[k] })), i) }
 function setFilter(f) { filter.value = f }
 function measure() {
   const w = Math.min(window.innerWidth, 1200)
@@ -134,7 +140,10 @@ onBeforeUnmount(() => window.removeEventListener('resize', measure))
 .rw-h2 { margin-top: 8px; margin-bottom: 8px; }
 .rw-shots { margin-top: 20px; display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 14px; }
 .rw-shot { margin: 0; overflow: hidden; }
-.rw-shot img { width: 100%; height: 190px; object-fit: cover; object-position: top; display: block; border-bottom: 1px solid var(--line); }
+.rw-shot__open { position: relative; display: block; width: 100%; padding: 0; border: 0; background: none; cursor: zoom-in; }
+.rw-shot img { width: 100%; height: 190px; object-fit: contain; background: #0b0d12; display: block; border-bottom: 1px solid var(--line); transition: opacity .15s; }
+.rw-shot__open:hover img { opacity: .85; }
+.rw-shot__zoom { position: absolute; top: 8px; inset-inline-end: 8px; width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; background: rgba(10, 10, 11, .75); color: #fff; font-size: 16px; }
 .rw-shot figcaption { padding: 10px 12px; font-size: 12.5px; color: var(--text-2); }
 .rw-disc { color: var(--text-3); font-size: 12.5px; max-width: 90ch; margin: 22px 0 0; }
 @media (max-width: 640px) {

@@ -45,6 +45,8 @@
       <slot />
     </main>
 
+    <ImageLightbox v-if="mounted" />
+
     <footer class="pub-foot">
       <div class="pub-wrap pub-foot__grid">
         <div class="pub-foot__brand">
@@ -93,6 +95,7 @@
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import LangSwitcher from '@/components/LangSwitcher.vue'
+import ImageLightbox from '@/components/public/ImageLightbox.vue'
 import { useT, lang } from '@/i18n'
 import dict from '@/content/publicText'
 import legalDict from '@/content/legalText'
@@ -105,6 +108,7 @@ const route = useRoute()
 const router = useRouter()
 const menu = ref(false)
 const scrolled = ref(false)
+const mounted = ref(false)
 const year = new Date().getFullYear()
 
 const { theme, loadTheme, toggleTheme } = usePubTheme()
@@ -120,6 +124,7 @@ function onScroll() { scrolled.value = window.scrollY > 8 }
 
 onMounted(() => {
   loadTheme()
+  mounted.value = true
   window.addEventListener('scroll', onScroll, { passive: true })
   onScroll()
 })

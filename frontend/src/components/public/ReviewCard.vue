@@ -2,7 +2,9 @@
   <article class="rv-card pub-card" :class="{ 'rv-card--feature': r.feature && !compact }">
     <span class="pub-chip rv-card__tag">{{ t.reviewsPage.tags[r.tag] }}</span>
     <blockquote class="rv-card__text">{{ text }}</blockquote>
-    <img v-if="r.img && !compact" class="rv-card__img" :src="r.img" :alt="t.reviewsPage.tags[r.tag]" loading="lazy" />
+    <button v-if="r.img && !compact" type="button" class="rv-card__imgbtn" :aria-label="t.reviewsPage.tags[r.tag]" @click="openImg">
+      <img class="rv-card__img" :src="r.img" :alt="t.reviewsPage.tags[r.tag]" loading="lazy" />
+    </button>
     <div class="rv-card__who">
       <span class="rv-card__ava" aria-hidden="true">{{ initial }}</span>
       <div class="rv-card__meta">
@@ -19,11 +21,14 @@ import { computed } from 'vue'
 import { useT, lang, currentLocale } from '@/i18n'
 import dict from '@/content/siteText'
 import { REVIEWS } from '@/content/reviews'
+import { useLightbox } from '@/composables/useLightbox'
 
 const props = defineProps({ index: { type: Number, required: true }, compact: Boolean })
 const t = useT(dict)
 const r = computed(() => REVIEWS[props.index])
 const text = computed(() => t.value.reviewsPage.items[props.index])
+const { open } = useLightbox()
+const openImg = () => open([{ src: r.value.img, alt: `${name.value} · ${t.value.reviewsPage.tags[r.value.tag]}` }], 0)
 
 const name = computed(() => {
   const a = r.value.author
@@ -51,6 +56,8 @@ const meta = computed(() => {
 .rv-card__text { margin: 0; font-size: 15px; line-height: 1.6; color: var(--text); }
 .rv-card--feature .rv-card__text { font-size: 16.5px; }
 .rv-card__text::before { content: '“'; font-family: 'Montserrat', sans-serif; font-weight: 800; color: var(--accent); font-size: 34px; line-height: 0; vertical-align: -12px; margin-inline-end: 4px; }
+.rv-card__imgbtn { display: block; width: 100%; padding: 0; border: 0; background: none; cursor: zoom-in; }
+.rv-card__imgbtn:hover .rv-card__img { opacity: .88; }
 .rv-card__img { width: 100%; max-height: 360px; object-fit: cover; object-position: top; border-radius: 10px; border: 1px solid var(--line); display: block; }
 .rv-card__who { margin-top: auto; display: flex; align-items: center; gap: 10px; min-width: 0; }
 .rv-card__ava { flex: 0 0 auto; width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; font: 800 14px 'Montserrat', sans-serif; color: var(--on-accent); background: linear-gradient(135deg, var(--accent-2), var(--accent)); }
