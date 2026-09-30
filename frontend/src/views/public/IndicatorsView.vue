@@ -38,7 +38,7 @@
               <p v-if="it.flagship" class="ic-card__lead">{{ tx(it.slug).lead }}</p>
               <div class="ic-card__foot">
                 <span class="ic-card__price pub-tab"><b>{{ priceOf(it.id, it.price) }}</b> {{ t.catalog.perMonth }}</span>
-                <span class="ic-card__more">{{ t.catalog.more }} →</span>
+                <span class="ic-card__more">{{ t.catalog.more }} <span class="pub-arr">→</span></span>
               </div>
             </div>
           </router-link>

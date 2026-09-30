@@ -10,7 +10,8 @@
           <router-link :to="lp('/indicators')" class="pub-nav__link" active-class="is-active">{{ t.nav.indicators }}</router-link>
           <router-link :to="lp('/pricing')" class="pub-nav__link" active-class="is-active">{{ t.nav.pricing }}</router-link>
           <router-link :to="lp('/free')" class="pub-nav__link" active-class="is-active">{{ t.nav.free }}</router-link>
-          <a :href="lp('/') + '#team'" class="pub-nav__link">{{ t.nav.team }}</a>
+          <router-link :to="lp('/reviews')" class="pub-nav__link" active-class="is-active">{{ t.footer.reviews }}</router-link>
+          <router-link :to="lp('/team')" class="pub-nav__link" active-class="is-active">{{ t.nav.team }}</router-link>
           <router-link to="/partner-apply" class="pub-nav__link">{{ t.nav.business }}</router-link>
         </nav>
 
@@ -32,7 +33,8 @@
         <router-link :to="lp('/indicators')" @click="menu = false">{{ t.nav.indicators }}</router-link>
         <router-link :to="lp('/pricing')" @click="menu = false">{{ t.nav.pricing }}</router-link>
         <router-link :to="lp('/free')" @click="menu = false">{{ t.nav.free }}</router-link>
-        <a :href="lp('/') + '#team'" @click="menu = false">{{ t.nav.team }}</a>
+        <router-link :to="lp('/reviews')" @click="menu = false">{{ t.footer.reviews }}</router-link>
+        <router-link :to="lp('/team')" @click="menu = false">{{ t.nav.team }}</router-link>
         <router-link to="/partner-apply" @click="menu = false">{{ t.nav.business }}</router-link>
         <router-link to="/login" @click="menu = false">{{ t.nav.login }}</router-link>
         <router-link to="/register?get=magnet" class="pub-btn pub-btn--gold" @click="menu = false">{{ t.nav.start }}</router-link>
@@ -59,14 +61,14 @@
           <router-link :to="lp('/indicators')">{{ t.footer.indicators }}</router-link>
           <router-link :to="lp('/pricing')">{{ t.footer.pricing }}</router-link>
           <router-link :to="lp('/free')">{{ t.footer.free }}</router-link>
-          <a href="https://charts.updown.team" target="_blank" rel="noopener">{{ t.footer.charts }} ↗</a>
+          <a href="https://charts.updown.team" target="_blank" rel="noopener">{{ t.footer.charts }} <span class="pub-arr">↗</span></a>
         </div>
         <div class="pub-foot__col">
           <h4>{{ t.footer.company }}</h4>
-          <a :href="lp('/') + '#team'">{{ t.footer.team }}</a>
+          <router-link :to="lp('/team')">{{ t.footer.team }}</router-link>
+          <router-link :to="lp('/reviews')">{{ t.footer.reviews }}</router-link>
           <router-link to="/partner-apply">{{ t.footer.business }}</router-link>
-          <a href="https://t.me/UpDownReview" target="_blank" rel="noopener">{{ t.footer.reviews }} ↗</a>
-          <a href="https://t.me/updown_live" target="_blank" rel="noopener">{{ t.footer.live }} ↗</a>
+          <a href="https://t.me/updown_live" target="_blank" rel="noopener">{{ t.footer.live }} <span class="pub-arr">↗</span></a>
         </div>
         <div class="pub-foot__col">
           <h4>{{ t.footer.support }}</h4>
@@ -75,6 +77,11 @@
         </div>
       </div>
       <div class="pub-wrap pub-foot__bottom">
+        <nav class="pub-foot__legal" :aria-label="lt.nav.legal">
+          <router-link :to="lp('/terms')">{{ lt.nav.terms }}</router-link>
+          <router-link :to="lp('/privacy')">{{ lt.nav.privacy }}</router-link>
+          <router-link :to="lp('/refunds')">{{ lt.nav.refunds }}</router-link>
+        </nav>
         <p class="pub-foot__disc">{{ t.footer.disclaimer }}</p>
         <p class="pub-foot__copy">© {{ year }} UpDown. {{ t.footer.rights }}</p>
       </div>
@@ -88,20 +95,19 @@ import { useRoute, useRouter } from 'vue-router'
 import LangSwitcher from '@/components/LangSwitcher.vue'
 import { useT, lang } from '@/i18n'
 import dict from '@/content/publicText'
+import legalDict from '@/content/legalText'
 import { lp, stripLang } from '@/utils/publicLang'
+import { usePubTheme } from '@/composables/usePubTheme'
 
 const t = useT(dict)
+const lt = useT(legalDict)
 const route = useRoute()
 const router = useRouter()
 const menu = ref(false)
 const scrolled = ref(false)
 const year = new Date().getFullYear()
 
-const theme = ref('dark')
-function toggleTheme() {
-  theme.value = theme.value === 'dark' ? 'light' : 'dark'
-  try { localStorage.setItem('ud-theme', theme.value) } catch { /* ignore */ }
-}
+const { theme, loadTheme, toggleTheme } = usePubTheme()
 
 const socials = [
   { name: 'Telegram', href: 'https://t.me/updown_live', icon: 'M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z' },
@@ -113,7 +119,7 @@ const socials = [
 function onScroll() { scrolled.value = window.scrollY > 8 }
 
 onMounted(() => {
-  try { theme.value = localStorage.getItem('ud-theme') || 'dark' } catch { /* ignore */ }
+  loadTheme()
   window.addEventListener('scroll', onScroll, { passive: true })
   onScroll()
 })
@@ -206,8 +212,15 @@ watch(() => route.fullPath, () => { menu.value = false })
 .pub-foot__col a:hover { color: var(--text); }
 .pub-select { user-select: all; color: var(--text); }
 .pub-foot__bottom { border-top: 1px solid var(--line); margin-top: 32px; padding-top: 20px; display: grid; gap: 8px; }
+.pub-foot__legal { display: flex; flex-wrap: wrap; gap: 8px 20px; }
+.pub-foot__legal a { color: var(--text-2); font-size: 13px; }
+.pub-foot__legal a:hover { color: var(--text); }
 .pub-foot__disc { color: var(--text-3); font-size: 12.5px; max-width: 90ch; margin: 0; }
 .pub-foot__copy { color: var(--text-3); font-size: 12.5px; margin: 0; }
+
+/* Стрелки-направления в RTL (арабский) зеркалим: → становится ←, ↗ становится ↖ */
+.pub-arr { display: inline-block; }
+[dir="rtl"] .pub-arr { transform: scaleX(-1); }
 
 .pub a:focus-visible, .pub button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 

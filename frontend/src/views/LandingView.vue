@@ -1,55 +1,10 @@
 <template>
+  <PublicLayout>
   <div class="landing" :class="theme">
-
-    <!-- ===== NAVBAR ===== -->
-    <nav class="nav" :class="{ 'nav--scrolled': scrolled }">
-      <div class="nav__inner">
-        <div class="nav__logo">
-          <span class="logo-icon">↑↓</span>
-          <span class="logo-text">UpDown</span>
-        </div>
-
-        <div class="nav__links">
-          <router-link :to="lp('/indicators')">{{ pt.nav.indicators }}</router-link>
-          <router-link :to="lp('/pricing')">{{ pt.nav.pricing }}</router-link>
-          <a href="#how" @click.prevent="scrollTo('how')">{{ t.nav.how }}</a>
-          <a href="#team" @click.prevent="scrollTo('team')">{{ t.nav.team }}</a>
-          <router-link to="/partner-apply">{{ t.nav.business }}</router-link>
-          <a href="https://charts.updown.team" target="_blank" rel="noopener" class="nav__charts-link">{{ t.nav.charts }} ↗</a>
-        </div>
-
-        <div class="nav__actions">
-          <button class="icon-btn" @click="toggleTheme" :title="theme === 'dark' ? 'Light mode' : 'Dark mode'">
-            <svg v-if="theme === 'dark'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-            <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-          </button>
-          <LangSwitcher />
-          <router-link to="/login" class="btn-nav btn-nav--login">{{ t.nav.login }}</router-link>
-          <router-link to="/register?get=magnet" class="btn-nav btn-nav--accent">{{ t.nav.free }}</router-link>
-          <button class="hamburger" @click="mobileMenuOpen = !mobileMenuOpen" :class="{ 'hamburger--open': mobileMenuOpen }">
-            <span></span><span></span><span></span>
-          </button>
-        </div>
-      </div>
-      <!-- Mobile menu -->
-      <div class="nav__mobile" :class="{ 'nav__mobile--open': mobileMenuOpen }">
-        <router-link :to="lp('/indicators')" @click="mobileMenuOpen=false">{{ pt.nav.indicators }}</router-link>
-        <router-link :to="lp('/pricing')" @click="mobileMenuOpen=false">{{ pt.nav.pricing }}</router-link>
-        <a href="#how" @click.prevent="scrollTo('how'); mobileMenuOpen=false">{{ t.nav.how }}</a>
-        <a href="#team" @click.prevent="scrollTo('team'); mobileMenuOpen=false">{{ t.nav.team }}</a>
-        <a href="#partners" @click.prevent="scrollTo('partners'); mobileMenuOpen=false">{{ t.nav.partners }}</a>
-        <a href="https://charts.updown.team" target="_blank" rel="noopener" class="nav__charts-link">{{ t.nav.charts }} ↗</a>
-        <router-link to="/login" @click="mobileMenuOpen=false">{{ t.nav.login }}</router-link>
-        <router-link to="/partner-apply" @click="mobileMenuOpen=false">{{ t.nav.business }}</router-link>
-        <router-link to="/register?get=magnet" @click="mobileMenuOpen=false" class="mobile-partner-link">{{ t.nav.free }}</router-link>
-      </div>
-    </nav>
 
     <!-- ===== HERO ===== -->
     <section class="hero">
-      <!-- Animated grid background -->
       <div class="hero__grid"></div>
-      <!-- Floating orbs -->
       <div class="orb orb--1"></div>
       <div class="orb orb--2"></div>
       <div class="orb orb--3"></div>
@@ -57,21 +12,21 @@
       <div class="hero__content">
         <div class="hero__badge reveal">
           <span class="badge-dot"></span>
-          {{ t.hero.badge }}
+          {{ h.hero.badge }}
         </div>
         <h1 class="hero__title reveal reveal--delay-1">
-          <span class="title-line">{{ t.hero.title1 }}</span>
-          <span class="title-line title-line--accent">{{ t.hero.title2 }}</span>
-          <span class="title-line">{{ t.hero.title3 }}</span>
+          <span class="title-line">{{ h.hero.title1 }}</span>
+          <span class="title-line title-line--accent">{{ h.hero.title2 }}</span>
         </h1>
-        <p class="hero__sub reveal reveal--delay-2">{{ t.hero.sub }}</p>
+        <p class="hero__sub reveal reveal--delay-2">{{ h.hero.sub }}</p>
         <div class="hero__cta reveal reveal--delay-3">
           <router-link to="/register?get=magnet" class="btn-hero btn-hero--primary">
-            {{ t.hero.cta1 }}
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            {{ h.hero.cta1 }}
+            <svg class="pub-arr" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           </router-link>
-          <router-link to="/partner-apply" class="btn-hero btn-hero--ghost">{{ t.hero.cta2 }}</router-link>
+          <router-link :to="lp('/pricing')" class="btn-hero btn-hero--ghost">{{ h.hero.cta2 }}</router-link>
         </div>
+        <router-link :to="lp('/free')" class="hero__more reveal reveal--delay-3">{{ h.freeMore }} <span class="pub-arr">→</span></router-link>
 
         <div class="hero__stats reveal reveal--delay-4">
           <div class="hero-stat" v-for="s in t.hero.stats" :key="s.label">
@@ -81,24 +36,15 @@
         </div>
       </div>
 
-      <!-- Floating cards -->
-      <div class="hero__cards">
-        <div class="float-card float-card--2 reveal reveal--delay-3">
-          <div class="float-card__icon">🤖</div>
-          <div class="float-card__text">
-            <span>AI Signals</span>
-            <small>{{ t.hero.card2 }}</small>
-          </div>
-        </div>
-        <div class="float-card float-card--3 reveal reveal--delay-4">
-          <div class="float-card__icon">🔐</div>
-          <div class="float-card__text">
-            <span>White Label</span>
-            <small>{{ t.hero.card3 }}</small>
-          </div>
-        </div>
-      </div>
+      <!-- Скриншот флагманского индикатора -->
+      <figure class="hero__shot reveal reveal--delay-4">
+        <router-link :to="lp('/indicators/market-radar-pro')">
+          <img src="/indicators/market-radar-pro.webp" :alt="h.hero.shotCaption" width="1600" height="484" fetchpriority="high" />
+        </router-link>
+        <figcaption>{{ h.hero.shotCaption }}</figcaption>
+      </figure>
     </section>
+
 
     <!-- ===== TICKER ===== -->
     <div class="ticker">
@@ -126,45 +72,34 @@
         <div class="free-block__cta reveal reveal--delay-3">
           <router-link to="/register?get=magnet" class="btn-hero btn-hero--primary">
             {{ t.freeBlock.cta }}
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            <svg class="pub-arr" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           </router-link>
+          <router-link :to="lp('/free')" class="free-block__more">{{ h.freeMore }} <span class="pub-arr">→</span></router-link>
           <p class="free-block__note">{{ t.freeBlock.note }}</p>
         </div>
       </div>
     </section>
 
-    <!-- ===== PRODUCTS ===== -->
+    <!-- ===== ПУТЬ ТРЕЙДЕРА ===== -->
     <section class="products" id="products">
       <div class="section-container">
-        <div class="section-label reveal">{{ t.products.label }}</div>
-        <h2 class="section-title reveal reveal--delay-1">{{ t.products.title }}</h2>
-        <p class="section-sub reveal reveal--delay-2">{{ t.products.sub }}</p>
+        <div class="section-label reveal">{{ h.path.label }}</div>
+        <h2 class="section-title reveal reveal--delay-1">{{ h.path.title }}</h2>
+        <p class="section-sub reveal reveal--delay-2">{{ h.path.sub }}</p>
 
-        <div class="products__grid">
-          <div
-            class="product-card reveal"
-            v-for="(p, i) in t.products.items.filter(x => x.id !== 'copy')"
-            :key="p.id"
-            :class="`reveal--delay-${i+1} product-card--${p.id}`"
-            @mouseenter="hoveredProduct = p.id"
-            @mouseleave="hoveredProduct = null"
-          >
-            <div class="product-card__glow"></div>
-            <div class="product-card__header">
-              <div class="product-card__icon">{{ p.icon }}</div>
-              <div class="product-card__tag">{{ p.tag }}</div>
+        <ol class="tpath">
+          <li v-for="(s, i) in pathSteps" :key="i" class="tpath__step reveal" :class="`reveal--delay-${(i % 3) + 1}`">
+            <span class="tpath__num">{{ String(i + 1).padStart(2, '0') }}</span>
+            <h3>{{ s.title }}</h3>
+            <p>{{ s.text }}</p>
+            <div class="tpath__tools">
+              <router-link v-for="l in s.links" :key="l.to + l.label" :to="l.to" class="tpath__tool">{{ l.label }}</router-link>
             </div>
-            <h3>{{ p.title }}</h3>
-            <p>{{ p.desc }}</p>
-            <ul class="product-card__features">
-              <li v-for="f in p.features" :key="f">
-                <span class="check">✦</span> {{ f }}
-              </li>
-            </ul>
-          </div>
-        </div>
+          </li>
+        </ol>
       </div>
     </section>
+
 
     <!-- ===== CHART SECTION ===== -->
     <section class="chart-section" id="chart">
@@ -307,7 +242,7 @@
                   class="btn-hero btn-hero--primary"
                 >
                   {{ t.chart.promo.cta }}
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                  <svg class="pub-arr" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                 </a>
                 <p class="tv-pine-note">{{ t.chart.promo.pineNote }}</p>
               </div>
@@ -366,8 +301,66 @@
             </div>
           </div>
         </div>
+        <div class="home-more reveal">
+          <router-link :to="lp('/team')" class="btn-hero btn-hero--ghost">{{ h.team.all }} <span class="pub-arr">→</span></router-link>
+        </div>
       </div>
     </section>
+
+    <!-- ===== ТАРИФЫ ===== -->
+    <section class="home-plans" id="plans">
+      <div class="section-container">
+        <div class="section-label reveal">{{ h.plans.label }}</div>
+        <h2 class="section-title reveal reveal--delay-1">{{ h.plans.title }}</h2>
+        <p class="section-sub reveal reveal--delay-2">{{ h.plans.sub }}</p>
+        <div class="hp-grid">
+          <router-link v-for="p in planList" :key="p.type" :to="lp('/pricing')" class="hp-card reveal" :class="{ 'hp-card--pop': p.type === 'PRO' }">
+            <div class="hp-card__head">
+              <span class="hp-card__name">{{ p.name }}</span>
+              <span v-if="p.type === 'PRO'" class="hp-card__pop">{{ h.plans.popular }}</span>
+            </div>
+            <div class="hp-card__price"><b>{{ p.price }}</b> {{ h.plans.perMonth }}</div>
+            <p v-if="p.desc" class="hp-card__desc">{{ p.desc }}</p>
+            <span class="hp-card__go">{{ h.plans.choose }} <span class="pub-arr">→</span></span>
+          </router-link>
+        </div>
+        <div class="home-more reveal">
+          <router-link :to="lp('/pricing')" class="btn-hero btn-hero--ghost">{{ h.plans.more }} <span class="pub-arr">→</span></router-link>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== ОТЗЫВЫ ===== -->
+    <section class="home-reviews" id="reviews">
+      <div class="section-container">
+        <div class="section-label reveal">{{ h.reviews.label }}</div>
+        <h2 class="section-title reveal reveal--delay-1">{{ h.reviews.title }}</h2>
+        <div class="hr-grid">
+          <ReviewCard v-for="i in HOME_REVIEWS" :key="i" :index="i" compact />
+        </div>
+        <div class="home-more reveal">
+          <router-link :to="lp('/reviews')" class="btn-hero btn-hero--primary">{{ h.reviews.all }} <span class="pub-arr">→</span></router-link>
+          <a :href="REVIEWS_TG" target="_blank" rel="noopener" class="btn-hero btn-hero--ghost">{{ h.reviews.tg }} <span class="pub-arr">↗</span></a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== FAQ ===== -->
+    <section class="home-faq" id="faq">
+      <div class="section-container">
+        <div class="section-label reveal">{{ h.faq.label }}</div>
+        <h2 class="section-title reveal reveal--delay-1">{{ h.faq.title }}</h2>
+        <div class="hf-list">
+          <details v-for="(f, i) in faqItems" :key="i" class="hf-item" :open="i === 0">
+            <summary>{{ f.q }}</summary>
+            <p>{{ f.a }}</p>
+          </details>
+        </div>
+        <p v-if="LEGAL_READY" class="hf-refunds"><router-link :to="lp('/refunds')">{{ h.faq.refundsLink }} <span class="pub-arr">→</span></router-link></p>
+      </div>
+    </section>
+
+
 
     <!-- ===== PARTNERS / FRANCHISE ===== -->
     <section class="partners" id="partners">
@@ -384,7 +377,7 @@
             </ul>
             <router-link to="/partner-apply" class="btn-hero btn-hero--primary reveal reveal--delay-4">
               {{ t.partners.cta }}
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              <svg class="pub-arr" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             </router-link>
           </div>
           <div class="partners__visual reveal reveal--delay-2">
@@ -416,73 +409,29 @@
       </div>
     </section>
 
-    <!-- ===== FOOTER ===== -->
-    <footer class="footer">
-      <div class="section-container">
-        <div class="footer__top">
-          <div class="footer__brand">
-            <div class="nav__logo">
-              <span class="logo-icon">↑↓</span>
-              <span class="logo-text">UpDown</span>
-            </div>
-            <p>{{ t.footer.desc }}</p>
-          </div>
-          <div class="footer__cols">
-            <div class="footer__col">
-              <strong>{{ t.footer.platform }}</strong>
-              <router-link to="/login">{{ t.nav.login }}</router-link>
-              <router-link to="/register">{{ t.footer.register }}</router-link>
-              <router-link to="/partner-apply">{{ t.nav.partner }}</router-link>
-            </div>
-            <div class="footer__col">
-              <strong>{{ t.footer.ecosystem }}</strong>
-              <a href="#products">{{ t.footer.signals }}</a>
-              <a href="#products">{{ t.footer.whitelabel }}</a>
-              <a href="#products">{{ t.footer.indicators }}</a>
-              <a href="https://charts.updown.team" target="_blank" rel="noopener">{{ t.nav.charts }} ↗</a>
-            </div>
-          </div>
-        </div>
-        <div class="footer__bottom">
-          <span>© {{ new Date().getFullYear() }} UpDown / AiView Platform</span>
-          <span>{{ t.footer.rights }}</span>
-        </div>
-      </div>
-    </footer>
-
   </div>
+  </PublicLayout>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
-import { useRouter } from 'vue-router'
-import LangSwitcher from '@/components/LangSwitcher.vue'
-import { lang, useT } from '@/i18n'
+import PublicLayout from '@/components/public/PublicLayout.vue'
+import ReviewCard from '@/components/public/ReviewCard.vue'
+import { lang, useT, tDb } from '@/i18n'
 import dict from '@/i18n/dicts/landing'
-import pdict from '@/content/publicText'
+import hdict from '@/content/siteText'
+import { HOME_REVIEWS, REVIEWS_TG } from '@/content/reviews'
 import { lp } from '@/utils/publicLang'
+import { usePubTheme } from '@/composables/usePubTheme'
+import { usePublicCatalog } from '@/composables/usePublicCatalog'
 
-// ---- THEME ----
-const theme = ref((typeof localStorage !== 'undefined' ? localStorage.getItem('ud-theme') : null) || 'dark')
-function toggleTheme() {
-  theme.value = theme.value === 'dark' ? 'light' : 'dark'
-  localStorage.setItem('ud-theme', theme.value)
-  // Применяем тему и к html для страниц авторизации
-  document.documentElement.setAttribute('data-theme', theme.value)
-  reapplyReveal()
-}
+// ---- THEME (общая с шапкой PublicLayout) ----
+const { theme } = usePubTheme()
+watch(theme, () => reapplyReveal())
 
 // ---- LANG ----
 // lang импортируется из общего ядра i18n; при смене языка переприменяем reveal.
-const mobileMenuOpen = ref(false)
-watch(lang, () => { mobileMenuOpen.value = false; reapplyReveal() })
-
-// ---- SCROLL ----
-const scrolled = ref(false)
-function onScroll() { scrolled.value = window.scrollY > 40 }
-function scrollTo(id) {
-  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
-}
+watch(lang, () => { reapplyReveal() })
 
 // ---- SCROLL REVEAL ----
 let observer
@@ -522,16 +471,13 @@ function reapplyReveal() {
 }
 
 onMounted(() => {
-  window.addEventListener('scroll', onScroll)
   setTimeout(initReveal, 150)
   nextTick(() => buildLWChart())
 })
 onUnmounted(() => {
-  window.removeEventListener('scroll', onScroll)
   observer?.disconnect()
 })
 
-const hoveredProduct = ref(null)
 
 // ---- CHART: LIGHTWEIGHT CHARTS + FIB INDICATOR VISUALIZATION ----
 const lwChartContainer = ref(null)
@@ -1002,7 +948,39 @@ const tickerItems = ['Market Radar Pro', '✦', 'Magnet Pro', '✦', 'Fib Pro', 
 
 // ---- TRANSLATIONS ----
 const t = useT(dict)
-const pt = useT(pdict)
+const ht = useT(hdict)
+const h = computed(() => ht.value.home)
+// Вопрос про возврат ссылается на страницу «Правила возврата»
+const LEGAL_READY = true
+const faqItems = computed(() => (LEGAL_READY ? h.value.faq.items : h.value.faq.items.slice(0, 5)))
+
+// Путь трейдера: шаги и ссылки на инструменты
+const PATH_LINKS = [
+  [['Market Radar Pro', '/indicators/market-radar-pro']],
+  [['Magnet Pro', '/indicators/magnet-pro'], ['Fib Pro', '/indicators/fib-pro'], ['Liquidity Zones', '/indicators/liquidity-zones']],
+  [['OI Radar Pro', '/indicators/oi-radar-pro'], ['MM Target Pro', '/indicators/mm-target-pro'], ['Trap Hunter Pro', '/indicators/trap-hunter-pro']],
+  [['signalsTools', '/pricing']],
+  [['eduTools', '/pricing']],
+  [['plansTools', '/pricing']],
+]
+const pathSteps = computed(() => h.value.path.steps.map((s, i) => ({
+  ...s,
+  links: (PATH_LINKS[i] || []).map(([label, to]) => ({ label: h.value.path[label] || label, to: lp(to) })),
+})))
+
+// Тарифы из базы; до загрузки — цены по умолчанию
+const { plans } = usePublicCatalog()
+const DEFAULT_PLANS = [
+  { type: 'START', name: 'START', price: 49, desc: '' },
+  { type: 'PRO', name: 'PRO', price: 99, desc: '' },
+  { type: 'ELITE', name: 'ELITE', price: 149, desc: '' },
+]
+const planList = computed(() => {
+  const list = Array.isArray(plans.value) ? plans.value.filter((p) => p.isActive !== false && !p.isTrial) : []
+  if (!list.length) return DEFAULT_PLANS
+  return list.slice().sort((a, b) => Number(a.price) - Number(b.price))
+    .map((p) => ({ type: p.type, name: tDb(p, 'name') || p.name, price: Number(p.price), desc: tDb(p, 'description') }))
+})
 </script>
 
 <style lang="scss" scoped>
@@ -1070,149 +1048,17 @@ const pt = useT(pdict)
 }
 
 /* ============================================================
-   NAVBAR
-============================================================ */
-.nav {
-  position: fixed;
-  top: 0; left: 0; right: 0;
-  z-index: 200;
-  transition: background 0.3s, border-color 0.3s;
-  border-bottom: 1px solid transparent;
-
-  &--scrolled {
-    background: rgba(10,10,11,0.85);
-    backdrop-filter: blur(20px);
-    border-color: var(--border);
-
-    .landing.light & {
-      background: rgba(244,246,251,0.9);
-    }
-  }
-
-  &__inner {
-    max-width: 1280px;
-    margin: 0 auto;
-    padding: 0 32px;
-    height: 68px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  &__links {
-    display: flex;
-    gap: 32px;
-
-    a {
-      color: var(--text-2);
-      font-size: 14px;
-      font-weight: 500;
-      text-decoration: none;
-      transition: color 0.2s;
-      &:hover { color: var(--text); }
-    }
-
-    .nav__charts-link {
-      color: #4f6ef7;
-      font-weight: 600;
-      &:hover { color: #7b9cff; }
-    }
-  }
-
-  &__actions {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-}
-
-.nav__logo {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: default;
-}
-
-.logo-icon {
-  font-size: 20px;
-  font-weight: 800;
-  font-family: 'Montserrat', sans-serif;
-  color: var(--accent);
-  line-height: 1;
-}
-
-.logo-text {
-  font-size: 18px;
-  font-weight: 700;
-  font-family: 'Montserrat', sans-serif;
-  color: var(--text);
-  letter-spacing: -0.3px;
-}
-
-.icon-btn {
-  width: 34px; height: 34px;
-  border-radius: 8px;
-  border: 1px solid var(--border-2);
-  background: var(--surface);
-  color: var(--text-2);
-  cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  transition: all 0.2s;
-  &:hover { color: var(--text); border-color: var(--accent); }
-}
-
-.lang-btn {
-  height: 34px; padding: 0 12px;
-  border-radius: 8px;
-  border: 1px solid var(--border-2);
-  background: var(--surface);
-  color: var(--text-2);
-  font-size: 12px; font-weight: 700;
-  font-family: 'Montserrat', sans-serif;
-  cursor: pointer;
-  transition: all 0.2s;
-  letter-spacing: 0.5px;
-  &:hover { color: var(--accent); border-color: var(--accent); }
-}
-
-.btn-nav {
-  height: 34px; padding: 0 16px;
-  border-radius: 8px;
-  border: 1px solid var(--border-2);
-  background: transparent;
-  color: var(--text-2);
-  font-size: 13px; font-weight: 500;
-  font-family: 'Roboto', sans-serif;
-  text-decoration: none;
-  display: inline-flex; align-items: center;
-  transition: all 0.2s;
-  &:hover { color: var(--text); border-color: var(--border-2); text-decoration: none; }
-
-  &--accent {
-    background: var(--accent);
-    color: #000;
-    border-color: var(--accent);
-    font-weight: 600;
-    &:hover { background: var(--accent-2); border-color: var(--accent-2); color: #000; }
-
-    .landing.light & {
-      color: #fff;
-      &:hover { color: #fff; }
-    }
-  }
-}
-
-/* ============================================================
    HERO
 ============================================================ */
 .hero {
   position: relative;
-  min-height: 100vh;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 48px;
   overflow: hidden;
-  padding: 120px 32px 80px;
+  padding: 72px 32px 64px;
 
   &__grid {
     position: absolute;
@@ -1947,73 +1793,6 @@ const pt = useT(pdict)
 }
 
 /* ============================================================
-   FOOTER
-============================================================ */
-.footer {
-  padding: 60px 0 32px;
-  background: var(--bg-2);
-  border-top: 1px solid var(--border);
-
-  &__top {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 48px;
-    gap: 40px;
-    flex-wrap: wrap;
-  }
-
-  &__brand {
-    p {
-      font-size: 13px;
-      color: var(--text-3);
-      margin-top: 10px;
-    }
-  }
-
-  &__cols {
-    display: flex;
-    gap: 60px;
-  }
-
-  &__col {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-
-    strong {
-      font-family: 'Montserrat', sans-serif;
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      color: var(--text-3);
-      margin-bottom: 4px;
-    }
-
-    a {
-      font-size: 13px;
-      color: var(--text-2);
-      text-decoration: none;
-      transition: color 0.2s;
-      &:hover { color: var(--accent); }
-    }
-  }
-
-  &__bottom {
-    border-top: 1px solid var(--border);
-    padding-top: 24px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 12px;
-
-    span { font-size: 12px; color: var(--text-3); }
-  }
-}
-
-/* ============================================================
    CHART SECTION
 ============================================================ */
 .chart-section {
@@ -2471,126 +2250,123 @@ const pt = useT(pdict)
   line-height: 1.5;
 }
 
+
 /* ============================================================
-   HAMBURGER + MOBILE MENU
+   НОВАЯ ГЛАВНАЯ (Спринт 3b)
 ============================================================ */
-.hamburger {
-  display: none;
-  flex-direction: column;
-  justify-content: center;
-  gap: 5px;
-  width: 34px; height: 34px;
-  background: var(--surface);
-  border: 1px solid var(--border-2);
-  border-radius: 8px;
-  cursor: pointer;
-  padding: 7px 8px;
+.hero__more {
+  display: inline-block; margin: 18px 0 8px; color: var(--text-2); font-size: 14px; font-weight: 600;
+  border-bottom: 1px dashed var(--border-2);
+  &:hover { color: var(--accent); border-color: var(--accent); }
+}
+.hero__shot {
+  position: relative; z-index: 2; margin: 0; width: 100%; max-width: 1100px;
+  a { display: block; border-radius: 16px; overflow: hidden; border: 1px solid var(--border-2); box-shadow: 0 30px 80px -30px rgba(0,0,0,.6), 0 0 0 1px rgba(201,168,76,.08); transition: transform .2s, border-color .2s; }
+  a:hover { transform: translateY(-2px); border-color: var(--accent); }
+  img { display: block; width: 100%; height: auto; background: #0b0d12; }
+  figcaption { margin-top: 12px; text-align: center; color: var(--text-3); font-size: 13px; }
+}
+.free-block__more { color: var(--accent); font-weight: 700; font-size: 14px; &:hover { text-decoration: underline; } }
 
-  span {
-    display: block;
-    height: 2px;
-    background: var(--text-2);
-    border-radius: 2px;
-    transition: all 0.3s ease;
-    transform-origin: center;
-  }
-
-  &--open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
-  &--open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
-  &--open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+.tpath {
+  list-style: none; margin: 0; padding: 0;
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; counter-reset: none;
+}
+.tpath__step {
+  position: relative; min-width: 0; padding: 24px; border-radius: 16px;
+  background: var(--surface); border: 1px solid var(--border);
+  display: flex; flex-direction: column; gap: 8px;
+  transition: border-color .2s;
+  &:hover { border-color: var(--accent); }
+  h3 { font-family: 'Montserrat', sans-serif; font-size: 18px; font-weight: 700; margin: 0; color: var(--text); }
+  p { margin: 0; color: var(--text-2); font-size: 14.5px; line-height: 1.55; }
+}
+.tpath__num { font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 13px; color: var(--accent); letter-spacing: 1px; }
+.tpath__tools { display: flex; flex-wrap: wrap; gap: 6px; margin-top: auto; padding-top: 10px; }
+.tpath__tool {
+  font-size: 12.5px; font-weight: 600; color: var(--text); padding: 4px 10px; border-radius: 999px;
+  border: 1px solid var(--border-2); background: var(--bg-2); white-space: nowrap;
+  &:hover { border-color: var(--accent); color: var(--accent); }
 }
 
-.nav__mobile {
-  display: none;
-  flex-direction: column;
-  padding: 0 20px;
-  border-top: 1px solid var(--border);
-  background: var(--bg);
-  gap: 4px;
-  /* Закрыто: нулевая высота + clip, без overflow:hidden на самом блоке */
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.35s ease, padding 0.35s ease;
+.home-more { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 36px; }
 
-  &--open {
-    max-height: 480px;
-    padding: 12px 20px 16px;
-  }
-
-  a {
-    display: block;
-    padding: 11px 12px;
-    border-radius: 8px;
-    font-size: 15px;
-    font-weight: 500;
-    color: var(--text-2);
-    text-decoration: none;
-    transition: background 0.15s, color 0.15s;
-    &:hover { background: var(--surface); color: var(--text); text-decoration: none; }
-  }
-
-  .nav__charts-link { color: #4f6ef7; font-weight: 600; }
-
-  .mobile-partner-link {
-    margin-top: 8px;
-    background: var(--accent);
-    color: #0a0a0b !important;
-    font-weight: 700;
-    text-align: center;
-    &:hover { background: var(--accent-2); color: #0a0a0b !important; }
-  }
+.home-plans { padding: 96px 0 0; }
+.hp-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+.hp-card {
+  display: flex; flex-direction: column; gap: 10px; padding: 24px; border-radius: 16px; min-width: 0;
+  background: var(--surface); border: 1px solid var(--border); color: var(--text);
+  transition: border-color .2s, transform .2s;
+  &:hover { border-color: var(--accent); transform: translateY(-2px); }
+  &--pop { border-color: var(--accent); background: linear-gradient(180deg, var(--accent-glow), transparent 55%), var(--surface); }
 }
+.hp-card__head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.hp-card__name { font-family: 'Montserrat', sans-serif; font-weight: 800; letter-spacing: .16em; color: var(--accent); }
+.hp-card__pop { font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px; background: var(--accent); color: var(--bg); }
+.hp-card__price { color: var(--text-3); font-size: 14px; b { font-family: 'Montserrat', sans-serif; font-size: 38px; color: var(--text); margin-inline-end: 4px; font-variant-numeric: tabular-nums; } }
+.hp-card__desc { margin: 0; color: var(--text-2); font-size: 14px; }
+.hp-card__go { margin-top: auto; color: var(--accent); font-weight: 700; font-size: 14px; }
+
+.home-reviews { padding: 96px 0 0; }
+.hr-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-items: stretch; }
+
+.home-faq { padding: 96px 0 0; }
+.hf-list { display: grid; gap: 10px; max-width: 860px; }
+.hf-item {
+  padding: 16px 20px; border-radius: 14px; background: var(--surface); border: 1px solid var(--border);
+  summary { cursor: pointer; font-weight: 700; list-style: none; color: var(--text); display: flex; justify-content: space-between; gap: 12px; }
+  summary::-webkit-details-marker { display: none; }
+  summary::after { content: '+'; color: var(--accent); font-weight: 800; }
+  &[open] summary::after { content: '−'; }
+  p { color: var(--text-2); margin: 10px 0 0; line-height: 1.6; }
+}
+.hf-refunds { margin-top: 14px; a { color: var(--accent); font-weight: 700; } }
+.home-reviews .section-title, .home-faq .section-title { margin-bottom: 36px; }
 
 /* ============================================================
    RESPONSIVE
 ============================================================ */
 
-/* ── 1100px: скрываем nav-ссылки, показываем бургер ── */
+/* Числа вида «1000+» в RTL не переворачиваем */
+.hero-stat__num, .big-stat__num { unicode-bidi: isolate; direction: ltr; }
+
+/* ── 1100px ── */
 @media (max-width: 1100px) {
-  .products__grid { grid-template-columns: repeat(2, 1fr); }
+  .tpath { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .hr-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .team__grid { grid-template-columns: repeat(3, 1fr); }
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
   .how__steps { grid-template-columns: repeat(2, 1fr); }
-  .nav__inner { padding: 0 24px; }
-
-  /* Ссылки убираем, показываем бургер — nav остаётся аккуратным */
-  .nav__links { display: none; }
-  .nav__mobile { display: flex; }
-  .hamburger { display: flex; }
-  /* На планшете логин-кнопку прячем, оставляем только accent */
-  .btn-nav--login { display: none; }
 }
 
 /* ── 900px ── */
 @media (max-width: 900px) {
   .section-container { padding: 0 24px; }
-  .nav__inner { padding: 0 20px; }
 }
 
 /* ── 768px: планшет вертикальный ── */
 @media (max-width: 768px) {
-  .btn-nav { display: none; }
 
-  .hero { padding: 100px 20px 60px; }
+  .hero { padding: 48px 20px 48px; gap: 36px; }
   .hero__sub { font-size: 15px; }
   .hero__stats { gap: 28px; }
   .hero__cards { display: none; }
   .float-card { display: none; }
 
-  .products__grid { grid-template-columns: 1fr; }
+  .tpath, .hr-grid, .hp-grid { grid-template-columns: 1fr; }
   .team__grid { grid-template-columns: repeat(2, 1fr); }
   .stats-grid { grid-template-columns: 1fr 1fr; }
   .how__steps { grid-template-columns: 1fr; }
   .partners__inner { grid-template-columns: 1fr; }
-
-  .footer__top { flex-direction: column; gap: 32px; }
-  .footer__cols { flex-direction: row; gap: 32px; flex-wrap: wrap; }
-  .footer__col { min-width: 140px; }
 }
 
 /* ── 600px: телефон ── */
 @media (max-width: 600px) {
-  .hero { padding: 90px 16px 52px; }
+  /* Главная на телефоне короче: 3 отзыва и 3 человека, остальное — на отдельных страницах */
+  .hr-grid > :nth-child(n+4) { display: none; }
+  .team__grid > :nth-child(n+4) { display: none; }
+  .hero__stats { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 12px; }
+  .hero { padding: 36px 16px 40px; gap: 28px; }
   .hero__cta { flex-direction: column; align-items: center; }
   .btn-hero { width: 100%; max-width: 320px; justify-content: center; }
   .hero__stats { gap: 20px; }
@@ -2603,7 +2379,5 @@ const pt = useT(pdict)
 @media (max-width: 480px) {
   .team__grid { grid-template-columns: 1fr; }
   .stats-grid { grid-template-columns: 1fr; }
-  .nav__inner { padding: 0 16px; height: 60px; }
-  .footer__cols { flex-direction: column; gap: 24px; }
 }
 </style>

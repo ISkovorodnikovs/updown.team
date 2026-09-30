@@ -2,7 +2,7 @@
   <PublicLayout>
     <div v-if="it" class="pub-wrap">
       <nav class="ip-crumbs">
-        <router-link :to="lp('/indicators')">← {{ t.ind.back }}</router-link>
+        <router-link :to="lp('/indicators')"><span class="pub-arr">←</span> {{ t.ind.back }}</router-link>
       </nav>
 
       <section class="ip-hero">
@@ -20,7 +20,7 @@
           <div class="ip-buy__price pub-tab"><b>{{ price }}</b> {{ t.catalog.perMonth }}</div>
           <router-link v-if="it.free" to="/register?get=magnet" class="pub-btn pub-btn--gold pub-btn--lg">{{ t.ind.getFree }}</router-link>
           <router-link :to="buyLink" class="pub-btn pub-btn--lg" :class="it.free ? 'pub-btn--ghost' : 'pub-btn--gold'">{{ fill(t.ind.buy, { price }) }}</router-link>
-          <a :href="it.tv" target="_blank" rel="noopener" class="ip-buy__tv">{{ t.ind.openTv }} ↗</a>
+          <a :href="it.tv" target="_blank" rel="noopener" class="ip-buy__tv">{{ t.ind.openTv }} <span class="pub-arr">↗</span></a>
           <p class="pub-muted">{{ t.ind.priceNote }}</p>
         </aside>
       </section>

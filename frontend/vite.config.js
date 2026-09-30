@@ -4,12 +4,14 @@ import { fileURLToPath, URL } from 'url'
 import { writeFileSync } from 'fs'
 import { SEO, OG_LOCALE, langPath, LANDING_LANGS } from './src/seo-meta.js'
 import PUBLIC_TEXT from './src/content/publicText.js'
+import SITE_SEO from './src/content/siteSeo.js'
+import LEGAL_TEXT from './src/content/legalText.js'
 import { INDICATORS, INDICATOR_TEXT } from './src/content/indicators.js'
 
 const SITE = 'https://updown.team'
 
 // Страницы без языкового префикса; для каждого языка — '/ru/pricing' и т.д.
-const PAGES = ['/', '/indicators', ...INDICATORS.map((i) => `/indicators/${i.slug}`), '/pricing', '/free']
+const PAGES = ['/', '/indicators', ...INDICATORS.map((i) => `/indicators/${i.slug}`), '/pricing', '/free', '/reviews', '/team', '/terms', '/privacy', '/refunds']
 const withLang = (code, page) => (code === 'en' ? page : page === '/' ? `/${code}` : `/${code}${page}`)
 const PRERENDER = LANDING_LANGS.flatMap((code) => PAGES.map((page) => withLang(code, page)))
 
@@ -28,6 +30,13 @@ function seoFor(code, page) {
   if (page === '/indicators') return { title: ui.indicatorsTitle, desc: ui.indicatorsDesc }
   if (page === '/pricing') return { title: ui.pricingTitle, desc: ui.pricingDesc }
   if (page === '/free') return { title: ui.freeTitle, desc: ui.freeDesc }
+  const ss = SITE_SEO[code] || SITE_SEO.en
+  if (page === '/team') return { title: ss.teamTitle, desc: ss.teamDesc }
+  if (page === '/reviews') return { title: ss.reviewsTitle, desc: ss.reviewsDesc }
+  const ls = (LEGAL_TEXT[code] || LEGAL_TEXT.en).seo
+  if (page === '/terms') return { title: ls.termsTitle, desc: ls.termsDesc }
+  if (page === '/privacy') return { title: ls.privacyTitle, desc: ls.privacyDesc }
+  if (page === '/refunds') return { title: ls.refundsTitle, desc: ls.refundsDesc }
   const slug = page.replace('/indicators/', '')
   const ind = INDICATORS.find((i) => i.slug === slug)
   if (ind) {
@@ -77,7 +86,7 @@ function injectSeo(route, html) {
 // sitemap.xml со всеми страницами и языковыми версиями
 function writeSitemap() {
   const today = new Date().toISOString().slice(0, 10)
-  const prio = (page) => (page === '/' ? '1.0' : page === '/indicators' || page === '/pricing' || page === '/free' ? '0.9' : '0.8')
+  const prio = (page) => (page === '/' ? '1.0' : ['/terms', '/privacy', '/refunds'].includes(page) ? '0.3' : page === '/indicators' || page === '/pricing' || page === '/free' || page === '/reviews' ? '0.9' : '0.8')
   const urls = []
   for (const page of PAGES) {
     const alts = [`<xhtml:link rel="alternate" hreflang="x-default" href="${SITE}${withLang('en', page)}"/>`]

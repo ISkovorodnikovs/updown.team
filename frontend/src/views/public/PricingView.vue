@@ -41,7 +41,7 @@
             <router-link :to="lp('/indicators')" class="pr-row pr-row--link">
               <span class="pr-row__main"><b>{{ t.pricing.indicatorsRow }}</b><small>{{ t.pricing.indicatorsNote }}</small></span>
               <span class="pr-row__price pub-tab">{{ indicatorPrice }} {{ t.pricing.perMonth }}</span>
-              <span class="pr-row__go">{{ t.pricing.seeAll }} →</span>
+              <span class="pr-row__go">{{ t.pricing.seeAll }} <span class="pub-arr">→</span></span>
             </router-link>
             <div class="pr-row pr-row--group">{{ t.pricing.channelsTitle }}</div>
             <div v-for="c in t.pricing.channels" :key="c.name" class="pr-row">

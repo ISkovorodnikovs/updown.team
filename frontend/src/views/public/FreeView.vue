@@ -7,7 +7,7 @@
         <p class="pub-lead">{{ t.free.sub }}</p>
         <div class="pub-row">
           <router-link to="/register?get=magnet" class="pub-btn pub-btn--gold pub-btn--lg">{{ t.free.cta }}</router-link>
-          <router-link :to="lp('/indicators/magnet-pro')" class="pub-btn pub-btn--ghost pub-btn--lg">Magnet Pro →</router-link>
+          <router-link :to="lp('/indicators/magnet-pro')" class="pub-btn pub-btn--ghost pub-btn--lg">Magnet Pro <span class="pub-arr">→</span></router-link>
         </div>
       </section>
 
@@ -40,7 +40,7 @@
           <p>{{ t.free.after }}</p>
           <div class="pub-row">
             <router-link to="/register?get=magnet" class="pub-btn pub-btn--gold pub-btn--lg">{{ t.free.cta }}</router-link>
-            <router-link :to="lp('/pricing')" class="pub-btn pub-btn--ghost pub-btn--lg">{{ t.nav.pricing }} →</router-link>
+            <router-link :to="lp('/pricing')" class="pub-btn pub-btn--ghost pub-btn--lg">{{ t.nav.pricing }} <span class="pub-arr">→</span></router-link>
           </div>
         </div>
       </section>

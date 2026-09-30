@@ -9,7 +9,7 @@ const LANDING = () => import('@/views/LandingView.vue')
 const landingRoutes = LANDING_LANGS.map((code) => ({
   path: code === 'en' ? '/' : `/${code}`,
   component: LANDING,
-  meta: { landingLang: code },
+  meta: { landingLang: code, publicPage: 'home' },
 }))
 
 // Публичные страницы (Спринт 3) на всех языках: /indicators, /ru/indicators, ...
@@ -18,6 +18,11 @@ const PUBLIC_PAGES = [
   { path: '/indicators/:slug', component: () => import('@/views/public/IndicatorView.vue'), page: 'indicator' },
   { path: '/pricing', component: () => import('@/views/public/PricingView.vue'), page: 'pricing' },
   { path: '/free', component: () => import('@/views/public/FreeView.vue'), page: 'free' },
+  { path: '/reviews', component: () => import('@/views/public/ReviewsView.vue'), page: 'reviews' },
+  { path: '/team', component: () => import('@/views/public/TeamView.vue'), page: 'team' },
+  { path: '/terms', component: () => import('@/views/public/LegalView.vue'), page: 'terms' },
+  { path: '/privacy', component: () => import('@/views/public/LegalView.vue'), page: 'privacy' },
+  { path: '/refunds', component: () => import('@/views/public/LegalView.vue'), page: 'refunds' },
 ]
 const publicRoutes = LANDING_LANGS.flatMap((code) => PUBLIC_PAGES.map((pg) => ({
   path: (code === 'en' ? '' : `/${code}`) + pg.path,
