@@ -4,6 +4,7 @@ import App from './App.vue'
 import { routes, setupRouter } from './router'
 import { applyDom } from './i18n'
 import { captureReferral } from './utils/referral'
+import { captureAttribution } from './utils/attribution'
 import './assets/styles/main.scss'
 
 // ViteSSG создаёт роутер сам (memory-history на сервере, web-history на клиенте)
@@ -17,6 +18,7 @@ export const createApp = ViteSSG(
     if (isClient) {
       applyDom()        // выставляем <html lang/dir> и SEO на клиенте
       captureReferral() // запоминаем ?ref= из ссылки на 30 дней
+      captureAttribution() // источник визита (utm, referrer) на 30 дней
     }
   },
 )

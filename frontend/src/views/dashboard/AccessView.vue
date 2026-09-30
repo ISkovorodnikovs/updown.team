@@ -1,7 +1,9 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue'
-import { shopApi, subscriptionsApi } from '@/api'
-import { useT, tDb, lang, fmtDate } from '@/i18n'
+import { ref, onMounted, computed, nextTick } from 'vue'
+import { useRoute } from 'vue-router'
+import { shopApi, subscriptionsApi, tvApi } from '@/api'
+import { useT, tDb, lang, fmtDate, fmtDateTime } from '@/i18n'
+import { track } from '@/utils/attribution'
 import dict from '@/i18n/dicts/access'
 
 const t = useT(dict)
@@ -12,10 +14,41 @@ const products = ref([])
 const hasSupport = ref(false)
 const loading = ref(true)
 
+const route = useRoute()
 const tvName = ref('')
 const tvBusy = ref(false)
-const tvSaved = ref(false)
 const tvError = ref('')
+const confirmNick = ref('')
+const requests = ref([])
+const tvCard = ref(null)
+const focusTv = ref(false)
+
+const fill = (tpl, vars) => String(tpl || '').replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? '')
+const isForever = (d) => d && new Date(d).getUTCFullYear() >= 2099
+const untilLabel = (d) => (isForever(d) ? t.value.forever : fmtDate(d))
+
+// Статус выдачи конкретного индикатора — по последней заявке, где он есть
+function itemState(it) {
+  for (const r of requests.value) {
+    const item = (r.items || []).find((i) => i.productId === it.productId)
+    if (!item) continue
+    if (r.status === 'granted' && item.until && new Date(item.until) < new Date()) return { status: 'none' }
+    return { status: r.status, req: r }
+  }
+  return { status: 'none' }
+}
+function stateLabel(st) {
+  return { none: t.value.tvStNone, pending: t.value.tvStPending, granted: t.value.tvStGranted, not_found: t.value.tvStNotFound }[st] || ''
+}
+const needRequest = computed(() => indicators.value.some((it) => ['none', 'not_found'].includes(itemState(it).status)))
+const pendingReq = computed(() => requests.value.find((r) => r.status === 'pending') || null)
+const notFoundReq = computed(() => (requests.value[0]?.status === 'not_found' ? requests.value[0] : null))
+const allGranted = computed(() => indicators.value.length > 0 && indicators.value.every((it) => itemState(it).status === 'granted'))
+const grantedNick = computed(() => requests.value.find((r) => r.status === 'granted')?.tvUsername || '')
+
+async function loadRequests() {
+  try { requests.value = await tvApi.my().then((r) => r.data) } catch { requests.value = [] }
+}
 
 const showContact = ref(false)
 const contactMsg = ref('')
@@ -47,24 +80,42 @@ onMounted(async () => {
     products.value = d.products || []
     hasSupport.value = !!d.hasSupport
     tvName.value = d.tvUsername || ''
-    tvSaved.value = !!d.tvUsername
   } catch { /* ignore */ }
   try { activePlan.value = await subscriptionsApi.getActivePlan().then(r => r.data) } catch { /* ignore */ }
+  await loadRequests()
   loading.value = false
+  // Пришли по кнопке «Получить Magnet Pro» — сразу показываем заявку
+  if (route.query.focus === 'tv') {
+    await nextTick()
+    tvCard.value?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    focusTv.value = true
+    setTimeout(() => { focusTv.value = false }, 2500)
+  }
 })
 
 function daysLeft(date) {
   return Math.max(0, Math.ceil((new Date(date) - new Date()) / 86400000))
 }
 
-async function submitTv() {
+async function submitTv(confirm) {
   const val = (tvName.value || '').trim()
   if (!val) return
   tvBusy.value = true; tvError.value = ''
   try {
-    await shopApi.setTvUsername({ tvUsername: val, language: lang.value })
-    tvSaved.value = true
-  } catch { tvError.value = t.value.errTv } finally { tvBusy.value = false }
+    const { data } = await tvApi.request({ tvUsername: val, confirm: !!confirm, lang: lang.value })
+    if (data && data.ok === false && data.reason === 'profile_not_found') {
+      confirmNick.value = data.tvUsername || val
+      return
+    }
+    confirmNick.value = ''
+    track('lead_magnet_request', { product: 'tradingview_access' })
+    await loadRequests()
+  } catch (e) {
+    const m = String(e.response?.data?.message || '')
+    tvError.value = m.includes('INVALID_USERNAME') ? t.value.tvInvalid
+      : m.includes('ALREADY_GRANTED') ? t.value.tvAlready
+      : t.value.errTv
+  } finally { tvBusy.value = false }
 }
 
 async function requestChannel(it) {
@@ -99,6 +150,7 @@ async function sendContact() {
       </div>
       <div class="acc-plan__meta">
         <span>{{ t.subExpires }}: {{ fmtDate(activePlan.expiresAt) }} · {{ daysLeft(activePlan.expiresAt) }} {{ t.days }}</span>
+        <span v-if="activePlan.plan?.isTrial" class="acc-plan__trial">{{ t.trialNote }}</span>
         <router-link class="acc-plan__hist" to="/dashboard/subscriptions">{{ t.subHistory }} →</router-link>
       </div>
     </div>
@@ -121,32 +173,57 @@ async function sendContact() {
     </div>
 
     <template v-else>
-      <!-- TradingView: одно имя на все индикаторы -->
-      <div v-if="indicators.length" class="acc-card">
+      <!-- TradingView: заявка на доступ (выдаёт администратор вручную) -->
+      <div v-if="indicators.length" id="tv" ref="tvCard" class="acc-card" :class="{ 'acc-card--focus': focusTv }">
         <div class="acc-card__name">{{ t.tvTitle }}</div>
-        <p class="acc-block__hint">{{ t.tvHint }}</p>
-        <p class="acc-block__where">{{ t.tvWhere }}</p>
         <ul class="acc-inds">
           <li v-for="it in indicators" :key="it.productId">
-            <span>✦ {{ tDb(it, 'name') }}</span>
-            <a v-if="it.tradingViewUrl" class="acc-link" :href="it.tradingViewUrl" target="_blank" rel="noopener">{{ t.openTv }} →</a>
+            <span class="acc-ind__name">✦ {{ tDb(it, 'name') }}</span>
+            <span class="acc-ind__meta">
+              <span class="tv-state" :class="'tv-state--' + itemState(it).status">{{ stateLabel(itemState(it).status) }}</span>
+              <span class="acc-ind__until">{{ t.until }}: {{ untilLabel(it.expiresAt) }}</span>
+              <a v-if="it.tradingViewUrl" class="acc-link" :href="it.tradingViewUrl" target="_blank" rel="noopener">{{ t.openTv }} →</a>
+            </span>
           </li>
         </ul>
-        <div class="acc-tv">
-          <input v-model="tvName" :placeholder="t.tvPh" class="acc-input" />
-          <button class="acc-btn acc-btn--primary" :disabled="tvBusy" @click="submitTv">
-            {{ tvBusy ? '…' : (tvSaved ? t.tvChange : t.tvSubmit) }}
-          </button>
+
+        <div v-if="pendingReq" class="acc-note acc-note--pending">
+          {{ fill(t.tvPendingFull, { nick: pendingReq.tvUsername, time: fmtDateTime(pendingReq.createdAt) }) }}
         </div>
-        <div v-if="tvSaved" class="acc-ok">✓ {{ t.tvPending }}</div>
-        <div v-if="tvError" class="acc-err">{{ tvError }}</div>
+        <div v-if="notFoundReq && needRequest" class="acc-note acc-note--warn">
+          {{ fill(t.tvNotFoundFull, { nick: notFoundReq.tvUsername }) }}
+        </div>
+        <div v-if="allGranted" class="acc-note acc-note--ok">
+          {{ fill(t.tvGrantedFull, { nick: grantedNick }) }}
+          <div class="acc-note__sub">{{ t.tvHowFind }}</div>
+        </div>
+
+        <template v-if="needRequest">
+          <p class="acc-block__hint">{{ t.tvHint }}</p>
+          <p class="acc-block__where">{{ t.tvWhere }}</p>
+          <div class="acc-tv">
+            <input id="tv-username" v-model="tvName" :placeholder="t.tvPh" class="acc-input" autocomplete="off" @keyup.enter="submitTv(false)" />
+            <button class="acc-btn acc-btn--primary" :disabled="tvBusy" @click="submitTv(false)">
+              {{ tvBusy ? '…' : t.tvSubmit }}
+            </button>
+          </div>
+          <div v-if="confirmNick" class="acc-note acc-note--warn">
+            {{ fill(t.tvProfileNotFound, { nick: confirmNick }) }}
+            <div class="acc-note__actions">
+              <button class="acc-btn acc-btn--primary" :disabled="tvBusy" @click="submitTv(true)">{{ t.tvConfirmSend }}</button>
+              <button class="acc-btn acc-btn--ghost" @click="confirmNick = ''">{{ t.tvFix }}</button>
+            </div>
+          </div>
+          <div v-if="tvError" class="acc-err">{{ tvError }}</div>
+        </template>
+        <p v-if="needRequest || pendingReq" class="acc-block__where acc-timing">{{ t.tvTiming }}</p>
       </div>
 
       <!-- Каналы: доступ в Telegram (по каждому) -->
       <div v-for="it in channels" :key="it.productId" class="acc-card">
         <div class="acc-card__top">
           <div class="acc-card__name">{{ tDb(it, 'name') }}</div>
-          <div class="acc-card__until">{{ t.until }}: {{ fmtDate(it.expiresAt) }}</div>
+          <div class="acc-card__until">{{ t.until }}: {{ untilLabel(it.expiresAt) }}</div>
         </div>
 
         <!-- Кастомная настройка (Скальпинг): ввод инструмента + поддержка -->
@@ -258,6 +335,23 @@ async function sendContact() {
   border-radius: 10px; padding: 11px 14px; color: var(--text-1); font-size: 14px;
   &:focus { outline: none; border-color: var(--accent); } }
 .acc-ok { color: #1E9E5A; font-size: 13px; margin-top: 10px; font-weight: 600; }
+.acc-card--focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(201,168,76,.25); transition: box-shadow .3s; }
+.acc-ind__name { font-weight: 600; }
+.acc-ind__meta { display: inline-flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.acc-ind__until { color: var(--text-3); font-size: 12px; }
+.tv-state { font-size: 11px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px;
+  border: 1px solid var(--border, #2a2a30); color: var(--text-2); }
+.tv-state--pending { color: #D9A11F; border-color: rgba(217,161,31,.5); }
+.tv-state--granted { color: #1E9E5A; border-color: rgba(30,158,90,.5); }
+.tv-state--not_found { color: #E5484D; border-color: rgba(229,72,77,.5); }
+.acc-note { border-radius: 10px; padding: 12px 14px; font-size: 13px; line-height: 1.5; margin: 0 0 12px; border: 1px solid var(--border, #2a2a30); }
+.acc-note--pending { border-color: rgba(217,161,31,.45); }
+.acc-note--ok { border-color: rgba(30,158,90,.45); }
+.acc-note--warn { border-color: rgba(229,72,77,.45); }
+.acc-note__sub { color: var(--text-2); margin-top: 6px; }
+.acc-note__actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+.acc-timing { margin-top: 12px; margin-bottom: 0; }
+.acc-plan__trial { display: block; width: 100%; color: var(--text-2); font-size: 12px; margin-top: 4px; }
 .acc-err { color: #E5484D; font-size: 13px; margin-top: 8px; }
 .acc-link { display: inline-block; margin-top: 12px; color: var(--accent); font-size: 13px; text-decoration: none; }
 .acc-help-note { margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--border-2, #33333a);

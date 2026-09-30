@@ -37,7 +37,9 @@ export default {
     "tgHint": "Прив’яжіть Telegram, щоб отримувати сповіщення й там.",
     "tgConnect": "Прив’язати Telegram",
     "tgConnected": "Telegram прив’язано",
-    "tgNotify": "Надсилати сповіщення в Telegram"
+    "tgNotify": "Надсилати сповіщення в Telegram",
+    "setPw": "Встановити пароль",
+    "setPwHint": "Ви зареєструвалися за кодом із листа. Встановіть пароль, щоб входити й з ним. Вхід за кодом залишиться доступним."
   },
   "en": {
     "title": "Profile",
@@ -77,7 +79,9 @@ export default {
     "tgHint": "Link Telegram to receive notifications there too.",
     "tgConnect": "Connect Telegram",
     "tgConnected": "Telegram connected",
-    "tgNotify": "Send notifications to Telegram"
+    "tgNotify": "Send notifications to Telegram",
+    "setPw": "Set a password",
+    "setPwHint": "You signed up with a one-time code. Set a password to sign in with it as well. Signing in by code remains available."
   },
   "ru": {
     "title": "Профиль",
@@ -117,7 +121,9 @@ export default {
     "tgHint": "Привяжите Telegram, чтобы получать уведомления ещё и там.",
     "tgConnect": "Привязать Telegram",
     "tgConnected": "Telegram привязан",
-    "tgNotify": "Слать уведомления в Telegram"
+    "tgNotify": "Слать уведомления в Telegram",
+    "setPw": "Задать пароль",
+    "setPwHint": "Вы зарегистрировались по коду из письма. Задайте пароль, чтобы входить и с ним. Вход по коду останется доступен."
   },
   "de": {
     "title": "Profil",
@@ -157,7 +163,9 @@ export default {
     "tgHint": "Verbinde Telegram, um Benachrichtigungen auch dort zu erhalten.",
     "tgConnect": "Telegram verbinden",
     "tgConnected": "Telegram verbunden",
-    "tgNotify": "Benachrichtigungen an Telegram senden"
+    "tgNotify": "Benachrichtigungen an Telegram senden",
+    "setPw": "Passwort festlegen",
+    "setPwHint": "Sie haben sich mit einem Einmalcode registriert. Legen Sie ein Passwort fest, um sich auch damit anzumelden. Die Anmeldung per Code bleibt möglich."
   },
   "es": {
     "title": "Perfil",
@@ -197,7 +205,9 @@ export default {
     "tgHint": "Vincula Telegram para recibir notificaciones también allí.",
     "tgConnect": "Vincular Telegram",
     "tgConnected": "Telegram vinculado",
-    "tgNotify": "Enviar notificaciones a Telegram"
+    "tgNotify": "Enviar notificaciones a Telegram",
+    "setPw": "Establecer contraseña",
+    "setPwHint": "Te registraste con un código de un solo uso. Establece una contraseña para entrar también con ella. El acceso por código seguirá disponible."
   },
   "it": {
     "title": "Profilo",
@@ -237,7 +247,9 @@ export default {
     "tgHint": "Collega Telegram per ricevere le notifiche anche lì.",
     "tgConnect": "Collega Telegram",
     "tgConnected": "Telegram collegato",
-    "tgNotify": "Invia notifiche a Telegram"
+    "tgNotify": "Invia notifiche a Telegram",
+    "setPw": "Imposta una password",
+    "setPwHint": "Ti sei registrato con un codice monouso. Imposta una password per accedere anche con essa. L'accesso con codice resta disponibile."
   },
   "pt": {
     "title": "Perfil",
@@ -277,7 +289,9 @@ export default {
     "tgHint": "Vincule o Telegram para receber notificações lá também.",
     "tgConnect": "Vincular Telegram",
     "tgConnected": "Telegram vinculado",
-    "tgNotify": "Enviar notificações ao Telegram"
+    "tgNotify": "Enviar notificações ao Telegram",
+    "setPw": "Definir senha",
+    "setPwHint": "Você se registrou com um código de uso único. Defina uma senha para entrar também com ela. O acesso por código continua disponível."
   },
   "zh": {
     "title": "个人资料",
@@ -317,7 +331,9 @@ export default {
     "tgHint": "绑定 Telegram，即可在那里也接收通知。",
     "tgConnect": "绑定 Telegram",
     "tgConnected": "已绑定 Telegram",
-    "tgNotify": "将通知发送到 Telegram"
+    "tgNotify": "将通知发送到 Telegram",
+    "setPw": "设置密码",
+    "setPwHint": "您是通过一次性验证码注册的。设置密码后也可以用密码登录，验证码登录仍然可用。"
   },
   "ar": {
     "title": "الملف الشخصي",
@@ -357,6 +373,8 @@ export default {
     "tgHint": "اربط تيليجرام لتلقّي الإشعارات هناك أيضًا.",
     "tgConnect": "ربط تيليجرام",
     "tgConnected": "تم ربط تيليجرام",
-    "tgNotify": "إرسال الإشعارات إلى تيليجرام"
+    "tgNotify": "إرسال الإشعارات إلى تيليجرام",
+    "setPw": "تعيين كلمة مرور",
+    "setPwHint": "سجّلت برمز لمرة واحدة. عيّن كلمة مرور لتسجيل الدخول بها أيضاً. يبقى الدخول بالرمز متاحاً."
   }
 }

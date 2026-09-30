@@ -75,6 +75,22 @@ export class User {
   @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
   referralBalance: number;
 
+  // Пароль задан пользователем (false — зарегистрирован по коду без пароля)
+  @Column({ default: true })
+  hasPassword: boolean;
+
+  // Язык интерфейса на момент регистрации / последнего выбора (для писем)
+  @Column({ type: 'varchar', length: 5, nullable: true })
+  lang: string | null;
+
+  // Источник регистрации: utm_*, referrer, страница входа, первый визит
+  @Column({ type: 'jsonb', nullable: true })
+  signupSource: Record<string, string> | null;
+
+  // Когда выдан пробный FREE (выдаётся один раз; админ может выдать заново)
+  @Column({ type: 'timestamp', nullable: true })
+  freeTrialAt: Date | null;
+
   @CreateDateColumn()
   createdAt: Date;
 

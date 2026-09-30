@@ -17,15 +17,20 @@ import {
   IsBoolean,
   IsOptional,
   Length,
+  IsIn,
 } from 'class-validator';
+
+const LANGS = ['en', 'de', 'es', 'it', 'pt', 'ru', 'uk', 'zh', 'ar'];
 
 class UpdateProfileDto {
   @IsOptional() @IsString() firstName?: string;
   @IsOptional() @IsString() lastName?: string;
+  @IsOptional() @IsIn(LANGS) lang?: string;
 }
 
 class ChangePasswordDto {
-  @IsString() currentPassword: string;
+  // Необязателен, если пароль ещё не задан (регистрация по коду)
+  @IsOptional() @IsString() currentPassword?: string;
   @IsString() @MinLength(8) @MaxLength(64) newPassword: string;
 }
 

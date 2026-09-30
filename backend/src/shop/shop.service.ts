@@ -183,18 +183,23 @@ export class ShopService implements OnModuleInit {
     this.logger.log('✅ Shop products seeded');
   }
 
+  /** Не показываем в магазине бесплатные (freeForever) и скрытые (hiddenInShop) товары. */
+  private visibleInShop(list: ShopProduct[]): ShopProduct[] {
+    return list.filter((p) => !(p.meta && (p.meta.hiddenInShop === true || p.meta.freeForever === true)));
+  }
+
   async getIndicators() {
-    return this.productRepo.find({
+    return this.visibleInShop(await this.productRepo.find({
       where: { type: ProductType.INDICATOR, isActive: true },
       order: { sortOrder: 'ASC' },
-    });
+    }));
   }
 
   async getChannels() {
-    return this.productRepo.find({
+    return this.visibleInShop(await this.productRepo.find({
       where: { type: ProductType.SIGNAL_CHANNEL, isActive: true },
       order: { sortOrder: 'ASC' },
-    });
+    }));
   }
 
   async getAll() {
@@ -382,6 +387,7 @@ export class ShopService implements OnModuleInit {
         inviteLink: null,
         joined: false,
         expiresAt: x.expiresAt,
+        freeForever: !!(p.meta && p.meta.freeForever === true),
       };
       // Для сигнальных каналов с привязанным чатом — постоянная инвайт-ссылка
       if (p.type === ProductType.SIGNAL_CHANNEL && p.telegramChatId && !p.customInstrument) {
@@ -465,10 +471,10 @@ export class ShopService implements OnModuleInit {
 
   // Обучение — отдельный раздел магазина
   async getEducation() {
-    return this.productRepo.find({
+    return this.visibleInShop(await this.productRepo.find({
       where: { type: ProductType.EDUCATION, isActive: true },
       order: { sortOrder: 'ASC' },
-    });
+    }));
   }
 
   async getEducationGated(userId: string) {

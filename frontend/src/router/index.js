@@ -51,6 +51,7 @@ export const routes = [
       { path: 'admin/shop', component: () => import('@/views/admin/AdminShopView.vue'), meta: { roles: ['ADMIN','OWNER'] } },
       { path: 'admin/banners', component: () => import('@/views/admin/AdminBannersView.vue'), meta: { roles: ['ADMIN','OWNER'] } },
       { path: 'admin/referral', component: () => import('@/views/admin/AdminReferralView.vue'), meta: { roles: ['ADMIN','OWNER'] } },
+      { path: 'admin/bot-check', component: () => import('@/views/admin/BotCheckView.vue'), meta: { roles: ['ADMIN','OWNER'] } },
       { path: 'all-tickets', component: () => import('@/views/admin/AllTicketsView.vue'), meta: { roles: ['ADMIN','OWNER'] } },
       { path: 'partners', component: () => import('@/views/admin/PartnersView.vue'), meta: { roles: ['ADMIN','OWNER'] } },
       { path: 'bots-overview', component: () => import('@/views/admin/BotsOverview.vue'), meta: { roles: ['ADMIN','OWNER'] } },

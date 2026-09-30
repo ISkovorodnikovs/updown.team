@@ -63,6 +63,10 @@ export class Plan {
   @Column({ default: true })
   isActive: boolean;
 
+  // Пробный тариф FREE: не продаётся, выдаётся новым пользователям на 7 дней
+  @Column({ default: false })
+  isTrial: boolean;
+
   @Column({ default: 0 })
   sortOrder: number;
 

@@ -4,12 +4,12 @@ import { landingRest } from './landingB'
 
 const base = {
   en: {
-    nav: { products: 'Products', how: 'How it works', team: 'Team', partners: 'Partnership', login: 'Sign In', partner: 'Become a Partner', charts: 'Chart Platform' },
+    nav: { products: 'Products', how: 'How it works', team: 'Team', partners: 'Partnership', login: 'Sign In', partner: 'Become a Partner', free: 'Start free', business: 'For business', charts: 'Chart Platform' },
     hero: {
       badge: 'Infrastructure Trading Platform',
       title1: 'Trade smarter.', title2: 'Scale faster.', title3: 'Earn more.',
       sub: 'UpDown / AiView — ecosystem of trading signals, AI analytics, indicators and B2B solutions for traders and partners worldwide.',
-      cta1: 'Get Started', cta2: 'Become a Partner',
+      cta1: 'Get Magnet Pro free', cta2: 'For business',
       card1: 'Partner ROI', card2: 'Active', card3: 'Ready',
       stats: [{ num: '1000+', label: 'Users' }, { num: '50+', label: 'Partners' }, { num: '9+', label: 'Indicators' }, { num: '4', label: 'Signal services' }],
     },
@@ -56,7 +56,8 @@ const base = {
       cta: 'Become a Partner',
       card: { label: 'Monetization models', models: [{ name: 'Revenue Share', pct: 85 }, { name: 'White Label', pct: 70 }, { name: 'Subscription', pct: 95 }, { name: 'Development', pct: 60 }] },
     },
-    cta: { title: 'Ready to start?', sub: 'Join the UpDown / AiView ecosystem and scale your trading business.', btn1: 'Create account', btn2: 'Learn about partnership' },
+    cta: { title: 'Ready to start?', sub: 'Join the UpDown / AiView ecosystem and scale your trading business.', btn1: 'Start free', btn2: 'For business' },
+    freeBlock: { label: 'Free', title: 'Start free: 7 days of UpDown tools', sub: 'Create an account and get access right away. No card or payment required.', items: [{ name: 'Magnet Pro', term: '7 days', desc: 'TradingView indicator that maps the areas of market interest above and below the price.' }, { name: 'UpDown PRO', term: '7 days', desc: 'Signal service: entry zone, targets and protective level for every trade idea.' }, { name: 'UpDown Digest', term: 'No expiration', desc: 'A regular market brief in Telegram.' }], cta: 'Get Magnet Pro free', note: 'Magnet Pro is enabled in TradingView by our team manually, usually within one hour.' },
     chart: {
       label: 'Indicator', title: 'UpDown [FIB] — in action',
       sub: 'A demonstration of the indicator\'s logic on live Binance data: logarithmic Fibonacci grid, Key Level, entry zones and trade plan. The full version runs in TradingView.',
@@ -81,12 +82,12 @@ const base = {
   },
 
   ru: {
-    nav: { products: 'Продукты', how: 'Как работает', team: 'Команда', partners: 'Партнёрство', login: 'Войти', partner: 'Стать партнёром', charts: 'Chart Platform' },
+    nav: { products: 'Продукты', how: 'Как работает', team: 'Команда', partners: 'Партнёрство', login: 'Войти', partner: 'Стать партнёром', free: 'Начать бесплатно', business: 'Для бизнеса', charts: 'Chart Platform' },
     hero: {
       badge: 'Инфраструктурная торговая платформа',
       title1: 'Торгуй умнее.', title2: 'Масштабируй быстрее.', title3: 'Зарабатывай больше.',
       sub: 'UpDown / AiView — экосистема торговых сигналов, AI-аналитики, индикаторов и B2B-решений для трейдеров и партнёров по всему миру.',
-      cta1: 'Начать сейчас', cta2: 'Стать партнёром',
+      cta1: 'Получить Magnet Pro бесплатно', cta2: 'Для бизнеса',
       card1: 'Доходность партнёров', card2: 'Активно', card3: 'Ready',
       stats: [{ num: '1000+', label: 'Пользователей' }, { num: '50+', label: 'Партнёров' }, { num: '9+', label: 'Индикаторов' }, { num: '4', label: 'Сигнальных сервиса' }],
     },
@@ -133,7 +134,8 @@ const base = {
       cta: 'Стать партнёром',
       card: { label: 'Модели монетизации', models: [{ name: 'Revenue Share', pct: 85 }, { name: 'White Label', pct: 70 }, { name: 'Подписка', pct: 95 }, { name: 'Разработка', pct: 60 }] },
     },
-    cta: { title: 'Готов начать?', sub: 'Присоединяйся к экосистеме UpDown / AiView и масштабируй свой торговый бизнес.', btn1: 'Создать аккаунт', btn2: 'Узнать о партнёрстве' },
+    cta: { title: 'Готов начать?', sub: 'Присоединяйся к экосистеме UpDown / AiView и масштабируй свой торговый бизнес.', btn1: 'Начать бесплатно', btn2: 'Для бизнеса' },
+    freeBlock: { label: 'Бесплатно', title: 'Начните бесплатно: 7 дней с инструментами UpDown', sub: 'Создайте аккаунт и получите доступ сразу. Карта и оплата не нужны.', items: [{ name: 'Magnet Pro', term: '7 дней', desc: 'Индикатор для TradingView: области рыночного интереса выше и ниже цены.' }, { name: 'UpDown PRO', term: '7 дней', desc: 'Сигнальный сервис: зона входа, цели и защитный уровень по каждой идее.' }, { name: 'UpDown Digest', term: 'Бессрочно', desc: 'Регулярный обзор рынка в Telegram.' }], cta: 'Получить Magnet Pro бесплатно', note: 'Доступ к Magnet Pro в TradingView наша команда открывает вручную, обычно в течение часа.' },
     chart: {
       label: 'Индикатор', title: 'UpDown [FIB] — в действии',
       sub: 'Демонстрация логики индикатора на реальных данных Binance: логарифмическая сетка Фибоначчи, Key Level, зоны входа и план сделки. Полная версия — в TradingView.',

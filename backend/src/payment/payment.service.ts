@@ -537,7 +537,11 @@ export class PaymentService {
         meta: { link: '/dashboard/access', txId: tx.id },
       });
       const payer = await this.userRepo.findOne({ where: { id: tx.userId } });
-      if (payer?.email) await this.mail.sendPaymentSuccess(payer.email);
+      if (payer?.email) {
+        await this.mail.sendPaymentSuccess(payer.email, payer.lang, {
+          id: tx.id, amount: tx.amount, currency: tx.currency, paidAt: new Date(),
+        });
+      }
     } catch (e) {
       this.logger?.warn?.(`payment notify failed: ${(e as any).message}`);
     }

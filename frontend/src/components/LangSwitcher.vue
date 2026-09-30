@@ -28,6 +28,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { LANGS, lang, setLang } from '@/i18n'
+import { usersApi } from '@/api'
 import { computed } from 'vue'
 
 const open = ref(false)
@@ -42,6 +43,8 @@ const flagUrl = (cc) => `https://flagcdn.com/${cc}.svg`
 function pick(code) {
   setLang(code)
   open.value = false
+  // Запоминаем язык в профиле — на нём приходят письма
+  try { if (localStorage.getItem('token')) usersApi.updateMe({ lang: code }).catch(() => {}) } catch { /* ignore */ }
 }
 
 function onDocClick(e) {

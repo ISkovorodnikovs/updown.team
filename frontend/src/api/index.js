@@ -33,12 +33,12 @@ export default api
 
 // Auth
 export const authApi = {
-  sendCode: (email) => api.post('/auth/send-code', { email }),
+  sendCode: (email, lang) => api.post('/auth/send-code', { email, lang }),
   register: (data, refCode) => api.post(`/auth/register${refCode ? `?ref=${refCode}` : ''}`, data),
   login: (data) => api.post('/auth/login', data),
-  sendLoginCode: (email) => api.post('/auth/login/code', { email }),
+  sendLoginCode: (email, lang) => api.post('/auth/login/code', { email, lang }),
   verifyLoginCode: (data) => api.post('/auth/login/verify', data),
-  forgotPassword: (email) => api.post('/auth/forgot-password', { email }),
+  forgotPassword: (email, lang) => api.post('/auth/forgot-password', { email, lang }),
   resetPassword: (data) => api.post('/auth/reset-password', data),
 }
 
@@ -103,6 +103,17 @@ export const adminApi = {
   revokeAdmin: (id) => api.post(`/admin/users/${id}/revoke-admin`),
   deactivateUser: (id) => api.post(`/admin/users/${id}/deactivate`),
   getLogs: (params) => api.get('/admin/logs', { params }),
+  // Бесплатный доступ и проверка бота
+  grantFree: (id) => api.post(`/admin/free/users/${id}`),
+  grantFreeAll: () => api.post('/admin/free/all', {}, { timeout: 120000 }),
+  freeConfig: () => api.get('/admin/free/config'),
+  botCheck: () => api.get('/admin/bot-check', { timeout: 60000 }),
+}
+
+// Заявки на доступ к индикаторам TradingView
+export const tvApi = {
+  my: () => api.get('/tv-access/my'),
+  request: (data) => api.post('/tv-access/request', data, { timeout: 30000 }),
 }
 
 // Plans

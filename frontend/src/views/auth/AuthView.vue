@@ -159,39 +159,22 @@
             <div v-if="regStep === 2">
               <div class="alert alert--info">{{ authT.codeSent }} {{ regForm.email }}</div>
               <div class="form-group">
-                <input class="input" v-model="regForm.code" :placeholder="authT.codePlaceholder" maxlength="6" @keyup.enter="handleRegister" />
-              </div>
-              <div class="form-group">
-                <div class="input-wrapper">
-                  <input
-                    class="input input--with-icon"
-                    v-model="regForm.password"
-                    :type="showRegPassword ? 'text' : 'password'"
-                    :placeholder="authT.passwordLabel"
-                  />
-                  <button class="eye-btn" type="button" @click="showRegPassword = !showRegPassword" :title="showRegPassword ? authT.hidePass : authT.showPass">
-                    <svg v-if="!showRegPassword" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                    <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
-                  </button>
-                </div>
-              </div>
-              <div class="form-group">
-                <div class="input-wrapper">
-                  <input
-                    class="input input--with-icon"
-                    v-model="regForm.confirmPassword"
-                    :type="showRegConfirmPassword ? 'text' : 'password'"
-                    :placeholder="authT.confirmPlaceholder"
-                  />
-                  <button class="eye-btn" type="button" @click="showRegConfirmPassword = !showRegConfirmPassword" :title="showRegConfirmPassword ? authT.hidePass : authT.showPass">
-                    <svg v-if="!showRegConfirmPassword" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                    <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
-                  </button>
-                </div>
+                <input class="input" v-model="regForm.code" :placeholder="authT.codePlaceholder" maxlength="6"
+                  inputmode="numeric" autocomplete="one-time-code" @keyup.enter="handleRegister" />
               </div>
               <button class="btn-main" type="button" :disabled="regLoading" @click="handleRegister">
                 {{ regLoading ? '...' : authT.signUpBtn }}
               </button>
+              <p class="hint hint--small">{{ authT.spamHint }}</p>
+              <div class="form-options">
+                <button class="link-btn" type="button" :disabled="resendLeft > 0 || regLoading" @click="sendRegCode">
+                  {{ resendLeft > 0 ? authT.resendIn.replace('{s}', resendLeft) : authT.resend }}
+                </button>
+                <button class="link-btn link-btn--right" type="button" @click="regStep = 1; regForm.code = ''">{{ authT.changeEmail }}</button>
+              </div>
+            </div>
+            <div v-if="emailTaken" class="form-options" style="margin-top:12px">
+              <button class="link-btn" type="button" @click="loginInsteadByCode">{{ authT.loginByCodeInstead }}</button>
             </div>
           </div>
         </div>
@@ -200,8 +183,13 @@
       <!-- Синяя панель -->
       <div class="panel panel--blue">
         <div class="blue-content" :class="{ 'blue-content--hidden': !isRegister }">
-          <h2>{{ authT.welcomeBack }}</h2>
-          <p>{{ authT.welcomeSub }}</p>
+          <h2>{{ authT.freeTitle }}</h2>
+          <ul class="free-list">
+            <li><b>Magnet Pro</b> · {{ authT.free7 }}</li>
+            <li><b>UpDown PRO</b> · {{ authT.free7 }}</li>
+            <li><b>UpDown Digest</b> · {{ authT.freeForever }}</li>
+          </ul>
+          <p class="free-note">{{ authT.freeNote }}</p>
           <button class="btn-outline" @click="goTo('login')">{{ authT.signInBlue }}</button>
         </div>
         <div class="blue-content" :class="{ 'blue-content--hidden': isRegister }">
@@ -223,6 +211,7 @@ import { authApi } from '@/api'
 import { lang, useT } from '@/i18n'
 import dict from '@/i18n/dicts/auth'
 import { getReferral, clearReferral } from '@/utils/referral'
+import { getAttribution, track } from '@/utils/attribution'
 
 const router = useRouter()
 const route = useRoute()
@@ -284,8 +273,7 @@ const requires2FA = ref(false)
 const twoFaCode = ref('')
 const loginForm = ref({ email: '', password: '', code: '' })
 const showLoginPassword = ref(false)
-const showRegPassword = ref(false)
-const showRegConfirmPassword = ref(false)
+
 
 
 
@@ -312,12 +300,19 @@ async function loginPassword() {
   try {
     const { data } = await authApi.login({ email: loginForm.value.email, password: loginForm.value.password })
     if (data.requires2FA) { requires2FA.value = true }
-    else { auth.setAuth(data); router.push('/dashboard') }
+    else { auth.setAuth(data); track('login', { method: 'password' }); router.push(afterAuthPath()) }
   } catch (e) {
     const msg = e.response?.data?.message || ''
     const isEmailErr = Array.isArray(msg)
       ? msg.some(m => typeof m === 'string' && m.toLowerCase().includes('email'))
       : typeof msg === 'string' && msg.toLowerCase().includes('email')
+    if (msg === 'PASSWORD_NOT_SET') {
+      // Аккаунт создан по коду — предлагаем вход по коду
+      loginError.value = authT.value.passwordNotSet
+      loginMode.value = 'code'
+      loginCodeSent.value = false
+      return
+    }
     loginError.value = isEmailErr
       ? authT.value.errValidEmail
       : authT.value.errInvalidLogin
@@ -329,7 +324,7 @@ async function verify2FA() {
   loginLoading.value = true
   try {
     const { data } = await authApi.verifyLoginCode({ email: loginForm.value.email, code: twoFaCode.value })
-    auth.setAuth(data); router.push('/dashboard')
+    auth.setAuth(data); router.push(afterAuthPath())
   } catch (e) { loginError.value = authT.value.errInvalidCode }
   finally { loginLoading.value = false }
 }
@@ -351,7 +346,7 @@ async function sendLoginCode() {
   loginLoading.value = true
   loginError.value = ''
   try {
-    await authApi.sendLoginCode(loginForm.value.email)
+    await authApi.sendLoginCode(loginForm.value.email, lang.value)
     loginCodeSent.value = true
   } catch (e) { loginError.value = translateBackendError(e.response?.data?.message, authT.value.errSendCode) }
   finally { loginLoading.value = false }
@@ -361,7 +356,7 @@ async function verifyLoginCode() {
   loginLoading.value = true
   try {
     const { data } = await authApi.verifyLoginCode({ email: loginForm.value.email, code: loginForm.value.code })
-    auth.setAuth(data); router.push('/dashboard')
+    auth.setAuth(data); track('login', { method: 'email_code' }); router.push(afterAuthPath())
   } catch (e) { loginError.value = authT.value.errExpiredCode }
   finally { loginLoading.value = false }
 }
@@ -370,7 +365,30 @@ async function verifyLoginCode() {
 const regStep = ref(1)
 const regLoading = ref(false)
 const regError = ref('')
-const regForm = ref({ email: '', code: '', password: '', confirmPassword: '' })
+const regForm = ref({ email: '', code: '' })
+const emailTaken = ref(false)
+const resendLeft = ref(0)
+let resendTimer = null
+function startResendTimer() {
+  resendLeft.value = 60
+  clearInterval(resendTimer)
+  resendTimer = setInterval(() => { if (--resendLeft.value <= 0) clearInterval(resendTimer) }, 1000)
+}
+
+// Куда вести после входа: ?get=magnet → сразу к заявке на Magnet Pro
+function afterAuthPath() {
+  const get = String(route.query.get || '')
+  return get === 'magnet' ? '/dashboard/access?focus=tv' : '/dashboard'
+}
+
+function loginInsteadByCode() {
+  loginForm.value.email = regForm.value.email
+  emailTaken.value = false
+  regError.value = ''
+  goTo('login')
+  loginMode.value = 'code'
+  loginCodeSent.value = false
+}
 
 // --- Forgot Password ---
 const forgotStep = ref(1)
@@ -383,7 +401,7 @@ const showForgotPass = ref(false)
 async function sendForgotCode() {
   forgotLoading.value = true; forgotError.value = ''; forgotSuccess.value = ''
   try {
-    await authApi.forgotPassword(forgotForm.value.email)
+    await authApi.forgotPassword(forgotForm.value.email, lang.value)
     forgotStep.value = 2
   } catch (e) { forgotError.value = translateBackendError(e.response?.data?.message, authT.value.errSendCode) }
   finally { forgotLoading.value = false }
@@ -400,34 +418,40 @@ async function doResetPassword() {
 }
 
 async function sendRegCode() {
-  regLoading.value = true; regError.value = ''
+  regLoading.value = true; regError.value = ''; emailTaken.value = false
   try {
-    await authApi.sendCode(regForm.value.email)
+    await authApi.sendCode(regForm.value.email, lang.value)
     regStep.value = 2
-  } catch (e) { regError.value = translateBackendError(e.response?.data?.message, authT.value.errSendCode) }
+    startResendTimer()
+    track('sign_up_start', { method: 'email_code' })
+  } catch (e) {
+    const msg = e.response?.data?.message
+    regError.value = translateBackendError(msg, authT.value.errSendCode)
+    if (e.response?.status === 409) emailTaken.value = true
+  }
   finally { regLoading.value = false }
 }
 
 async function handleRegister() {
-  if (regForm.value.password !== regForm.value.confirmPassword) {
-    regError.value = authT.value.errPassMatch; return
-  }
+  if (!/^\d{6}$/.test(String(regForm.value.code || '').trim())) { regError.value = authT.value.errCode; return }
   regLoading.value = true; regError.value = ''
   try {
+    const intent = String(route.query.get || '')
     const { data } = await authApi.register({
       email: regForm.value.email,
-      code: regForm.value.code,
-      password: regForm.value.password
+      code: String(regForm.value.code).trim(),
+      lang: lang.value,
+      source: getAttribution({ intent }),
     }, getReferral())
     clearReferral()
-    auth.setAuth(data); router.push('/dashboard')
+    track('sign_up', { method: 'email_code', intent: intent || undefined })
+    auth.setAuth(data); router.push(afterAuthPath())
   } catch (e) { regError.value = translateBackendError(e.response?.data?.message, authT.value.errRegFailed) }
   finally { regLoading.value = false }
 }
 </script>
 
 <style lang="scss" scoped>
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Roboto:wght@300;400;500;700&display=swap');
 .auth-page {
   min-height: 100vh;
   display: flex;
@@ -668,6 +692,11 @@ h2 {
   &:disabled { opacity: 0.5; cursor: not-allowed; }
 }
 
+.free-list { list-style: none; padding: 0; margin: 18px 0 10px; display: grid; gap: 10px; text-align: left; font-size: 15px; }
+.free-list li { padding-left: 22px; position: relative; }
+.free-list li::before { content: '✓'; position: absolute; left: 0; font-weight: 700; }
+.free-note { font-size: 13px; opacity: .85; margin-bottom: 18px; }
+.hint--small { font-size: 12px; opacity: .75; margin: 10px 0 0; }
 .hint {
   font-size: 13px;
   color: #6b7280;

@@ -11,7 +11,7 @@ export class AuthController {
   @Post('send-code')
   @Throttle({ default: { ttl: 60000, limit: 3 } })
   sendCode(@Body() dto: SendCodeDto) {
-    return this.authService.sendRegistrationCode(dto.email);
+    return this.authService.sendRegistrationCode(dto.email, dto.lang);
   }
 
   @Post('register')
@@ -19,7 +19,7 @@ export class AuthController {
   register(@Body() dto: RegisterDto, @Query('ref') refQuery?: string) {
     // Реф-код может прийти либо в query (?ref=CODE), либо в теле запроса
     const refCode = refQuery || dto.refCode;
-    return this.authService.register(dto.email, dto.code, dto.password, refCode);
+    return this.authService.register(dto.email, dto.code, dto.password, refCode, dto.lang, dto.source);
   }
 
   @Post('login')
@@ -31,7 +31,7 @@ export class AuthController {
   @Post('login/code')
   @Throttle({ default: { ttl: 60000, limit: 3 } })
   sendLoginCode(@Body() dto: SendCodeDto) {
-    return this.authService.sendLoginCode(dto.email);
+    return this.authService.sendLoginCode(dto.email, dto.lang);
   }
 
   @Post('login/verify')
@@ -43,7 +43,7 @@ export class AuthController {
   @Post('forgot-password')
   @Throttle({ default: { ttl: 60000, limit: 3 } })
   forgotPassword(@Body() dto: SendCodeDto) {
-    return this.authService.sendPasswordResetCode(dto.email);
+    return this.authService.sendPasswordResetCode(dto.email, dto.lang);
   }
 
   @Post('reset-password')

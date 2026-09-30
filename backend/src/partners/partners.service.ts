@@ -138,6 +138,7 @@ export class PartnersService {
       partner.user.email,
       action,
       reason,
+      (partner.user as any)?.lang,
     );
     await this.notifications.create(partner.userId, {
       type: NotificationType.PARTNER,

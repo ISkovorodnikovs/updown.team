@@ -10,6 +10,7 @@ import { User } from '../database/entities/user.entity';
 import { VerificationCode } from '../database/entities/verification-code.entity';
 import { MailModule } from '../mail/mail.module';
 import { TelegramModule } from '../telegram/telegram.module';
+import { FreeAccessModule } from '../free-access/free-access.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { TelegramModule } from '../telegram/telegram.module';
     }),
     MailModule,
     TelegramModule,
+    FreeAccessModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy],

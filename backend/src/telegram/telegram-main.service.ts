@@ -108,7 +108,9 @@ export class TelegramMainService implements OnModuleInit {
     if (!this.bot || !chatId) return null;
     try {
       const opts: any = { member_limit: 1 };
-      if (expireDate) opts.expire_date = Math.floor(new Date(expireDate).getTime() / 1000);
+      // Бессрочный доступ (напр. UpDown Digest, срок 2099) — ссылку выдаём без срока
+      const farFuture = expireDate && new Date(expireDate).getTime() > Date.now() + 365 * 86400000;
+      if (expireDate && !farFuture) opts.expire_date = Math.floor(new Date(expireDate).getTime() / 1000);
       if (name) opts.name = String(name).slice(0, 32);
       const res: any = await this.bot.createChatInviteLink(chatId, opts);
       return res?.invite_link || null;
@@ -152,6 +154,99 @@ export class TelegramMainService implements OnModuleInit {
     } catch {
       return null;
     }
+  }
+
+  // ─── Админ-группа: сообщения с кнопками ─────────────────────────────
+
+  /** Сообщение в админ-группу с inline-кнопками. Возвращает message_id или null. */
+  async sendAdminMessage(text: string, buttons?: { text: string; data: string }[][]): Promise<number | null> {
+    if (!this.bot || !this.chatId) return null;
+    try {
+      const opts: any = { disable_web_page_preview: true };
+      if (buttons?.length) opts.reply_markup = { inline_keyboard: buttons.map((row) => row.map((b) => ({ text: b.text, callback_data: b.data }))) };
+      const m: any = await this.bot.sendMessage(this.chatId, text, opts);
+      return m?.message_id ?? null;
+    } catch (e: any) {
+      this.logger.error(`[Telegram] ❌ Admin send failed: ${e.message}`);
+      return null;
+    }
+  }
+
+  /** Переписать сообщение в админ-группе и убрать кнопки. */
+  async editAdminMessage(messageId: number, text: string): Promise<void> {
+    if (!this.bot || !this.chatId || !messageId) return;
+    try {
+      await this.bot.editMessageText(text, {
+        chat_id: this.chatId, message_id: messageId, disable_web_page_preview: true,
+        reply_markup: { inline_keyboard: [] },
+      } as any);
+    } catch (e: any) {
+      this.logger.warn(`[Telegram] edit failed (${messageId}): ${e.message}`);
+    }
+  }
+
+  /** Ответ (reply) на сообщение в админ-группе — для напоминаний. */
+  async replyAdmin(messageId: number | null, text: string): Promise<void> {
+    if (!this.bot || !this.chatId) return;
+    try {
+      await this.bot.sendMessage(this.chatId, text, messageId ? { reply_to_message_id: messageId } as any : {});
+    } catch (e: any) {
+      this.logger.warn(`[Telegram] reply failed: ${e.message}`);
+    }
+  }
+
+  private callbackHandlers: { prefix: string; fn: (data: string, who: string) => Promise<string | void> }[] = [];
+  private callbackBound = false;
+
+  /**
+   * Обработчик нажатий inline-кнопок с callback_data, начинающимся на prefix.
+   * Принимаются только нажатия в админ-группе. fn возвращает текст всплывающего ответа.
+   */
+  onCallback(prefix: string, fn: (data: string, who: string) => Promise<string | void>) {
+    if (!this.bot) return;
+    this.callbackHandlers.push({ prefix, fn });
+    if (this.callbackBound) return;
+    this.callbackBound = true;
+    this.bot.on('callback_query', async (q: any) => {
+      const data: string = q?.data || '';
+      const fromChat = String(q?.message?.chat?.id || '');
+      const who = q?.from?.username ? `@${q.from.username}` : [q?.from?.first_name, q?.from?.last_name].filter(Boolean).join(' ') || String(q?.from?.id || '?');
+      let answer = '';
+      try {
+        if (fromChat !== String(this.chatId)) {
+          answer = 'Недоступно';
+        } else {
+          const h = this.callbackHandlers.find((x) => data.startsWith(x.prefix));
+          if (h) answer = (await h.fn(data, who)) || '';
+        }
+      } catch (e: any) {
+        this.logger.warn(`[Telegram] callback failed (${data}): ${e.message}`);
+        answer = 'Ошибка, попробуйте ещё раз';
+      }
+      try { await this.bot.answerCallbackQuery(q.id, answer ? { text: answer } : {}); } catch { /* ignore */ }
+    });
+  }
+
+  /** Проверка бота в чате: название, статус, права. */
+  async checkChat(chatId: string): Promise<{ chatId: string; title: string | null; status: string | null; canInvite: boolean; canRestrict: boolean; error: string | null }> {
+    const res = { chatId, title: null as string | null, status: null as string | null, canInvite: false, canRestrict: false, error: null as string | null };
+    if (!this.bot) { res.error = 'bot disabled'; return res; }
+    try {
+      const chat: any = await this.bot.getChat(chatId);
+      res.title = chat?.title || null;
+      const me = await this.bot.getMe();
+      const m: any = await this.bot.getChatMember(chatId, me.id);
+      res.status = m?.status || null;
+      res.canInvite = m?.status === 'creator' || !!m?.can_invite_users;
+      res.canRestrict = m?.status === 'creator' || !!m?.can_restrict_members;
+    } catch (e: any) {
+      res.error = e?.response?.body?.description || e.message;
+    }
+    return res;
+  }
+
+  getAdminChatId(): string | null {
+    return this.chatId;
   }
 
   /**

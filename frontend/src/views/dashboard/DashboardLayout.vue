@@ -163,10 +163,11 @@ const statusKey = computed(() => {
   if (auth.isOwner) return 'owner'
   if (auth.isAdmin) return 'admin'
   if (auth.isPartner) return 'partner'
+  if (activePlan.value?.plan?.isTrial) return 'trial'
   if (activePlan.value) return 'client'
   return 'free'
 })
-const STATUS_LABELS = { owner: 'Owner', admin: 'Admin', partner: 'Partner', client: 'Client', free: 'Free' }
+const STATUS_LABELS = { owner: 'Owner', admin: 'Admin', partner: 'Partner', client: 'Client', trial: 'FREE · 7d', free: 'Free' }
 const statusLabel = computed(() => STATUS_LABELS[statusKey.value])
 
 onMounted(async () => {
@@ -234,7 +235,6 @@ export default { components: { NavItem } }
 </script>
 
 <style lang="scss" scoped>
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Roboto:wght@300;400;500&display=swap');
 
 .dashboard {
   display: flex;

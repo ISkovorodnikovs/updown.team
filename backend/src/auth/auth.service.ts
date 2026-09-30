@@ -18,6 +18,22 @@ import {
 import { MailService } from '../mail/mail.service';
 import { TelegramMainService } from '../telegram/telegram-main.service';
 import { v4 as uuidv4 } from 'uuid';
+import { randomBytes } from 'crypto';
+import { FreeAccessService } from '../free-access/free-access.service';
+import { normalizeLang } from '../mail/templates';
+
+const SOURCE_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'referrer', 'landing', 'first_visit', 'intent'];
+
+/** Оставляем только известные поля источника, строки до 200 символов. */
+function cleanSource(src?: Record<string, any>): Record<string, string> | null {
+  if (!src || typeof src !== 'object') return null;
+  const out: Record<string, string> = {};
+  for (const k of SOURCE_KEYS) {
+    const v = src[k];
+    if (v !== undefined && v !== null && String(v).trim()) out[k] = String(v).trim().slice(0, 200);
+  }
+  return Object.keys(out).length ? out : null;
+}
 
 function nanoid() { return uuidv4().replace(/-/g,'').substring(0,8).toUpperCase(); }
 
@@ -31,6 +47,7 @@ export class AuthService {
     private mailService: MailService,
     private config: ConfigService,
     private telegramService: TelegramMainService,
+    private freeAccess: FreeAccessService,
   ) {}
 
   private generateCode(): string {
@@ -90,22 +107,25 @@ export class AuthService {
     throw new BadRequestException('Invalid or expired code');
   }
 
-  async sendRegistrationCode(email: string) {
+  async sendRegistrationCode(email: string, lang?: string) {
     const existing = await this.userRepo.findOne({ where: { email } });
     if (existing) throw new ConflictException('Email already registered');
 
     const code = await this.saveCode(email, CodeType.REGISTRATION);
-    await this.mailService.sendVerificationCode(email, code);
+    await this.mailService.sendCode(email, 'registration', code, lang);
     return { message: 'Verification code sent' };
   }
 
-  async register(email: string, code: string, password: string, refCode?: string) {
+  async register(email: string, code: string, password?: string, refCode?: string, lang?: string, source?: Record<string, any>) {
     const existing = await this.userRepo.findOne({ where: { email } });
     if (existing) throw new ConflictException('Email already registered');
 
     await this.verifyCode(email, code, CodeType.REGISTRATION);
 
-    const passwordHash = await bcrypt.hash(password, 12);
+    // Без пароля: ставим случайный хэш, вход — по коду; пароль можно задать в профиле
+    const hasPassword = !!password;
+    const passwordHash = await bcrypt.hash(password || randomBytes(32).toString('hex'), 12);
+    const signupSource = cleanSource(source);
 
     // Генерируем уникальный реферальный код
     let referralCode: string;
@@ -129,10 +149,19 @@ export class AuthService {
       role: UserRole.USER,
       referralCode,
       referredBy,
+      hasPassword,
+      lang: normalizeLang(lang),
+      signupSource,
     });
 
     await this.userRepo.save(user);
-    await this.telegramService.sendMessage(`🆕 Новая регистрация\n📧 ${email}${referredBy ? '\n🔗 Реферал' : ''}`);
+    const src = signupSource?.utm_source
+      ? `\n📣 Источник: ${[signupSource.utm_source, signupSource.utm_medium, signupSource.utm_campaign].filter(Boolean).join(' / ')}`
+      : signupSource?.referrer ? `\n📣 Переход с: ${signupSource.referrer}` : '';
+    await this.telegramService.sendMessage(`🆕 Новая регистрация\n📧 ${email}${referredBy ? '\n🔗 Реферал' : ''}${src}`);
+
+    // Бесплатный доступ: Digest навсегда + FREE на 7 дней, приветственное письмо
+    await this.freeAccess.onSignup(user.id);
     return this.issueToken(user);
   }
 
@@ -140,12 +169,15 @@ export class AuthService {
     const user = await this.userRepo.findOne({ where: { email, isActive: true } });
     if (!user) throw new UnauthorizedException('Invalid credentials');
 
+    // Аккаунт зарегистрирован по коду и пароль ещё не задан
+    if (user.hasPassword === false) throw new UnauthorizedException('PASSWORD_NOT_SET');
+
     const valid = await bcrypt.compare(password, user.passwordHash);
     if (!valid) throw new UnauthorizedException('Invalid credentials');
 
     if (user.twoFaEnabled) {
       const code = await this.saveCode(email, CodeType.LOGIN_2FA);
-      await this.mailService.sendLoginCode(email, code);
+      await this.mailService.sendCode(email, 'login', code, user.lang);
       return { requires2FA: true };
     }
 
@@ -164,20 +196,20 @@ export class AuthService {
     return this.issueToken(user);
   }
 
-  async sendLoginCode(email: string) {
+  async sendLoginCode(email: string, lang?: string) {
     const user = await this.userRepo.findOne({ where: { email, isActive: true } });
     if (!user) throw new NotFoundException('User not found');
 
     const code = await this.saveCode(email, CodeType.LOGIN_2FA);
-    await this.mailService.sendLoginCode(email, code);
+    await this.mailService.sendCode(email, 'login', code, user.lang || lang);
     return { message: 'Code sent' };
   }
 
-  async sendPasswordResetCode(email: string) {
+  async sendPasswordResetCode(email: string, lang?: string) {
     const user = await this.userRepo.findOne({ where: { email, isActive: true } });
     if (!user) return { message: 'If this email exists, a reset code has been sent' };
     const code = await this.saveCode(email, CodeType.PASSWORD_RESET);
-    await this.mailService.sendPasswordResetCode(email, code);
+    await this.mailService.sendCode(email, 'reset', code, user.lang || lang);
     return { message: 'If this email exists, a reset code has been sent' };
   }
 
@@ -186,7 +218,7 @@ export class AuthService {
     if (!user) throw new BadRequestException('Invalid request');
     await this.verifyCode(email, code, CodeType.PASSWORD_RESET);
     const passwordHash = await bcrypt.hash(newPassword, 12);
-    await this.userRepo.update(user.id, { passwordHash });
+    await this.userRepo.update(user.id, { passwordHash, hasPassword: true });
     return { message: 'Password updated successfully' };
   }
 
@@ -201,6 +233,7 @@ export class AuthService {
         lastName: user.lastName,
         role: user.role,
         twoFaEnabled: user.twoFaEnabled,
+        hasPassword: user.hasPassword !== false,
       },
     };
   }

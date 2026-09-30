@@ -1,6 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
+import {
+  Email, CodePurpose, normalizeLang,
+  codeEmail, welcomeEmail, tvGrantedEmail, tvNotFoundEmail, paymentEmail, partnerStatusEmail,
+} from './templates';
 
 @Injectable()
 export class MailService {
@@ -8,114 +12,99 @@ export class MailService {
 
   constructor(private config: ConfigService) {}
 
-  private async send(to: string, subject: string, html: string) {
-    const match = html.match(/\b(\d{6})\b/);
-    this.logger.log(`📧 TO: ${to} | ${subject}${match ? ' | КОД: ' + match[1] : ''}`);
+  /** Отправка через Resend. Коды подтверждения в лог НЕ пишем. */
+  private async deliver(to: string, mail: Email) {
+    this.logger.log(`📧 TO: ${to} | ${mail.subject.replace(/\b\d{6}\b/g, '******')}`);
 
     const apiKey = this.config.get('RESEND_API_KEY');
-    const from = this.config.get('MAIL_FROM') || 'UpDown Platform <onboarding@resend.dev>';
+    const from = this.config.get('MAIL_FROM') || 'UpDown <onboarding@resend.dev>';
+    const replyTo = this.config.get('MAIL_REPLY_TO', 'support@updown.team');
 
     if (!apiKey) {
-      this.logger.warn('RESEND_API_KEY не задан — письмо не отправлено, код в логе выше');
+      this.logger.warn('RESEND_API_KEY не задан — письмо не отправлено');
       return;
     }
 
     try {
       await axios.post(
         'https://api.resend.com/emails',
-        { from, to, subject, html },
         {
-          headers: {
-            'Authorization': `Bearer ${apiKey}`,
-            'Content-Type': 'application/json',
-          },
+          from, to,
+          subject: mail.subject,
+          html: mail.html,
+          text: mail.text,
+          ...(replyTo ? { reply_to: replyTo } : {}),
+        },
+        {
+          headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
           timeout: 10000,
         },
       );
       this.logger.log(`✅ Email отправлен на ${to}`);
     } catch (e) {
       const msg = e.response?.data?.message || e.message;
-      this.logger.warn(`⚠️ Email не отправлен (${msg}) — код в логе выше`);
+      this.logger.warn(`⚠️ Email не отправлен на ${to}: ${msg}`);
     }
   }
 
-  async sendVerificationCode(email: string, code: string) {
-    await this.send(
-      email,
-      'Email Verification Code',
-      `<h2>Your verification code: <strong>${code}</strong></h2>
-       <p>Code expires in ${this.config.get('CODE_TTL_MINUTES', '10')} minutes.</p>`,
-    );
+  private ttl() {
+    return this.config.get('CODE_TTL_MINUTES', '10');
   }
 
-  async sendLoginCode(email: string, code: string) {
-    await this.send(
-      email,
-      'Login Verification Code',
-      `<h2>Your login code: <strong>${code}</strong></h2>
-       <p>Code expires in 10 minutes. If you didn't request this, ignore this email.</p>`,
-    );
+  // ── Коды ─────────────────────────────────────────────────────────
+  async sendCode(email: string, purpose: CodePurpose, code: string, lang?: string | null) {
+    await this.deliver(email, codeEmail(normalizeLang(lang), purpose, code, this.ttl()));
   }
 
-  async sendEmailChangeCode(email: string, code: string) {
-    await this.send(
-      email,
-      'Confirm Email Change',
-      `<h2>Confirm your new email address</h2>
-       <p>Your verification code: <strong>${code}</strong></p>
-       <p>Expires in 10 minutes.</p>`,
-    );
+  // Совместимость со старыми вызовами
+  async sendVerificationCode(email: string, code: string, lang?: string | null) {
+    return this.sendCode(email, 'registration', code, lang);
+  }
+  async sendLoginCode(email: string, code: string, lang?: string | null) {
+    return this.sendCode(email, 'login', code, lang);
+  }
+  async sendEmailChangeCode(email: string, code: string, lang?: string | null) {
+    return this.sendCode(email, 'email_change', code, lang);
+  }
+  async sendPasswordResetCode(email: string, code: string, lang?: string | null) {
+    return this.sendCode(email, 'reset', code, lang);
   }
 
-  async sendPartnerApplication(data: {
-    name: string;
-    email: string;
-    companyName: string;
-    description: string;
-  }) {
-    await this.send(
-      this.config.get('MAIL_ADMIN'),
-      'New Partner Application',
-      `<h2>New Partner Application</h2>
-       <p><b>Name:</b> ${data.name}</p>
-       <p><b>Email:</b> ${data.email}</p>
-       <p><b>Company:</b> ${data.companyName}</p>
-       <p><b>Description:</b> ${data.description}</p>`,
-    );
+  // ── Пользовательские письма ──────────────────────────────────────
+  async sendWelcome(email: string, lang: string | null | undefined, trialEndsAt: Date | null) {
+    await this.deliver(email, welcomeEmail(normalizeLang(lang), trialEndsAt));
   }
 
-  async sendPasswordResetCode(email: string, code: string) {
-    await this.send(
-      email,
-      'Password Reset Code',
-      `<h2>Password Reset</h2>
-       <p>Your reset code: <strong>${code}</strong></p>
-       <p>Expires in ${this.config.get('CODE_TTL_MINUTES', '10')} minutes. If you didn't request this, ignore this email.</p>`,
-    );
+  async sendTvGranted(email: string, lang: string | null | undefined, products: string[], tvUsername: string, until: Date | null) {
+    await this.deliver(email, tvGrantedEmail(normalizeLang(lang), products, tvUsername, until));
   }
 
-  async sendPartnerStatusUpdate(email: string, status: string, reason?: string) {
-    const isApproved = status === 'approved';
-    await this.send(
-      email,
-      `Partner Application ${isApproved ? 'Approved' : 'Rejected'}`,
-      `<h2>Your partner application has been ${status}</h2>
-       ${reason ? `<p><b>Reason:</b> ${reason}</p>` : ''}
-       ${isApproved ? '<p>You can now log in and set up your Telegram bot.</p>' : ''}`,
-    );
+  async sendTvNotFound(email: string, lang: string | null | undefined, tvUsername: string) {
+    await this.deliver(email, tvNotFoundEmail(normalizeLang(lang), tvUsername));
   }
 
-  async sendPaymentSuccess(email: string) {
-    const link = 'https://updown.team/dashboard/access';
-    await this.send(
-      email,
-      'Оплата получена — доступ активирован',
-      `<h2>Спасибо за покупку!</h2>
-       <p>Ваш доступ активирован. Откройте раздел «Мои доступы», чтобы получить всё, что вы оплатили (доступ к индикаторам TradingView, каналам и т.д.):</p>
-       <p style="margin:20px 0">
-         <a href="${link}" style="display:inline-block;padding:12px 22px;background:#c9a84c;color:#0a0a0b;text-decoration:none;border-radius:8px;font-weight:700">Открыть «Мои доступы»</a>
-       </p>
-       <p style="color:#666;font-size:13px">Или перейдите по ссылке: <a href="${link}">${link}</a></p>`,
-    );
+  async sendPaymentSuccess(email: string, lang?: string | null, tx?: { id: string; amount: any; currency?: string; paidAt?: Date }) {
+    const amount = tx ? Number(tx.amount || 0).toFixed(2) : '—';
+    await this.deliver(email, paymentEmail(normalizeLang(lang), tx?.id || '—', amount, tx?.currency || 'USDT', tx?.paidAt || new Date()));
+  }
+
+  async sendPartnerStatusUpdate(email: string, status: string, reason?: string, lang?: string | null) {
+    await this.deliver(email, partnerStatusEmail(normalizeLang(lang), status === 'approved', reason));
+  }
+
+  // ── Служебное письмо администратору (без шаблона) ────────────────
+  async sendPartnerApplication(data: { name: string; email: string; companyName: string; description: string }) {
+    const esc = (s: any) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const html =
+      `<h2>New partner application</h2>
+       <p><b>Name:</b> ${esc(data.name)}</p>
+       <p><b>Email:</b> ${esc(data.email)}</p>
+       <p><b>Company:</b> ${esc(data.companyName)}</p>
+       <p><b>Description:</b> ${esc(data.description)}</p>`;
+    await this.deliver(this.config.get('MAIL_ADMIN'), {
+      subject: 'New partner application',
+      html,
+      text: `New partner application\nName: ${data.name}\nEmail: ${data.email}\nCompany: ${data.companyName}\n${data.description}`,
+    });
   }
 }

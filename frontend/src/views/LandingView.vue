@@ -13,7 +13,7 @@
           <a href="#products" @click.prevent="scrollTo('products')">{{ t.nav.products }}</a>
           <a href="#how" @click.prevent="scrollTo('how')">{{ t.nav.how }}</a>
           <a href="#team" @click.prevent="scrollTo('team')">{{ t.nav.team }}</a>
-          <a href="#partners" @click.prevent="scrollTo('partners')">{{ t.nav.partners }}</a>
+          <router-link to="/partner-apply">{{ t.nav.business }}</router-link>
           <a href="https://charts.updown.team" target="_blank" rel="noopener" class="nav__charts-link">{{ t.nav.charts }} ↗</a>
         </div>
 
@@ -24,7 +24,7 @@
           </button>
           <LangSwitcher />
           <router-link to="/login" class="btn-nav btn-nav--login">{{ t.nav.login }}</router-link>
-          <router-link to="/partner-apply" class="btn-nav btn-nav--accent">{{ t.nav.partner }}</router-link>
+          <router-link to="/register?get=magnet" class="btn-nav btn-nav--accent">{{ t.nav.free }}</router-link>
           <button class="hamburger" @click="mobileMenuOpen = !mobileMenuOpen" :class="{ 'hamburger--open': mobileMenuOpen }">
             <span></span><span></span><span></span>
           </button>
@@ -38,7 +38,8 @@
         <a href="#partners" @click.prevent="scrollTo('partners'); mobileMenuOpen=false">{{ t.nav.partners }}</a>
         <a href="https://charts.updown.team" target="_blank" rel="noopener" class="nav__charts-link">{{ t.nav.charts }} ↗</a>
         <router-link to="/login" @click="mobileMenuOpen=false">{{ t.nav.login }}</router-link>
-        <router-link to="/partner-apply" @click="mobileMenuOpen=false" class="mobile-partner-link">{{ t.nav.partner }}</router-link>
+        <router-link to="/partner-apply" @click="mobileMenuOpen=false">{{ t.nav.business }}</router-link>
+        <router-link to="/register?get=magnet" @click="mobileMenuOpen=false" class="mobile-partner-link">{{ t.nav.free }}</router-link>
       </div>
     </nav>
 
@@ -63,7 +64,7 @@
         </h1>
         <p class="hero__sub reveal reveal--delay-2">{{ t.hero.sub }}</p>
         <div class="hero__cta reveal reveal--delay-3">
-          <router-link to="/register" class="btn-hero btn-hero--primary">
+          <router-link to="/register?get=magnet" class="btn-hero btn-hero--primary">
             {{ t.hero.cta1 }}
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           </router-link>
@@ -104,6 +105,31 @@
         <span v-for="item in tickerItems" :key="'b'+item" class="ticker__item">{{ item }}</span>
       </div>
     </div>
+
+    <!-- ===== FREE AFTER SIGN-UP ===== -->
+    <section class="free-block" id="free">
+      <div class="section-container">
+        <div class="section-label reveal">{{ t.freeBlock.label }}</div>
+        <h2 class="section-title reveal reveal--delay-1">{{ t.freeBlock.title }}</h2>
+        <p class="section-sub reveal reveal--delay-2">{{ t.freeBlock.sub }}</p>
+        <div class="free-grid">
+          <div class="free-card reveal" v-for="(it, i) in t.freeBlock.items" :key="it.name" :class="`reveal--delay-${i+1}`">
+            <div class="free-card__top">
+              <h3>{{ it.name }}</h3>
+              <span class="free-card__term" :class="{ 'free-card__term--forever': i === 2 }">{{ it.term }}</span>
+            </div>
+            <p>{{ it.desc }}</p>
+          </div>
+        </div>
+        <div class="free-block__cta reveal reveal--delay-3">
+          <router-link to="/register?get=magnet" class="btn-hero btn-hero--primary">
+            {{ t.freeBlock.cta }}
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </router-link>
+          <p class="free-block__note">{{ t.freeBlock.note }}</p>
+        </div>
+      </div>
+    </section>
 
     <!-- ===== PRODUCTS ===== -->
     <section class="products" id="products">
@@ -382,7 +408,7 @@
         <h2 class="cta-section__title reveal">{{ t.cta.title }}</h2>
         <p class="cta-section__sub reveal reveal--delay-1">{{ t.cta.sub }}</p>
         <div class="cta-section__actions reveal reveal--delay-2">
-          <router-link to="/register" class="btn-hero btn-hero--primary">{{ t.cta.btn1 }}</router-link>
+          <router-link to="/register?get=magnet" class="btn-hero btn-hero--primary">{{ t.cta.btn1 }}</router-link>
           <router-link to="/partner-apply" class="btn-hero btn-hero--ghost">{{ t.cta.btn2 }}</router-link>
         </div>
       </div>
@@ -974,7 +1000,6 @@ const t = useT(dict)
 </script>
 
 <style lang="scss" scoped>
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Roboto:wght@300;400;500;700&display=swap');
 
 /* ============================================================
    CSS VARIABLES — THEMES
@@ -1479,6 +1504,39 @@ const t = useT(dict)
   grid-template-columns: repeat(3, 1fr);
   gap: 20px;
 }
+
+.free-block {
+  padding: 96px 0 40px;
+}
+.free-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+  margin-top: 40px;
+  @media (max-width: 900px) { grid-template-columns: 1fr; }
+}
+.free-card {
+  padding: 26px 26px 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  h3 { margin: 0; font-size: 20px; color: var(--text); }
+  p { margin: 0; color: var(--text-2); line-height: 1.6; font-size: 15px; }
+}
+.free-card__top { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.free-card__term {
+  font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+  padding: 5px 10px; border-radius: 999px;
+  color: var(--accent); border: 1px solid var(--accent);
+}
+.free-card__term--forever { color: var(--bg); background: var(--accent); }
+.free-block__cta {
+  margin-top: 32px; display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center;
+}
+.free-block__note { margin: 0; font-size: 13px; color: var(--text-3); max-width: 60ch; }
 
 .product-card {
   position: relative;

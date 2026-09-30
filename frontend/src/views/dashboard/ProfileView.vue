@@ -52,10 +52,11 @@
 
       <!-- Change password -->
       <div class="card">
-        <h3>{{ t.changePw }}</h3>
+        <h3>{{ noPassword ? t.setPw : t.changePw }}</h3>
+        <p v-if="noPassword" class="pw-hint">{{ t.setPwHint }}</p>
         <form @submit.prevent="changePassword" style="margin-top:20px">
           <div v-if="pwMsg" :class="['alert', pwMsg.type === 'error' ? 'alert--error' : 'alert--success']">{{ pwMsg.text }}</div>
-          <div class="form-group">
+          <div class="form-group" v-if="!noPassword">
             <label>{{ t.currentPw }}</label>
             <input class="input" v-model="pw.current" type="password" required />
           </div>
@@ -109,7 +110,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { usersApi, notificationsApi } from '@/api'
 import { useT } from '@/i18n'
@@ -191,14 +192,18 @@ async function confirmEmailChange() {
   finally { emailLoading.value = false }
 }
 
+// Аккаунт зарегистрирован по коду — пароль задаётся впервые, без старого
+const noPassword = computed(() => auth.user?.hasPassword === false)
+
 async function changePassword() {
   if (pw.value.new !== pw.value.confirm) {
     pwMsg.value = { type: 'error', text: t.value.pwMismatch }; return
   }
   pwLoading.value = true
   try {
-    await usersApi.changePassword({ currentPassword: pw.value.current, newPassword: pw.value.new })
+    await usersApi.changePassword(noPassword.value ? { newPassword: pw.value.new } : { currentPassword: pw.value.current, newPassword: pw.value.new })
     pwMsg.value = { type: 'success', text: t.value.pwChanged }
+    if (auth.user) auth.user = { ...auth.user, hasPassword: true }
     pw.value = { current: '', new: '', confirm: '' }
   } catch (e) { pwMsg.value = { type: 'error', text: e.response?.data?.message || t.value.error } }
   finally { pwLoading.value = false }
@@ -215,6 +220,7 @@ async function toggle2FA() {
 </script>
 
 <style lang="scss" scoped>
+.pw-hint { color: var(--text-2); font-size: 13px; margin: 6px 0 0; line-height: 1.5; }
 .profile-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));

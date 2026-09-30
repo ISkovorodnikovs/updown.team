@@ -33,7 +33,7 @@ export class UsersService {
 
   async updateProfile(
     userId: string,
-    data: { firstName?: string; lastName?: string },
+    data: { firstName?: string; lastName?: string; lang?: string },
   ) {
     await this.userRepo.update(userId, data);
     return this.getProfile(userId);
@@ -45,11 +45,14 @@ export class UsersService {
     newPassword: string,
   ) {
     const user = await this.userRepo.findOne({ where: { id: userId } });
-    const valid = await bcrypt.compare(currentPassword, user.passwordHash);
-    if (!valid) throw new BadRequestException('Current password is incorrect');
+    // Аккаунт без пароля (регистрация по коду) — задаём пароль без проверки старого
+    if (user.hasPassword !== false) {
+      const valid = await bcrypt.compare(currentPassword || '', user.passwordHash);
+      if (!valid) throw new BadRequestException('Current password is incorrect');
+    }
 
     const hash = await bcrypt.hash(newPassword, 12);
-    await this.userRepo.update(userId, { passwordHash: hash });
+    await this.userRepo.update(userId, { passwordHash: hash, hasPassword: true });
     return { message: 'Password updated' };
   }
 
@@ -60,7 +63,7 @@ export class UsersService {
     const user = await this.userRepo.findOne({ where: { id: userId } });
     const code = await this.generateCode(newEmail, CodeType.EMAIL_CHANGE);
     await this.userRepo.update(userId, { pendingEmail: newEmail });
-    await this.mailService.sendEmailChangeCode(newEmail, code);
+    await this.mailService.sendCode(newEmail, 'email_change', code, user?.lang);
     return { message: 'Verification code sent to new email' };
   }
 

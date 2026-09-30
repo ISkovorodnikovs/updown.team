@@ -3,7 +3,12 @@
     <div class="page-header">
       <h1>{{ t.title }}</h1>
       <span class="user-count">{{ total }} {{ t.totalSuffix }}</span>
+      <div class="head-actions">
+        <router-link class="btn btn--outline btn--sm" to="/dashboard/admin/bot-check">{{ t.botCheck }}</router-link>
+        <button v-if="auth.isOwner" class="btn btn--accent btn--sm" :disabled="freeBusy" @click="grantFreeAll">{{ t.freeAll }}</button>
+      </div>
     </div>
+    <div v-if="freeMsg" class="alert alert--success" style="margin-bottom:12px">{{ freeMsg }}</div>
 
     <div class="search-bar">
       <input class="input" v-model="search" :placeholder="t.searchPh" @input="debouncedLoad" />
@@ -22,6 +27,7 @@
           <col style="min-width:80px">
           <col style="min-width:70px">
           <col style="min-width:90px">
+          <col style="min-width:120px">
           <col style="min-width:200px">
         </colgroup>
         <thead>
@@ -35,6 +41,7 @@
             <th>{{ t.role }}</th>
             <th>✓</th>
             <th>{{ t.date }}</th>
+            <th>{{ t.source }}</th>
             <th>{{ t.actions }}</th>
           </tr>
         </thead>
@@ -63,9 +70,11 @@
             <td><span :class="['badge', roleColor(u.role)]">{{ u.role }}</span></td>
             <td>{{ u.isActive ? '✅' : '❌' }}</td>
             <td>{{ formatDate(u.createdAt) }}</td>
+            <td class="td-source" :title="u.signupSource ? JSON.stringify(u.signupSource) : ''">{{ sourceLabel(u) }}</td>
             <td>
               <div class="td-actions">
                 <button class="btn btn--accent btn--sm" @click="openGrant(u)" :title="t.grant">{{ t.grant }}</button>
+                <button class="btn btn--outline btn--sm" :disabled="freeBusy" @click="grantFree(u)" :title="t.freeBtnTitle">{{ t.freeBtn }}</button>
                 <button v-if="u.role !== 'ADMIN' && u.role !== 'OWNER'" class="btn btn--outline btn--sm" @click="assign(u)">→ Admin</button>
                 <button v-if="u.role !== 'PARTNER' && u.role !== 'OWNER'" class="btn btn--outline btn--sm" @click="makePartner(u)">→ Partner</button>
                 <button v-if="u.role === 'ADMIN'" class="btn btn--outline btn--sm" @click="revoke(u)">← User</button>
@@ -165,8 +174,35 @@
 import { ref, onMounted } from 'vue'
 import { adminApi, plansApi, shopApi, subscriptionsApi, partnersApi } from '@/api'
 import { useT, fmtDate } from '@/i18n'
+import { useAuthStore } from '@/stores/auth'
 import dict from '@/i18n/dicts/users'
 const t = useT(dict)
+const auth = useAuthStore()
+
+// ── Бесплатный доступ ──
+const freeBusy = ref(false)
+const freeMsg = ref('')
+const fillT = (s, v) => String(s).replace(/\{(\w+)\}/g, (_, k) => v[k] ?? '')
+function sourceLabel(u) {
+  const s = u.signupSource || {}
+  return [s.utm_source, s.utm_campaign].filter(Boolean).join(' / ') || s.referrer || '—'
+}
+async function grantFree(u) {
+  if (!confirm(fillT(t.value.freeConfirm, { email: u.email }))) return
+  freeBusy.value = true; freeMsg.value = ''
+  try {
+    const { data } = await adminApi.grantFree(u.id)
+    freeMsg.value = data.trialUntil ? fillT(t.value.freeDone, { email: u.email, date: fmtDate(data.trialUntil) }) : t.value.freeNoPlan
+  } catch (e) { freeMsg.value = e.response?.data?.message || t.value.error } finally { freeBusy.value = false }
+}
+async function grantFreeAll() {
+  if (!confirm(t.value.freeAllConfirm)) return
+  freeBusy.value = true; freeMsg.value = ''
+  try {
+    const { data } = await adminApi.grantFreeAll()
+    freeMsg.value = fillT(t.value.freeAllDone, { u: data.users, t: data.trials, f: data.forever })
+  } catch (e) { freeMsg.value = e.response?.data?.message || t.value.error } finally { freeBusy.value = false }
+}
 
 const users = ref([])
 const loading = ref(true)
@@ -305,6 +341,8 @@ function formatDate(d) { return fmtDate(d) }
 </script>
 
 <style lang="scss" scoped>
+.head-actions { display: flex; gap: 8px; margin-left: auto; flex-wrap: wrap; }
+.td-source { font-size: 12px; color: var(--text-2); max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .users-page { max-width: 100%; }
 .page-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; h1 { font-family: 'Montserrat',sans-serif; font-size: 20px; font-weight: 800; color: var(--text); } }
 .user-count { font-size: 12px; color: var(--text-3); background: var(--surface); border: 1px solid var(--border); padding: 3px 10px; border-radius: 20px; }
