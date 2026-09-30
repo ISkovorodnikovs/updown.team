@@ -17,6 +17,8 @@
         <span v-if="it.done" class="fs__done">{{ t.checklist.done }}</span>
         <a v-else-if="it.key === 'telegram' && tgUrl" :href="tgUrl" target="_blank" rel="noopener"
            class="fs__btn" @click="refreshSoon">{{ t.checklist.items[it.key].btn }}</a>
+        <a v-else-if="it.link" :href="it.link" target="_blank" rel="noopener"
+           class="fs__btn" @click="refreshSoon">✈ {{ t.checklist.items[it.key].btn }}</a>
         <router-link v-else :to="linkFor(it)" class="fs__btn" :data-tour="'cl-' + it.key">
           {{ t.checklist.items[it.key].btn }}
         </router-link>

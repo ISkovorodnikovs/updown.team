@@ -8,6 +8,7 @@ import { ShopProduct } from '../database/entities/shop-product.entity';
 import { UserProduct, UserProductStatus } from '../database/entities/user-product.entity';
 import { ChannelAccess } from '../database/entities/channel-access.entity';
 import { TvAccessRequest } from '../database/entities/tv-access-request.entity';
+import { ChannelAccessService } from '../channel-access/channel-access.service';
 
 export type OnboardingMode = 'manual' | 'new' | 'all';
 const GOALS = ['indicators', 'signals', 'learn'];
@@ -17,6 +18,7 @@ export interface ChecklistItem {
   key: 'tv' | 'digest' | 'channel' | 'telegram' | 'shop';
   done: boolean;
   name?: string;
+  link?: string | null;
 }
 
 @Injectable()
@@ -29,6 +31,7 @@ export class OnboardingService {
     @InjectRepository(UserProduct) private userProductRepo: Repository<UserProduct>,
     @InjectRepository(ChannelAccess) private channelRepo: Repository<ChannelAccess>,
     @InjectRepository(TvAccessRequest) private tvRepo: Repository<TvAccessRequest>,
+    private channelAccess: ChannelAccessService,
   ) {}
 
   /** manual — только тем, кому выдал админ; new — новым (не legacy); all — всем. */
@@ -82,7 +85,11 @@ export class OnboardingService {
     const tv = await this.tvRepo.count({ where: { userId: user.id, status: In(['pending', 'granted']) } });
     items.push({ key: 'tv', done: tv > 0 });
 
-    // Доступные пользователю каналы с Telegram-группой
+    // 2. Уведомления в Telegram — раньше каналов: после привязки бот сам видит,
+    //    что человек уже состоит в группе, и галочки каналов ставятся автоматически
+    items.push({ key: 'telegram', done: !!user.telegramUserId });
+
+    // Доступные пользователю каналы с Telegram-группой и срок доступа к каждому
     const ups = await this.userProductRepo.find({
       where: { userId: user.id, status: UserProductStatus.ACTIVE, expiresAt: MoreThan(now) },
     });
@@ -90,32 +97,40 @@ export class OnboardingService {
       where: { userId: user.id, status: SubscriptionStatus.ACTIVE, expiresAt: MoreThan(now) },
       relations: ['plan'],
     });
-    const ids = new Set<string>(ups.map((u) => u.shopProductId));
-    for (const s of subs) (s.plan?.includedProductIds || []).forEach((id) => ids.add(id));
-    const channels = ids.size
+    const until = new Map<string, Date>();
+    const extend = (id: string, d: Date) => {
+      const cur = until.get(id);
+      if (!cur || new Date(d) > cur) until.set(id, new Date(d));
+    };
+    for (const u of ups) extend(u.shopProductId, u.expiresAt);
+    for (const sub of subs) (sub.plan?.includedProductIds || []).forEach((id) => extend(id, sub.expiresAt));
+    const channels = until.size
       ? await this.productRepo.find({
-          where: { id: In([...ids]), type: 'signal_channel' as any, isActive: true, telegramChatId: Not(IsNull()) },
+          where: { id: In([...until.keys()]), type: 'signal_channel' as any, isActive: true, telegramChatId: Not(IsNull()) },
           order: { sortOrder: 'ASC' },
         })
       : [];
     const usable = channels.filter((c) => !c.customInstrument);
-    const joined = usable.length
-      ? await this.channelRepo.find({
-          where: { userId: user.id, shopProductId: In(usable.map((c) => c.id)), joinedTelegramUserId: Not(IsNull()) },
-        })
-      : [];
-    const joinedIds = new Set(joined.map((j) => j.shopProductId));
+    const isFree = (c: ShopProduct) => !!(c.meta && (c.meta as any).freeForever === true);
 
-    // 2. Бесплатный канал (UpDown Digest)
-    const free = usable.find((c) => c.meta && (c.meta as any).freeForever === true);
-    if (free) items.push({ key: 'digest', done: joinedIds.has(free.id), name: free.name });
+    // Ссылка-приглашение + проверка членства (если Telegram привязан — спрашиваем у бота)
+    const channelItem = async (key: 'digest' | 'channel', c: ShopProduct): Promise<ChecklistItem> => {
+      try {
+        const acc = await this.channelAccess.getOrCreateLink(user.id, c, until.get(c.id) as Date, user.email, user.telegramUserId);
+        const joined = !!(acc && acc.status === 'active' && acc.joinedTelegramUserId);
+        return { key, done: joined, name: c.name, link: joined ? null : acc?.inviteLink || null };
+      } catch {
+        return { key, done: false, name: c.name, link: null };
+      }
+    };
 
-    // 3. Первый платный / пробный канал (UpDown PRO по FREE)
-    const paid = usable.find((c) => !(c.meta && (c.meta as any).freeForever === true));
-    if (paid) items.push({ key: 'channel', done: joinedIds.has(paid.id), name: paid.name });
+    // 3. Бесплатный канал (UpDown Digest)
+    const free = usable.find(isFree);
+    if (free) items.push(await channelItem('digest', free));
 
-    // 4. Уведомления в Telegram
-    items.push({ key: 'telegram', done: !!user.telegramUserId });
+    // 4. Первый платный / пробный канал (UpDown PRO по FREE)
+    const paid = usable.find((c) => !isFree(c));
+    if (paid) items.push(await channelItem('channel', paid));
 
     // 5. Посмотрел тарифы и продукты
     items.push({ key: 'shop', done: !!st.shopVisited });
