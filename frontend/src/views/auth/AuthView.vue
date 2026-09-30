@@ -204,6 +204,7 @@
 </template>
 
 <script setup>
+import { safeNext } from '@/router'
 import { ref, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
@@ -378,7 +379,8 @@ function startResendTimer() {
 // Куда вести после входа: ?get=magnet → сразу к заявке на Magnet Pro
 function afterAuthPath() {
   const get = String(route.query.get || '')
-  return get === 'magnet' ? '/dashboard/access?focus=tv' : '/dashboard'
+  if (get === 'magnet') return '/dashboard/access?focus=tv'
+  return safeNext(route.query.next) || '/dashboard'
 }
 
 function loginInsteadByCode() {

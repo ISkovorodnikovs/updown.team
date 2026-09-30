@@ -10,7 +10,8 @@
         </div>
 
         <div class="nav__links">
-          <a href="#products" @click.prevent="scrollTo('products')">{{ t.nav.products }}</a>
+          <router-link :to="lp('/indicators')">{{ pt.nav.indicators }}</router-link>
+          <router-link :to="lp('/pricing')">{{ pt.nav.pricing }}</router-link>
           <a href="#how" @click.prevent="scrollTo('how')">{{ t.nav.how }}</a>
           <a href="#team" @click.prevent="scrollTo('team')">{{ t.nav.team }}</a>
           <router-link to="/partner-apply">{{ t.nav.business }}</router-link>
@@ -32,7 +33,8 @@
       </div>
       <!-- Mobile menu -->
       <div class="nav__mobile" :class="{ 'nav__mobile--open': mobileMenuOpen }">
-        <a href="#products" @click.prevent="scrollTo('products'); mobileMenuOpen=false">{{ t.nav.products }}</a>
+        <router-link :to="lp('/indicators')" @click="mobileMenuOpen=false">{{ pt.nav.indicators }}</router-link>
+        <router-link :to="lp('/pricing')" @click="mobileMenuOpen=false">{{ pt.nav.pricing }}</router-link>
         <a href="#how" @click.prevent="scrollTo('how'); mobileMenuOpen=false">{{ t.nav.how }}</a>
         <a href="#team" @click.prevent="scrollTo('team'); mobileMenuOpen=false">{{ t.nav.team }}</a>
         <a href="#partners" @click.prevent="scrollTo('partners'); mobileMenuOpen=false">{{ t.nav.partners }}</a>
@@ -457,6 +459,8 @@ import { useRouter } from 'vue-router'
 import LangSwitcher from '@/components/LangSwitcher.vue'
 import { lang, useT } from '@/i18n'
 import dict from '@/i18n/dicts/landing'
+import pdict from '@/content/publicText'
+import { lp } from '@/utils/publicLang'
 
 // ---- THEME ----
 const theme = ref((typeof localStorage !== 'undefined' ? localStorage.getItem('ud-theme') : null) || 'dark')
@@ -998,6 +1002,7 @@ const tickerItems = ['Market Radar Pro', '✦', 'Magnet Pro', '✦', 'Fib Pro', 
 
 // ---- TRANSLATIONS ----
 const t = useT(dict)
+const pt = useT(pdict)
 </script>
 
 <style lang="scss" scoped>

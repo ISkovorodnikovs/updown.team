@@ -112,6 +112,11 @@ export const adminApi = {
 }
 
 // Заявки на доступ к индикаторам TradingView
+export const publicApi = {
+  catalog: () => api.get('/public/catalog'),
+  plans: () => api.get('/plans'),
+}
+
 export const onboardingApi = {
   get: () => api.get('/onboarding'),
   patch: (data) => api.patch('/onboarding', data),

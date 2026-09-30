@@ -12,8 +12,22 @@ const landingRoutes = LANDING_LANGS.map((code) => ({
   meta: { landingLang: code },
 }))
 
+// Публичные страницы (Спринт 3) на всех языках: /indicators, /ru/indicators, ...
+const PUBLIC_PAGES = [
+  { path: '/indicators', component: () => import('@/views/public/IndicatorsView.vue'), page: 'indicators' },
+  { path: '/indicators/:slug', component: () => import('@/views/public/IndicatorView.vue'), page: 'indicator' },
+  { path: '/pricing', component: () => import('@/views/public/PricingView.vue'), page: 'pricing' },
+  { path: '/free', component: () => import('@/views/public/FreeView.vue'), page: 'free' },
+]
+const publicRoutes = LANDING_LANGS.flatMap((code) => PUBLIC_PAGES.map((pg) => ({
+  path: (code === 'en' ? '' : `/${code}`) + pg.path,
+  component: pg.component,
+  meta: { landingLang: code, publicPage: pg.page },
+})))
+
 export const routes = [
   ...landingRoutes,
+  ...publicRoutes,
   { path: '/partner-apply', component: () => import('@/views/PartnerApplyView.vue') },
   { path: '/login', component: () => import('@/views/auth/AuthView.vue'), meta: { guest: true, key: 'auth' } },
   { path: '/register', component: () => import('@/views/auth/AuthView.vue'), meta: { guest: true, key: 'auth' } },
@@ -63,6 +77,12 @@ export const routes = [
 
 // Регистрация guard'ов. Вызывается из main.js (в setup-функции ViteSSG),
 // т.к. роутер создаёт vite-ssg, а не мы напрямую.
+// Куда вернуть после входа: только внутренние страницы кабинета
+export function safeNext(next) {
+  const n = String(next || '')
+  return /^\/dashboard(\/[\w\-\/?=&.]*)?$/.test(n) ? n : ''
+}
+
 export function setupRouter(router) {
   router.beforeEach(async (to) => {
     // Язык из префикса пути для SEO-версий лендинга ('/de' → de).
@@ -75,8 +95,8 @@ export function setupRouter(router) {
 
     const auth = useAuthStore()
     if (!auth.user && auth.token) await auth.fetchMe()
-    if (to.meta.requiresAuth && !auth.isAuthenticated) return '/login'
-    if (to.meta.guest && auth.isAuthenticated) return '/dashboard'
+    if (to.meta.requiresAuth && !auth.isAuthenticated) return { path: '/login', query: { next: to.fullPath } }
+    if (to.meta.guest && auth.isAuthenticated) return safeNext(to.query.next) || '/dashboard'
     if (to.meta.roles && !to.meta.roles.includes(auth.role)) return '/dashboard'
     return true
   })
