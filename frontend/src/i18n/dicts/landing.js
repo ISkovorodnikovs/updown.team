@@ -11,7 +11,7 @@ const base = {
       sub: 'UpDown / AiView — ecosystem of trading signals, AI analytics, indicators and B2B solutions for traders and partners worldwide.',
       cta1: 'Get Started', cta2: 'Become a Partner',
       card1: 'Partner ROI', card2: 'Active', card3: 'Ready',
-      stats: [{ num: '1000+', label: 'Users' }, { num: '50+', label: 'Partners' }, { num: '6', label: 'Products' }, { num: '99.9%', label: 'Uptime' }],
+      stats: [{ num: '1000+', label: 'Users' }, { num: '50+', label: 'Partners' }, { num: '9+', label: 'Indicators' }, { num: '4', label: 'Signal services' }],
     },
     products: {
       label: 'Ecosystem', title: 'Full arsenal for trading',
@@ -88,7 +88,7 @@ const base = {
       sub: 'UpDown / AiView — экосистема торговых сигналов, AI-аналитики, индикаторов и B2B-решений для трейдеров и партнёров по всему миру.',
       cta1: 'Начать сейчас', cta2: 'Стать партнёром',
       card1: 'Доходность партнёров', card2: 'Активно', card3: 'Ready',
-      stats: [{ num: '1000+', label: 'Пользователей' }, { num: '50+', label: 'Партнёров' }, { num: '6', label: 'Продуктов' }, { num: '99.9%', label: 'Uptime' }],
+      stats: [{ num: '1000+', label: 'Пользователей' }, { num: '50+', label: 'Партнёров' }, { num: '9+', label: 'Индикаторов' }, { num: '4', label: 'Сигнальных сервиса' }],
     },
     products: {
       label: 'Экосистема', title: 'Полный арсенал для трейдинга',

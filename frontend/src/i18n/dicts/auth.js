@@ -1,8 +1,8 @@
 export default {
-  uk: {"signIn":"Увійти","signInSub":"або скористайтесь акаунтом","createAccount":"Створити акаунт","createSub":"або зареєструйтесь через email","emailPlaceholder":"Адреса email","passwordPlaceholder":"Пароль","confirmPlaceholder":"Підтвердіть пароль","codePlaceholder":"Код з email","loginWithCode":"Увійти за кодом з email","loginWithPass":"Увійти за паролем","getCode":"ОТРИМАТИ КОД","signInBtn":"УВІЙТИ","signUpBtn":"ЗАРЕЄСТРУВАТИСЬ","helloFriend":"Привіт, друже!","helloSub":"Розпочніть свою неймовірну подорож, створивши акаунт сьогодні","welcomeBack":"З поверненням!","welcomeSub":"Залишайтесь на зв'язку — увійдіть зі своїми даними та продовжуйте","codeSent":"Код надіслано на","enterCode":"Введіть код з email","signInBlue":"УВІЙТИ","signUpBlue":"ЗАРЕЄСТРУВАТИСЬ","errInvalidLogin":"Невірний email або пароль","errInvalidCode":"Невірний код. Спробуйте ще раз.","errExpiredCode":"Невірний або прострочений код","errSendCode":"Не вдалося надіслати код","errPassMatch":"Паролі не збігаються","errRegFailed":"Реєстрація не вдалася. Спробуйте ще раз.","showPass":"Показати пароль","hidePass":"Сховати пароль","passwordLabel":"Пароль","emailLabel":"Адреса email","forgotPassword":"Забули пароль?","resetTitle":"Скидання пароля","resetSub":"введіть email, щоб отримати код скидання","sendResetCode":"НАДІСЛАТИ КОД","newPasswordLabel":"Новий пароль","setNewPassword":"ВСТАНОВИТИ НОВИЙ ПАРОЛЬ","backToLogin":"Назад до входу","resetSuccess":"Пароль оновлено! Тепер можете увійти.","errValidEmail":"Введіть коректну адресу email","errPwShort":"Пароль надто короткий","errEmailTaken":"Цей email вже зареєстровано","errCodeExpired":"Код прострочено, запитайте новий","errCode":"Невірний код"},
+  uk: {"signIn":"Увійти","signInSub":"Увійдіть в особистий кабінет UpDown","createAccount":"Створити акаунт","createSub":"Безкоштовно — займе менше хвилини","emailPlaceholder":"Адреса email","passwordPlaceholder":"Пароль","confirmPlaceholder":"Підтвердіть пароль","codePlaceholder":"Код з email","loginWithCode":"Увійти за кодом з email","loginWithPass":"Увійти за паролем","getCode":"ОТРИМАТИ КОД","signInBtn":"УВІЙТИ","signUpBtn":"ЗАРЕЄСТРУВАТИСЬ","helloFriend":"Привіт, друже!","helloSub":"Розпочніть свою неймовірну подорож, створивши акаунт сьогодні","welcomeBack":"З поверненням!","welcomeSub":"Залишайтесь на зв'язку — увійдіть зі своїми даними та продовжуйте","codeSent":"Код надіслано на","enterCode":"Введіть код з email","signInBlue":"УВІЙТИ","signUpBlue":"ЗАРЕЄСТРУВАТИСЬ","errInvalidLogin":"Невірний email або пароль","errInvalidCode":"Невірний код. Спробуйте ще раз.","errExpiredCode":"Невірний або прострочений код","errSendCode":"Не вдалося надіслати код","errPassMatch":"Паролі не збігаються","errRegFailed":"Реєстрація не вдалася. Спробуйте ще раз.","showPass":"Показати пароль","hidePass":"Сховати пароль","passwordLabel":"Пароль","emailLabel":"Адреса email","forgotPassword":"Забули пароль?","resetTitle":"Скидання пароля","resetSub":"введіть email, щоб отримати код скидання","sendResetCode":"НАДІСЛАТИ КОД","newPasswordLabel":"Новий пароль","setNewPassword":"ВСТАНОВИТИ НОВИЙ ПАРОЛЬ","backToLogin":"Назад до входу","resetSuccess":"Пароль оновлено! Тепер можете увійти.","errValidEmail":"Введіть коректну адресу email","errPwShort":"Пароль надто короткий","errEmailTaken":"Цей email вже зареєстровано","errCodeExpired":"Код прострочено, запитайте новий","errCode":"Невірний код"},
   en: {
-    signIn: 'Sign In', signInSub: 'or use your account', createAccount: 'Create Account',
-    createSub: 'or use your email for registration', emailPlaceholder: 'Email Address',
+    signIn: 'Sign In', signInSub: 'Sign in to your UpDown account', createAccount: 'Create Account',
+    createSub: 'Free — takes less than a minute', emailPlaceholder: 'Email Address',
     passwordPlaceholder: 'Password', confirmPlaceholder: 'Confirm Password', codePlaceholder: 'Code from email',
     loginWithCode: 'Login with email code', loginWithPass: 'Login with password',
     getCode: 'GET CODE', signInBtn: 'SIGN IN', signUpBtn: 'SIGN UP',
@@ -18,8 +18,8 @@ export default {
     backToLogin: 'Back to Sign In', resetSuccess: 'Password updated! You can now sign in.', errValidEmail: 'Enter a valid email address', errPwShort: 'Password is too short', errEmailTaken: 'This email is already registered', errCodeExpired: 'Code expired, request a new one', errCode: 'Invalid code',
   },
   ru: {
-    signIn: 'Войти', signInSub: 'или использовать аккаунт', createAccount: 'Создать аккаунт',
-    createSub: 'или email для регистрации', emailPlaceholder: 'Email адрес',
+    signIn: 'Войти', signInSub: 'Войдите в личный кабинет UpDown', createAccount: 'Создать аккаунт',
+    createSub: 'Бесплатно — займёт меньше минуты', emailPlaceholder: 'Email адрес',
     passwordPlaceholder: 'Пароль', confirmPlaceholder: 'Повторите пароль', codePlaceholder: 'Код из письма',
     loginWithCode: 'Войти по коду на email', loginWithPass: 'Войти с паролем',
     getCode: 'ПОЛУЧИТЬ КОД', signInBtn: 'ВОЙТИ', signUpBtn: 'РЕГИСТРАЦИЯ',
@@ -35,8 +35,8 @@ export default {
     backToLogin: 'Назад к входу', resetSuccess: 'Пароль обновлён! Войдите с новым паролем.', errValidEmail: 'Введите корректный email адрес', errPwShort: 'Пароль слишком короткий', errEmailTaken: 'Этот email уже зарегистрирован', errCodeExpired: 'Код устарел, запросите новый', errCode: 'Неверный код',
   },
   de: {
-    signIn: 'Anmelden', signInSub: 'oder Ihr Konto verwenden', createAccount: 'Konto erstellen',
-    createSub: 'oder E-Mail zur Registrierung verwenden', emailPlaceholder: 'E-Mail-Adresse',
+    signIn: 'Anmelden', signInSub: 'Melden Sie sich in Ihrem UpDown-Konto an', createAccount: 'Konto erstellen',
+    createSub: 'Kostenlos — dauert weniger als eine Minute', emailPlaceholder: 'E-Mail-Adresse',
     passwordPlaceholder: 'Passwort', confirmPlaceholder: 'Passwort bestätigen', codePlaceholder: 'Code aus der E-Mail',
     loginWithCode: 'Mit E-Mail-Code anmelden', loginWithPass: 'Mit Passwort anmelden',
     getCode: 'CODE ANFORDERN', signInBtn: 'ANMELDEN', signUpBtn: 'REGISTRIEREN',
@@ -52,8 +52,8 @@ export default {
     backToLogin: 'Zurück zur Anmeldung', resetSuccess: 'Passwort aktualisiert! Sie können sich jetzt anmelden.', errValidEmail: 'Geben Sie eine gültige E-Mail-Adresse ein', errPwShort: 'Passwort ist zu kurz', errEmailTaken: 'Diese E-Mail ist bereits registriert', errCodeExpired: 'Code abgelaufen, fordern Sie einen neuen an', errCode: 'Ungültiger Code',
   },
   es: {
-    signIn: 'Iniciar sesión', signInSub: 'o usa tu cuenta', createAccount: 'Crear cuenta',
-    createSub: 'o usa tu email para registrarte', emailPlaceholder: 'Correo electrónico',
+    signIn: 'Iniciar sesión', signInSub: 'Inicia sesión en tu cuenta de UpDown', createAccount: 'Crear cuenta',
+    createSub: 'Gratis — toma menos de un minuto', emailPlaceholder: 'Correo electrónico',
     passwordPlaceholder: 'Contraseña', confirmPlaceholder: 'Confirmar contraseña', codePlaceholder: 'Código del email',
     loginWithCode: 'Entrar con código por email', loginWithPass: 'Entrar con contraseña',
     getCode: 'OBTENER CÓDIGO', signInBtn: 'ENTRAR', signUpBtn: 'REGISTRARSE',
@@ -69,8 +69,8 @@ export default {
     backToLogin: 'Volver a iniciar sesión', resetSuccess: '¡Contraseña actualizada! Ya puedes iniciar sesión.', errValidEmail: 'Introduce un correo electrónico válido', errPwShort: 'La contraseña es demasiado corta', errEmailTaken: 'Este email ya está registrado', errCodeExpired: 'Código caducado, solicita uno nuevo', errCode: 'Código no válido',
   },
   it: {
-    signIn: 'Accedi', signInSub: 'o usa il tuo account', createAccount: 'Crea account',
-    createSub: 'o usa la tua email per registrarti', emailPlaceholder: 'Indirizzo email',
+    signIn: 'Accedi', signInSub: 'Accedi al tuo account UpDown', createAccount: 'Crea account',
+    createSub: 'Gratis — richiede meno di un minuto', emailPlaceholder: 'Indirizzo email',
     passwordPlaceholder: 'Password', confirmPlaceholder: 'Conferma password', codePlaceholder: 'Codice dall\'email',
     loginWithCode: 'Accedi con codice email', loginWithPass: 'Accedi con password',
     getCode: 'OTTIENI CODICE', signInBtn: 'ACCEDI', signUpBtn: 'REGISTRATI',
@@ -86,8 +86,8 @@ export default {
     backToLogin: 'Torna all\'accesso', resetSuccess: 'Password aggiornata! Ora puoi accedere.', errValidEmail: 'Inserisci un indirizzo email valido', errPwShort: 'La password è troppo corta', errEmailTaken: 'Questa email è già registrata', errCodeExpired: 'Codice scaduto, richiedine uno nuovo', errCode: 'Codice non valido',
   },
   pt: {
-    signIn: 'Entrar', signInSub: 'ou use sua conta', createAccount: 'Criar conta',
-    createSub: 'ou use seu email para se registrar', emailPlaceholder: 'Endereço de email',
+    signIn: 'Entrar', signInSub: 'Entre na sua conta UpDown', createAccount: 'Criar conta',
+    createSub: 'Grátis — leva menos de um minuto', emailPlaceholder: 'Endereço de email',
     passwordPlaceholder: 'Senha', confirmPlaceholder: 'Confirmar senha', codePlaceholder: 'Código do email',
     loginWithCode: 'Entrar com código por email', loginWithPass: 'Entrar com senha',
     getCode: 'OBTER CÓDIGO', signInBtn: 'ENTRAR', signUpBtn: 'CADASTRAR',
@@ -103,8 +103,8 @@ export default {
     backToLogin: 'Voltar ao login', resetSuccess: 'Senha atualizada! Agora você pode entrar.', errValidEmail: 'Digite um endereço de email válido', errPwShort: 'A senha é muito curta', errEmailTaken: 'Este email já está registrado', errCodeExpired: 'Código expirado, solicite um novo', errCode: 'Código inválido',
   },
   zh: {
-    signIn: '登录', signInSub: '或使用您的账户', createAccount: '创建账户',
-    createSub: '或使用邮箱进行注册', emailPlaceholder: '邮箱地址',
+    signIn: '登录', signInSub: '登录您的 UpDown 账户', createAccount: '创建账户',
+    createSub: '免费 — 不到一分钟即可完成', emailPlaceholder: '邮箱地址',
     passwordPlaceholder: '密码', confirmPlaceholder: '确认密码', codePlaceholder: '邮件验证码',
     loginWithCode: '使用邮箱验证码登录', loginWithPass: '使用密码登录',
     getCode: '获取验证码', signInBtn: '登录', signUpBtn: '注册',
@@ -120,8 +120,8 @@ export default {
     backToLogin: '返回登录', resetSuccess: '密码已更新！现在可以登录了。', errValidEmail: '请输入有效的邮箱地址', errPwShort: '密码太短', errEmailTaken: '该邮箱已注册', errCodeExpired: '验证码已过期，请重新获取', errCode: '验证码错误',
   },
   ar: {
-    signIn: 'تسجيل الدخول', signInSub: 'أو استخدم حسابك', createAccount: 'إنشاء حساب',
-    createSub: 'أو استخدم بريدك الإلكتروني للتسجيل', emailPlaceholder: 'البريد الإلكتروني',
+    signIn: 'تسجيل الدخول', signInSub: 'سجّل الدخول إلى حسابك في UpDown', createAccount: 'إنشاء حساب',
+    createSub: 'مجاني — يستغرق أقل من دقيقة', emailPlaceholder: 'البريد الإلكتروني',
     passwordPlaceholder: 'كلمة المرور', confirmPlaceholder: 'تأكيد كلمة المرور', codePlaceholder: 'الرمز من البريد',
     loginWithCode: 'الدخول برمز البريد', loginWithPass: 'الدخول بكلمة المرور',
     getCode: 'احصل على الرمز', signInBtn: 'دخول', signUpBtn: 'تسجيل',

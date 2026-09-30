@@ -9,7 +9,7 @@ export const landingRest = {
       sub: 'UpDown / AiView — екосистема торгових сигналів, AI-аналітики, індикаторів і B2B-рішень для трейдерів і партнерів по всьому світу.',
       cta1: 'Почати зараз', cta2: 'Стати партнером',
       card1: 'Дохідність партнерів', card2: 'Активно', card3: 'Ready',
-      stats: [{ num: '1000+', label: 'Користувачів' }, { num: '50+', label: 'Партнерів' }, { num: '6', label: 'Продуктів' }, { num: '99.9%', label: 'Аптайм' }],
+      stats: [{ num: '1000+', label: 'Користувачів' }, { num: '50+', label: 'Партнерів' }, { num: '9+', label: 'Індикаторів' }, { num: '4', label: 'Сигнальні сервіси' }],
     },
     products: {
       label: 'Екосистема', title: 'Повний арсенал для трейдингу',
@@ -86,7 +86,7 @@ export const landingRest = {
       sub: 'UpDown / AiView — Ökosystem aus Trading-Signalen, KI-Analytik, Indikatoren und B2B-Lösungen für Trader und Partner weltweit.',
       cta1: 'Loslegen', cta2: 'Partner werden',
       card1: 'Partner-ROI', card2: 'Aktiv', card3: 'Ready',
-      stats: [{ num: '1000+', label: 'Nutzer' }, { num: '50+', label: 'Partner' }, { num: '6', label: 'Produkte' }, { num: '99.9%', label: 'Uptime' }],
+      stats: [{ num: '1000+', label: 'Nutzer' }, { num: '50+', label: 'Partner' }, { num: '9+', label: 'Indikatoren' }, { num: '4', label: 'Signaldienste' }],
     },
     products: {
       label: 'Ökosystem', title: 'Volles Arsenal für den Handel',
@@ -163,7 +163,7 @@ export const landingRest = {
       sub: 'UpDown / AiView — ecosistema de señales de trading, analítica con IA, indicadores y soluciones B2B para traders y socios de todo el mundo.',
       cta1: 'Comenzar', cta2: 'Hazte socio',
       card1: 'ROI de socios', card2: 'Activo', card3: 'Ready',
-      stats: [{ num: '1000+', label: 'Usuarios' }, { num: '50+', label: 'Socios' }, { num: '6', label: 'Productos' }, { num: '99.9%', label: 'Uptime' }],
+      stats: [{ num: '1000+', label: 'Usuarios' }, { num: '50+', label: 'Socios' }, { num: '9+', label: 'Indicadores' }, { num: '4', label: 'Servicios de señales' }],
     },
     products: {
       label: 'Ecosistema', title: 'Arsenal completo para el trading',
@@ -240,7 +240,7 @@ export const landingRest = {
       sub: 'UpDown / AiView — ecosistema di segnali di trading, analisi con IA, indicatori e soluzioni B2B per trader e partner in tutto il mondo.',
       cta1: 'Inizia ora', cta2: 'Diventa partner',
       card1: 'ROI dei partner', card2: 'Attivo', card3: 'Ready',
-      stats: [{ num: '1000+', label: 'Utenti' }, { num: '50+', label: 'Partner' }, { num: '6', label: 'Prodotti' }, { num: '99.9%', label: 'Uptime' }],
+      stats: [{ num: '1000+', label: 'Utenti' }, { num: '50+', label: 'Partner' }, { num: '9+', label: 'Indicatori' }, { num: '4', label: 'Servizi di segnali' }],
     },
     products: {
       label: 'Ecosistema', title: 'Arsenale completo per il trading',
@@ -317,7 +317,7 @@ export const landingRest = {
       sub: 'UpDown / AiView — ecossistema de sinais de trading, análises com IA, indicadores e soluções B2B para traders e parceiros no mundo todo.',
       cta1: 'Começar', cta2: 'Seja parceiro',
       card1: 'ROI de parceiros', card2: 'Ativo', card3: 'Ready',
-      stats: [{ num: '1000+', label: 'Usuários' }, { num: '50+', label: 'Parceiros' }, { num: '6', label: 'Produtos' }, { num: '99.9%', label: 'Uptime' }],
+      stats: [{ num: '1000+', label: 'Usuários' }, { num: '50+', label: 'Parceiros' }, { num: '9+', label: 'Indicadores' }, { num: '4', label: 'Serviços de sinais' }],
     },
     products: {
       label: 'Ecossistema', title: 'Arsenal completo para o trading',
@@ -394,7 +394,7 @@ export const landingRest = {
       sub: 'UpDown / AiView——面向全球交易者与合作伙伴的交易信号、AI 分析、指标与 B2B 解决方案生态系统。',
       cta1: '立即开始', cta2: '成为合作伙伴',
       card1: '合作伙伴 ROI', card2: '运行中', card3: 'Ready',
-      stats: [{ num: '1000+', label: '用户' }, { num: '50+', label: '合作伙伴' }, { num: '6', label: '产品' }, { num: '99.9%', label: 'Uptime' }],
+      stats: [{ num: '1000+', label: '用户' }, { num: '50+', label: '合作伙伴' }, { num: '9+', label: '款指标' }, { num: '4', label: '个信号服务' }],
     },
     products: {
       label: '生态系统', title: '完整的交易工具库',
@@ -471,7 +471,7 @@ export const landingRest = {
       sub: 'UpDown / AiView — منظومة من إشارات التداول وتحليلات الذكاء الاصطناعي والمؤشرات وحلول B2B للمتداولين والشركاء حول العالم.',
       cta1: 'ابدأ الآن', cta2: 'كن شريكاً',
       card1: 'عائد الشركاء', card2: 'نشط', card3: 'Ready',
-      stats: [{ num: '1000+', label: 'مستخدم' }, { num: '50+', label: 'شريك' }, { num: '6', label: 'منتجات' }, { num: '99.9%', label: 'Uptime' }],
+      stats: [{ num: '1000+', label: 'مستخدم' }, { num: '50+', label: 'شريك' }, { num: '9+', label: 'مؤشرات' }, { num: '4', label: 'خدمات إشارات' }],
     },
     products: {
       label: 'المنظومة', title: 'ترسانة كاملة للتداول',

@@ -3,6 +3,7 @@ import { createPinia } from 'pinia'
 import App from './App.vue'
 import { routes, setupRouter } from './router'
 import { applyDom } from './i18n'
+import { captureReferral } from './utils/referral'
 import './assets/styles/main.scss'
 
 // ViteSSG создаёт роутер сам (memory-history на сервере, web-history на клиенте)
@@ -13,6 +14,9 @@ export const createApp = ViteSSG(
   ({ app, router, isClient }) => {
     app.use(createPinia())
     setupRouter(router)
-    if (isClient) applyDom() // выставляем <html lang/dir> и SEO на клиенте
+    if (isClient) {
+      applyDom()        // выставляем <html lang/dir> и SEO на клиенте
+      captureReferral() // запоминаем ?ref= из ссылки на 30 дней
+    }
   },
 )

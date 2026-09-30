@@ -222,6 +222,7 @@ import { useAuthStore } from '@/stores/auth'
 import { authApi } from '@/api'
 import { lang, useT } from '@/i18n'
 import dict from '@/i18n/dicts/auth'
+import { getReferral, clearReferral } from '@/utils/referral'
 
 const router = useRouter()
 const route = useRoute()
@@ -417,7 +418,8 @@ async function handleRegister() {
       email: regForm.value.email,
       code: regForm.value.code,
       password: regForm.value.password
-    })
+    }, getReferral())
+    clearReferral()
     auth.setAuth(data); router.push('/dashboard')
   } catch (e) { regError.value = translateBackendError(e.response?.data?.message, authT.value.errRegFailed) }
   finally { regLoading.value = false }

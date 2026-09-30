@@ -5,7 +5,8 @@ services:
     environment:
       POSTGRES_DB: updown_db
       POSTGRES_USER: updown_admin
-      POSTGRES_PASSWORD: aFNLDF5I72z3K1
+      # Пароль берётся из файла .env рядом с docker-compose.yml (в git не попадает).
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is not set - create .env next to docker-compose.yml}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:

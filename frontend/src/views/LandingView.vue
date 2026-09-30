@@ -80,13 +80,6 @@
 
       <!-- Floating cards -->
       <div class="hero__cards">
-        <div class="float-card float-card--1 reveal reveal--delay-2">
-          <div class="float-card__icon">📈</div>
-          <div class="float-card__text">
-            <span>+247%</span>
-            <small>{{ t.hero.card1 }}</small>
-          </div>
-        </div>
         <div class="float-card float-card--2 reveal reveal--delay-3">
           <div class="float-card__icon">🤖</div>
           <div class="float-card__text">
@@ -280,7 +273,7 @@
 <span class="ps-comment">// Stage 7: Entry 1-4 / SL / TP1-2 plan</span></pre>
                 </div>
                 <a
-                  href="https://www.tradingview.com/script/"
+                  href="https://www.tradingview.com/script/Z5q65byi-updown-fib-by-sk-trade-v3/"
                   target="_blank"
                   rel="noopener"
                   class="btn-hero btn-hero--primary"
